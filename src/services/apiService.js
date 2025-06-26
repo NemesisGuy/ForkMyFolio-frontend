@@ -10,7 +10,12 @@
 let authServiceInstance;
 export const VUE_APP_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
-// Function to set the authService instance (dependency injection)
+/**
+ * Sets the authService instance for dependency injection.
+ * This allows apiService to access authentication tokens and refresh logic
+ * without creating circular dependencies.
+ * @param {object} service - The authService instance.
+ */
 export function setAuthService(service) {
   authServiceInstance = service;
 }
@@ -219,8 +224,30 @@ export const getProjects = () => fetchWithAuth('/projects', { method: 'GET' }, f
  */
 export const getProjectById = (id) => fetchWithAuth(`/projects/${id}`, { method: 'GET' }, false);
 
-// POST, PUT, DELETE for projects (admin only) would require auth
-// Example: export const createProject = (projectData) => fetchWithAuth('/projects', { method: 'POST', body: projectData }, true);
+/**
+ * Creates a new project.
+ * Requires admin role.
+ * @param {object} projectData - Data for the new project (conforming to CreateProjectRequest DTO).
+ * @returns {Promise<object>} ProjectDto.
+ */
+export const createProject = (projectData) => fetchWithAuth('/projects', { method: 'POST', body: projectData }, true);
+
+/**
+ * Updates an existing project by its ID.
+ * Requires admin role.
+ * @param {string|number} id - The ID of the project to update.
+ * @param {object} projectData - Data to update the project with (conforming to UpdateProjectRequest DTO).
+ * @returns {Promise<object>} ProjectDto.
+ */
+export const updateProject = (id, projectData) => fetchWithAuth(`/projects/${id}`, { method: 'PUT', body: projectData }, true);
+
+/**
+ * Deletes a project by its ID.
+ * Requires admin role.
+ * @param {string|number} id - The ID of the project to delete.
+ * @returns {Promise<null>} Resolves with null on success (204 No Content).
+ */
+export const deleteProject = (id) => fetchWithAuth(`/projects/${id}`, { method: 'DELETE' }, true);
 
 
 // --- Skill API Functions ---
@@ -230,7 +257,28 @@ export const getProjectById = (id) => fetchWithAuth(`/projects/${id}`, { method:
  */
 export const getSkills = () => fetchWithAuth('/skills', { method: 'GET' }, false);
 
-// Other skill endpoints (get by ID, create, delete) would be similar.
+/**
+ * Fetches a single skill by ID.
+ * @param {string|number} id - The ID of the skill.
+ * @returns {Promise<object>} SkillDto.
+ */
+export const getSkillById = (id) => fetchWithAuth(`/skills/${id}`, { method: 'GET' }, false);
+
+/**
+ * Creates a new skill.
+ * Requires admin role.
+ * @param {object} skillData - Data for the new skill (conforming to CreateSkillRequest DTO).
+ * @returns {Promise<object>} SkillDto.
+ */
+export const createSkill = (skillData) => fetchWithAuth('/skills', { method: 'POST', body: skillData }, true);
+
+/**
+ * Deletes a skill by its ID.
+ * Requires admin role.
+ * @param {string|number} id - The ID of the skill to delete.
+ * @returns {Promise<null>} Resolves with null on success (204 No Content).
+ */
+export const deleteSkill = (id) => fetchWithAuth(`/skills/${id}`, { method: 'DELETE' }, true);
 
 
 // --- Contact Message API Functions ---
