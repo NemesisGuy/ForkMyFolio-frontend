@@ -2,18 +2,6 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 // Route level code-splitting (lazy loading) for page components.
 // This generates a separate chunk for each route which is lazy-loaded when the route is visited.
-const HomePage = () => import('../views/HomePage.vue'); // Will create this page
-const ProjectsPage = () => import('../views/ProjectsPage.vue'); // Will create this page
-const SkillsPage = () => import('../views/SkillsPage.vue'); // Will create this page
-const ContactPage = () => import('../views/ContactPage.vue'); // Will create this page
-const LoginPage = () => import('../views/LoginPage.vue'); // Will create this page
-const SignupPage = () => import('../views/SignupPage.vue'); // Will create this page
-
-// Placeholder for authenticated pages - will be added later with route guards
-import { authService } from '../services/authService'; // Import authService
-
-// Route level code-splitting (lazy loading) for page components.
-// This generates a separate chunk for each route which is lazy-loaded when the route is visited.
 const HomePage = () => import('../views/HomePage.vue');
 const ProjectsPage = () => import('../views/ProjectsPage.vue');
 const SkillsPage = () => import('../views/SkillsPage.vue');
@@ -21,8 +9,11 @@ const ContactPage = () => import('../views/ContactPage.vue');
 const LoginPage = () => import('../views/LoginPage.vue');
 const SignupPage = () => import('../views/SignupPage.vue');
 
+// Placeholder for authenticated pages - will be added later with route guards
+import { authService } from '../services/authService'; // Import authService
+
 // Authenticated pages
-const ProfilePage = () => import('../views/ProfilePage.vue'); // Will create this page
+const ProfilePage = () => import('../views/ProfilePage.vue');
 const MyProjectsPage = () => import('../views/MyProjectsPage.vue'); // Will create this page
 const AdminDashboardPage = () => import('../views/AdminDashboardPage.vue'); // Will create this page
 

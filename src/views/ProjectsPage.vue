@@ -4,28 +4,7 @@
       <h1 class="mb-4 display-5">Projects</h1>
       <p class="lead mb-5">Browse through the amazing projects showcased on ForkMyFolio.</p>
 
-      <div v-if="isLoading" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-        <div v-for="n in 6" :key="n" class="col">
-          <div class="card h-100 placeholder-glow" aria-hidden="true">
-            <span class="placeholder col-12" style="height: 200px;"></span>
-            <div class="card-body">
-              <h5 class="card-title placeholder-glow">
-                <span class="placeholder col-8"></span>
-              </h5>
-              <p class="card-text placeholder-glow">
-                <span class="placeholder col-7"></span>
-                <span class="placeholder col-4"></span>
-                <span class="placeholder col-4"></span>
-                <span class="placeholder col-6"></span>
-              </p>
-              <div class="d-flex justify-content-between align-items-center mt-auto">
-                <span class="placeholder col-3" style="height: 38px; border-radius: 0.25rem;"></span>
-                <small class="text-muted placeholder col-4"></small>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <LoadingSpinner v-if="isLoading" />
 
       <div v-else-if="error" class="alert alert-danger" role="alert">
         <h4 class="alert-heading">Error Loading Projects</h4>
@@ -80,6 +59,7 @@ import { ref, onMounted } from 'vue';
 import { getProjects } from '../services/apiService'; // Path to apiService
 import { ApiError } from '../services/apiService'; // Assuming ApiError is exported
 import { formatDate } from '../utils'; // Path to utils
+import LoadingSpinner from '../components/common/LoadingSpinner.vue';
 
 /**
  * @file src/views/ProjectsPage.vue
