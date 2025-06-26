@@ -1,2 +1,0 @@
-# ForkMyFolio-frontend
-ForkMyFolio-frontend

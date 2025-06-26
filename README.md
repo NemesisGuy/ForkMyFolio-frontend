@@ -1,215 +1,64 @@
-# ForkMyFolio Frontend
+# temp-vue-project
 
-This is the React-based frontend for ForkMyFolio, a digital portfolio platform.
+This template should help get you started developing with Vue 3 in Vite.
 
-## Project Overview
+## Recommended IDE Setup
 
-ForkMyFolio allows users to showcase their projects and skills. This frontend application provides the user interface for interacting with the platform, including public browsing, user authentication, profile management, and (for admins) content management.
+[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
 
-## Tech Stack & Key Libraries
+## Type Support for `.vue` Imports in TS
 
-*   **React**: Latest stable version (using JavaScript, not TypeScript).
-*   **React Router**: For client-side routing.
-*   **Tailwind CSS**: For styling.
-*   **shadcn/ui**: For UI components, built on top of Radix UI and Tailwind CSS.
-*   **JSDoc**: For code documentation.
-*   **Jest & React Testing Library**: For unit and component testing (Note: Test execution faced environment issues during development).
-*   **Context API & React Hooks**: For state management (e.g., `AuthContext`).
+TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
 
-## Features
+## Customize configuration
 
-*   **Public Pages**:
-    *   Home
-    *   Projects List
-    *   Skills List
-    *   Contact Form
-    *   Login & Signup
-*   **Authenticated Pages**:
-    *   User Profile
-    *   My Projects (placeholder, for users to manage their own projects)
-    *   Admin Dashboard (placeholder, for admins to manage platform projects & skills)
-*   **Authentication**: JWT-based authentication with tokens stored in `localStorage`.
-*   **Styling**: Modern, responsive design using Tailwind CSS and shadcn/ui components. Mobile-first approach considered.
-*   **Routing**: Client-side routing managed by React Router.
-*   **API Integration**: Connects to a backend REST API for data.
-*   **Code Quality**:
-    *   Well-commented code with JSDoc annotations.
-    *   Reusable UI components.
-    *   Code splitting via `React.lazy` for route-based lazy loading.
-*   **Error Handling**: User-friendly error messages and toast notifications (using `sonner`).
-*   **Loading States**: UI feedback for asynchronous operations (e.g., form submissions, page loads, future data fetching).
+See [Vite Configuration Reference](https://vite.dev/config/).
 
-## Project Structure
+## Project Setup
 
-```
-/public
-  index.html
-  ...other static assets
-/src
-  /assets
-    (global assets if any, e.g. images - currently empty)
-  /components
-    /ui (shadcn/ui components, e.g., button.jsx, input.jsx)
-    Navbar.js
-    ProtectedRoute.js
-    ...other shared components
-  /contexts
-    AuthContext.js
-    ...other contexts
-  /hooks
-    (custom hooks - currently empty)
-  /pages
-    HomePage.js
-    LoginPage.js
-    ProjectsPage.js
-    ...other page components
-  /services
-    api.js
-    ...other API service modules
-  /utils
-    cn.js
-    ...other utility functions
-  App.js (main app component with routing)
-  index.css (global styles, Tailwind directives)
-  index.js (entry point)
-components.json (shadcn/ui configuration)
-jsconfig.json (for absolute imports like @/components)
-tailwind.config.js
-postcss.config.js
-...other configuration files
+```sh
+npm install
 ```
 
-## Getting Started
+### Compile and Hot-Reload for Development
 
-### Prerequisites
-
-*   Node.js (version 16.x or later recommended)
-*   npm (usually comes with Node.js)
-
-### Setup
-
-1.  **Clone the repository:**
-    ```bash
-    git clone <repository-url>
-    cd forkmyfolio-frontend
-    ```
-
-2.  **Install dependencies:**
-    ```bash
-    npm install
-    ```
-
-### Environment Variables
-
-The application expects the backend API URL to be available via an environment variable. Create a `.env` file in the root of the project:
-
-```env
-REACT_APP_API_BASE_URL=http://localhost:5000/api/v1
+```sh
+npm run dev
 ```
 
-Replace `http://localhost:5000/api/v1` with the actual URL of your running backend API if it's different. If this variable is not set, the app will default to `/api/v1` which assumes the frontend is served from the same domain as the backend or a proxy is set up.
+### Type-Check, Compile and Minify for Production
 
-### Running the Development Server
-
-To start the application in development mode:
-
-```bash
-npm start
-```
-
-This will open the application in your default web browser, usually at `http://localhost:3000`. The page will reload if you make edits.
-
-### Building for Production
-
-To create an optimized production build:
-
-```bash
+```sh
 npm run build
 ```
 
-This command bundles React in production mode and optimizes the build for the best performance. The build artifacts will be stored in the `build/` directory.
+### Run Unit Tests with [Vitest](https://vitest.dev/)
 
-### Running Tests
-
-To run the test suite (if environment issues are resolved):
-
-```bash
-npm test
+```sh
+npm run test:unit
 ```
 
-Or, to run a specific test file:
+### Run End-to-End Tests with [Playwright](https://playwright.dev)
 
-```bash
-npm test -- src/path/to/your/test-file.test.js --watchAll=false
-# For example, to run the cn.test.js (if clsx module resolution is fixed):
-# npx react-scripts test src/utils/cn.test.js --watchAll=false
+```sh
+# Install browsers for the first run
+npx playwright install
+
+# When testing on CI, must build the project first
+npm run build
+
+# Runs the end-to-end tests
+npm run test:e2e
+# Runs the tests only on Chromium
+npm run test:e2e -- --project=chromium
+# Runs the tests of a specific file
+npm run test:e2e -- tests/example.spec.ts
+# Runs the tests in debug mode
+npm run test:e2e -- --debug
 ```
 
-**Note on Testing Environment:** During development, persistent "Cannot find module" errors (e.g., for `clsx`, `react`) were encountered when running Jest tests via `react-scripts`. The test files themselves are structured correctly, but the testing environment within the development sandbox had issues resolving these core dependencies, even after fresh installs and cache clearing. The `node_modules/clsx` directory, for example, appeared empty after `npm install`. This prevented successful execution of the test suite.
+### Lint with [ESLint](https://eslint.org/)
 
-### Troubleshooting Jest Module Resolution Issues
-
-If you encounter similar "Cannot find module" errors in your Jest/`react-scripts` test environment, consider the following troubleshooting steps:
-
-1.  **Clear npm cache forcefully:**
-    ```bash
-    npm cache clean --force
-    ```
-2.  **Perform a completely fresh install:** Delete `node_modules` and `package-lock.json` (or `yarn.lock`), then reinstall.
-    ```bash
-    rm -rf node_modules package-lock.json
-    npm install
-    ```
-3.  **Verify `node_modules` Integrity:** After installation, manually check if the problematic module's directory (e.g., `node_modules/clsx`, `node_modules/react`) exists and contains the expected files.
-4.  **Check for Conflicting Global Packages:** Ensure that global installations of `npm`, `npx`, `create-react-app`, or `jest` are not conflicting with project-local versions. It's generally recommended to use the versions pinned by the project.
-5.  **Environment Variables:** Verify that no environment variables (like `NODE_PATH`) are set in a way that might interfere with Node's or Jest's default module resolution logic.
-6.  **Minimal Test Case:** Create the simplest possible test file that only imports the problematic module (e.g., `import 'clsx';`). This can help isolate whether the issue is with the module itself or the broader test setup.
-    ```javascript
-    // src/minimal.test.js
-    import 'clsx'; // or import React from 'react';
-
-    test('module should load', () => {
-      expect(true).toBe(true);
-    });
-    ```
-    Then run `npx react-scripts test src/minimal.test.js --watchAll=false`.
-7.  **Clear Jest Cache:** Although often not the root cause for missing modules, it's good practice.
-    ```bash
-    npx react-scripts test --clearCache
-    ```
-8.  **Review Jest Configuration (if ejected or customized):** If not using the default CRA setup, review any custom Jest configurations (`jest.config.js` or `package.json`'s `jest` section) for issues in `moduleDirectories`, `moduleFileExtensions`, or `transform` settings. (This project uses the default CRA Jest config).
-
-If these steps don't resolve the issue, it might be specific to the development environment's constraints or tooling interactions.
-
-## API Integration Points
-
-The frontend is designed to integrate with the following backend API endpoints (as per initial project description):
-
-*   `POST /api/v1/auth/login`
-*   `POST /api/v1/auth/logout`
-*   `GET /api/v1/users/me/profile`
-*   `GET /api/v1/projects`
-*   `POST /api/v1/projects` (admin only)
-*   `PUT /api/v1/projects/{id}` (admin only)
-*   `DELETE /api/v1/projects/{id}` (admin only)
-*   `GET /api/v1/skills`
-*   `POST /api/v1/skills` (admin only)
-*   `DELETE /api/v1/skills/{id}` (admin only)
-*   `POST /api/v1/contact-messages`
-
-(Further API integration for these endpoints is pending).
-
-## Future Enhancements / To-Do
-
-*   Complete API integration for all features (Projects, Skills, Contact form submission, Signup).
-*   Implement full functionality for authenticated user areas (`MyProjectsPage`, `AdminDashboardPage`).
-*   Develop the Signup page and its API integration.
-*   Add mobile-responsive navigation (e.g., hamburger menu).
-*   Implement user avatar display and dropdown menu in the Navbar.
-*   Refine loading states with more detailed skeleton components where appropriate.
-*   Add a dedicated "403 Forbidden" or "Not Authorized" page.
-*   Resolve testing environment issues to ensure all unit tests can run.
-*   Consider more advanced form validation if needed (e.g., using `react-hook-form`).
-*   Implement dark mode theme switching if `sonner`'s current theme detection is not sufficient or a manual toggle is desired.
-
-This README provides a comprehensive overview of the ForkMyFolio frontend project.
+```sh
+npm run lint
+```
