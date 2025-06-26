@@ -5,7 +5,11 @@ import { createApp } from 'vue';
 // import { createPinia } from 'pinia'; // Removed Pinia import
 
 import App from './App.vue';
-import router from './router'; // Will check/update router/index.ts next
+import router from './router';
+import { authService } from './services/authService'; // Import authService
+
+// Initialize auth state before mounting the app
+authService.loadAuthState();
 
 const app = createApp(App);
 
