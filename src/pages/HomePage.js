@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button'; // Assuming Button is in ui directory
+import { Button } from '../components/ui/button'; // Updated path
 
 /**
  * Home page component.

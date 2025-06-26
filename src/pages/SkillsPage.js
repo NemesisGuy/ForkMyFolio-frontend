@@ -1,9 +1,9 @@
 import React from 'react';
 import { useState, useEffect } from 'react'; // Added for local state example
 // import { useQuery } from 'react-query'; // Example for data fetching
-// import { getSkills } from '@/services/api'; // To be created in api.js
-import { Badge } from '@/components/ui/badge.jsx'; // Example shadcn component
-import { Skeleton } from '@/components/ui/skeleton.jsx';
+// import { getSkills } from '../services/api'; // To be created in api.js & Updated path
+import { Badge } from '../components/ui/badge.jsx'; // Updated path
+import { Skeleton } from '../components/ui/skeleton.jsx'; // Updated path
 
 /**
  * Skills page component.

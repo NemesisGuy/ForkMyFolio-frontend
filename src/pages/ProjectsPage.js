@@ -1,10 +1,10 @@
 import React from 'react';
 import { useState, useEffect } from 'react'; // Added for local state example
 // import { useQuery } from 'react-query'; // Example for data fetching, to be added later
-// import { getProjects } from '@/services/api'; // To be created in api.js
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card.jsx'; // Example shadcn components
-import { Badge } from '@/components/ui/badge.jsx'; // Example shadcn component
-import { Skeleton } from '@/components/ui/skeleton.jsx';
+// import { getProjects } from '../services/api'; // To be created in api.js & Updated path
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/card.jsx'; // Updated path
+import { Badge } from '../components/ui/badge.jsx'; // Updated path
+import { Skeleton } from '../components/ui/skeleton.jsx'; // Updated path
 
 /**
  * Projects page component.

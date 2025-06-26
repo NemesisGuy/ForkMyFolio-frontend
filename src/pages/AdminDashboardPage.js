@@ -1,8 +1,8 @@
 import React from 'react';
-import { useAuth } from '@/contexts/AuthContext'; // Uncomment when auth checks are active
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.jsx";
-import { Button } from '@/components/ui/button'; // Example
-import { Input } from '@/components/ui/input.jsx';  // Example
+import { useAuth } from '../contexts/AuthContext'; // Uncomment when auth checks are active & Updated path
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs.jsx"; // Updated path
+import { Button } from '../components/ui/button'; // Example & Updated path
+import { Input } from '../components/ui/input.jsx';  // Example & Updated path
 
 /**
  * Admin Dashboard page component.

@@ -1,5 +1,5 @@
 import React from 'react'; // Import React for JSX
-import { cn } from "@/utils";
+import { cn } from "../../utils/cn"; // Updated path
 
 /**
  * @typedef {object} SkeletonProps

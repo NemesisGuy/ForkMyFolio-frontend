@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input.jsx'; // Using .jsx as per decision for shadcn components
-import { Textarea } from '@/components/ui/textarea.jsx'; // Assuming textarea will be added via shadcn
-import { Label } from '@/components/ui/label.jsx'; // Assuming label will be added via shadcn
+import { Button } from '../components/ui/button'; // Updated path
+import { Input } from '../components/ui/input.jsx'; // Updated path
+import { Textarea } from '../components/ui/textarea.jsx'; // Updated path
+import { Label } from '../components/ui/label.jsx'; // Updated path
 // import { useMutation } from 'react-query'; // For API call
-// import { sendContactMessage } from '@/services/api'; // To be created
+// import { sendContactMessage } from '../services/api'; // To be created & Updated path
 import { toast } from 'sonner';
-// import { Toaster } from '@/components/ui/sonner'; // Toaster is in App.js
+// import { Toaster } from '../components/ui/sonner'; // Toaster is in App.js & Updated path
 
 /**
  * Contact page component.

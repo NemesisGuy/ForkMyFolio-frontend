@@ -1,11 +1,11 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-// import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"; // For user avatar
-// import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"; // For user dropdown
+import { useAuth } from '../contexts/AuthContext'; // Updated path
+import { Button } from './ui/button'; // Updated path
+// import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"; // For user avatar
+// import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu"; // For user dropdown
 import { toast } from 'sonner';
-import { logoutUser as apiLogout } from '@/services/api'; // Renamed to avoid conflict
+import { logoutUser as apiLogout } from '../services/api'; // Updated path
 
 /**
  * Navigation bar component.

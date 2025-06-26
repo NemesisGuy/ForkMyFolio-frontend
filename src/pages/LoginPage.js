@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { loginUser } from '@/services/api';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input.jsx';
-import { Label } from '@/components/ui/label.jsx';
+import { useAuth } from '../contexts/AuthContext'; // Updated path
+import { loginUser } from '../services/api'; // Updated path
+import { Button } from '../components/ui/button'; // Updated path
+import { Input } from '../components/ui/input.jsx'; // Updated path
+import { Label } from '../components/ui/label.jsx'; // Updated path
 import { toast } from 'sonner';
 
 /**
