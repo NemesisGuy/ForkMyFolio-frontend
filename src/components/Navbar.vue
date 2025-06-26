@@ -1,6 +1,6 @@
 <template>
   <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom shadow-sm sticky-top">
-    <div class="container">
+    <div class="container-fluid"> <!-- Changed to container-fluid -->
       <router-link class="navbar-brand" to="/">ForkMyFolio</router-link>
       <button
         class="navbar-toggler"
