@@ -145,7 +145,41 @@ npm test -- src/path/to/your/test-file.test.js --watchAll=false
 # npx react-scripts test src/utils/cn.test.js --watchAll=false
 ```
 
-**Note on Testing Environment:** During development, there were persistent issues with Jest's module resolution in the provided sandbox environment, specifically for `clsx` and `react` modules. The test files are written but could not be successfully run. This might require environment-specific troubleshooting (e.g., related to symlinks, `npx` behavior, or npm installation within the sandbox).
+**Note on Testing Environment:** During development, persistent "Cannot find module" errors (e.g., for `clsx`, `react`) were encountered when running Jest tests via `react-scripts`. The test files themselves are structured correctly, but the testing environment within the development sandbox had issues resolving these core dependencies, even after fresh installs and cache clearing. The `node_modules/clsx` directory, for example, appeared empty after `npm install`. This prevented successful execution of the test suite.
+
+### Troubleshooting Jest Module Resolution Issues
+
+If you encounter similar "Cannot find module" errors in your Jest/`react-scripts` test environment, consider the following troubleshooting steps:
+
+1.  **Clear npm cache forcefully:**
+    ```bash
+    npm cache clean --force
+    ```
+2.  **Perform a completely fresh install:** Delete `node_modules` and `package-lock.json` (or `yarn.lock`), then reinstall.
+    ```bash
+    rm -rf node_modules package-lock.json
+    npm install
+    ```
+3.  **Verify `node_modules` Integrity:** After installation, manually check if the problematic module's directory (e.g., `node_modules/clsx`, `node_modules/react`) exists and contains the expected files.
+4.  **Check for Conflicting Global Packages:** Ensure that global installations of `npm`, `npx`, `create-react-app`, or `jest` are not conflicting with project-local versions. It's generally recommended to use the versions pinned by the project.
+5.  **Environment Variables:** Verify that no environment variables (like `NODE_PATH`) are set in a way that might interfere with Node's or Jest's default module resolution logic.
+6.  **Minimal Test Case:** Create the simplest possible test file that only imports the problematic module (e.g., `import 'clsx';`). This can help isolate whether the issue is with the module itself or the broader test setup.
+    ```javascript
+    // src/minimal.test.js
+    import 'clsx'; // or import React from 'react';
+
+    test('module should load', () => {
+      expect(true).toBe(true);
+    });
+    ```
+    Then run `npx react-scripts test src/minimal.test.js --watchAll=false`.
+7.  **Clear Jest Cache:** Although often not the root cause for missing modules, it's good practice.
+    ```bash
+    npx react-scripts test --clearCache
+    ```
+8.  **Review Jest Configuration (if ejected or customized):** If not using the default CRA setup, review any custom Jest configurations (`jest.config.js` or `package.json`'s `jest` section) for issues in `moduleDirectories`, `moduleFileExtensions`, or `transform` settings. (This project uses the default CRA Jest config).
+
+If these steps don't resolve the issue, it might be specific to the development environment's constraints or tooling interactions.
 
 ## API Integration Points
 
