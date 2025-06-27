@@ -34,6 +34,14 @@
         </p>
       </div>
     </div>
+
+    <SuccessModal
+      v-if="loginSuccessMessage"
+      :visible="showLoginSuccessModal"
+      title="Login Successful"
+      :message="loginSuccessMessage"
+      @close="closeLoginSuccessModal"
+    />
   </div>
 </template>
 
@@ -42,6 +50,7 @@ import { reactive, ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { authService } from '../../services/authService'; // Corrected path
 import { ApiError } from '../../services/apiService'; // Corrected path
+import SuccessModal from '../../components/common/SuccessModal.vue';
 
 /**
  * @file src/views/LoginPage.vue
@@ -83,6 +92,12 @@ const formMessage = reactive({ text: null, type: null, errors: [] });
 
 /** @type {import('vue').Ref<boolean>} */
 const isLoading = ref(false);
+/** @type {import('vue').Ref<string|null>} */
+const loginSuccessMessage = ref(null);
+/** @type {import('vue').Ref<boolean>} */
+const showLoginSuccessModal = ref(false);
+
+let redirectPathOnSuccess = '/'; // Store redirect path
 
 // Redirect if already logged in
 onMounted(() => {
@@ -90,6 +105,15 @@ onMounted(() => {
     router.replace(route.query.redirect || '/');
   }
 });
+
+/**
+ * Closes the success modal and performs redirection.
+ */
+const closeLoginSuccessModal = () => {
+  showLoginSuccessModal.value = false;
+  loginSuccessMessage.value = null;
+  router.replace(redirectPathOnSuccess); // Use stored redirect path
+};
 
 /**
  * Validates the login form data.
@@ -134,11 +158,13 @@ const handleLogin = async () => {
 
   try {
     await authService.login(credentials);
-    // Successful login is handled by authService updating state.
-    // Route guard or watcher in App.vue might redirect, or redirect here.
-    const redirectPath = route.query.redirect || '/'; // Get redirect path from query or default to home
-    router.replace(redirectPath);
-    // No success message here as redirection is immediate. Toasts can be used by authService if desired.
+
+    loginSuccessMessage.value = "Login successful! Redirecting to your dashboard...";
+    showLoginSuccessModal.value = true;
+    redirectPathOnSuccess = route.query.redirect || '/'; // Store the intended path
+
+    // Redirection will now happen when the SuccessModal is closed by the user
+    // or after a timeout if we implement auto-close later.
   } catch (error) {
     console.error("Login error:", error);
     if (error instanceof ApiError) {

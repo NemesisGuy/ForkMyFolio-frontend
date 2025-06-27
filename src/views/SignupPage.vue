@@ -54,6 +54,14 @@
         </p>
       </div>
     </div>
+
+    <SuccessModal
+      v-if="signupSuccessMessage"
+      :visible="showSignupSuccessModal"
+      title="Registration Successful"
+      :message="signupSuccessMessage"
+      @close="closeSignupSuccessModal"
+    />
   </div>
 </template>
 
@@ -62,6 +70,7 @@ import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { authService } from '../../services/authService'; // Corrected path
 import { ApiError } from '../../services/apiService'; // Corrected path for ApiError
+import SuccessModal from '../../components/common/SuccessModal.vue';
 
 /**
  * @file src/views/SignupPage.vue
@@ -121,6 +130,19 @@ const formMessage = reactive({ text: null, type: null, errors: [] });
 
 /** @type {import('vue').Ref<boolean>} */
 const isLoading = ref(false);
+/** @type {import('vue').Ref<string|null>} */
+const signupSuccessMessage = ref(null);
+/** @type {import('vue').Ref<boolean>} */
+const showSignupSuccessModal = ref(false);
+
+/**
+ * Closes the success modal and redirects to login.
+ */
+const closeSignupSuccessModal = () => {
+  showSignupSuccessModal.value = false;
+  signupSuccessMessage.value = null;
+  router.push('/login');
+};
 
 /**
  * Validates the signup form data.
@@ -197,15 +219,21 @@ const handleSignup = async () => {
       password: formData.password,
     };
     await authService.register(apiData);
-    formMessage.text = 'Registration successful! Please login.';
-    formMessage.type = 'success';
-    // Clear form or redirect
+
+    signupSuccessMessage.value = 'Registration successful! Please proceed to login.';
+    showSignupSuccessModal.value = true;
+
+    // Clear form
     Object.keys(formData).forEach(key => formData[key] = '');
-    // Optionally redirect to login after a delay
-    setTimeout(() => router.push('/login'), 2000);
+    // Redirection to /login will happen when SuccessModal is closed.
+    // The setTimeout for redirection is removed.
 
   } catch (error) {
     console.error("Signup error:", error);
+    // Ensure formMessage is cleared if we are now using SuccessModal for success
+    formMessage.text = null;
+    formMessage.type = null;
+
     if (error instanceof ApiError) {
       formMessage.text = error.message || 'Registration failed. Please try again.';
       formMessage.errors = error.errors || [{ message: 'An unknown API error occurred.' }];
