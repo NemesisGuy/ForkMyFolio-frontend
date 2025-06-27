@@ -20,6 +20,7 @@ const MyProjectsPage = () => import('../views/MyProjectsPage.vue');
 const AdminDashboardPage = () => import('../views/AdminDashboardPage.vue');
 const DashboardPage = () => import('../views/DashboardPage.vue');
 const EditProjectPage = () => import('../views/EditProjectPage.vue');
+const CreateProjectPage = () => import('../views/CreateProjectPage.vue');
 
 
 const routes = [
@@ -70,6 +71,12 @@ const routes = [
     name: 'my-projects',
     component: MyProjectsPage,
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/projects/create',
+    name: 'create-project',
+    component: CreateProjectPage,
+    meta: { requiresAuth: true, requiresAdmin: true } // Admin only as per API spec
   },
   {
     path: '/my-projects/:id/edit',

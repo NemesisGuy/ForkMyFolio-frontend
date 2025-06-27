@@ -15,59 +15,19 @@
         <LoadingSpinner />
       </div>
 
-      <form v-else-if="project" @submit.prevent="handleUpdateProject" class="mt-3 needs-validation" novalidate>
-        <div class="card shadow-sm">
-          <div class="card-body p-4">
-            <div class="mb-3">
-              <label for="projectTitle" class="form-label">Title</label>
-              <input type="text" class="form-control" id="projectTitle" v-model="project.title" required :class="{'is-invalid': fieldErrors.title}">
-              <div v-if="fieldErrors.title" class="invalid-feedback">{{ fieldErrors.title }}</div>
-            </div>
+      <ProjectForm
+        v-if="project && !isLoading"
+        :initial-data="project"
+        :is-saving="isSaving"
+        :field-errors="fieldErrors"
+        submit-text="Save Changes"
+        saving-text="Saving..."
+        @submit-form="handleUpdateProject"
+        @cancel="cancelEdit"
+        class="mt-3"
+      />
 
-            <div class="mb-3">
-              <label for="projectDescription" class="form-label">Description</label>
-              <textarea class="form-control" id="projectDescription" v-model="project.description" rows="5" required :class="{'is-invalid': fieldErrors.description}"></textarea>
-              <div v-if="fieldErrors.description" class="invalid-feedback">{{ fieldErrors.description }}</div>
-            </div>
-
-            <div class="mb-3">
-              <label for="projectTechStack" class="form-label">Tech Stack (comma-separated)</label>
-              <input type="text" class="form-control" id="projectTechStack" v-model="techStackString" :class="{'is-invalid': fieldErrors.techStack}">
-              <div class="form-text">Enter technologies separated by commas (e.g., Vue, Node.js, PostgreSQL).</div>
-              <div v-if="fieldErrors.techStack" class="invalid-feedback">{{ fieldErrors.techStack }}</div>
-            </div>
-
-            <div class="mb-3">
-              <label for="projectImageUrl" class="form-label">Image URL</label>
-              <input type="url" class="form-control" id="projectImageUrl" v-model="project.imageUrl" :class="{'is-invalid': fieldErrors.imageUrl}">
-               <div v-if="fieldErrors.imageUrl" class="invalid-feedback">{{ fieldErrors.imageUrl }}</div>
-            </div>
-
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label for="projectRepoUrl" class="form-label">Repository URL</label>
-                <input type="url" class="form-control" id="projectRepoUrl" v-model="project.repoUrl" :class="{'is-invalid': fieldErrors.repoUrl}">
-                <div v-if="fieldErrors.repoUrl" class="invalid-feedback">{{ fieldErrors.repoUrl }}</div>
-              </div>
-              <div class="col-md-6 mb-3">
-                <label for="projectLiveUrl" class="form-label">Live URL</label>
-                <input type="url" class="form-control" id="projectLiveUrl" v-model="project.liveUrl" :class="{'is-invalid': fieldErrors.liveUrl}">
-                <div v-if="fieldErrors.liveUrl" class="invalid-feedback">{{ fieldErrors.liveUrl }}</div>
-              </div>
-            </div>
-
-            <div class="mt-4 d-flex justify-content-end">
-              <button type="button" class="btn btn-outline-secondary me-2" @click="cancelEdit">Cancel</button>
-              <button type="submit" class="btn btn-primary" :disabled="isSaving">
-                <span v-if="isSaving" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                {{ isSaving ? 'Saving...' : 'Save Changes' }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </form>
-
-      <div v-else-if="!isLoading && !showErrorModal" class="alert alert-warning text-center" role="alert">
+      <div v-else-if="!isLoading && !project && !showErrorModal" class="alert alert-warning text-center" role="alert">
         Project data could not be loaded, or the project does not exist.
       </div>
     </div>
@@ -101,6 +61,7 @@ import { getProjectById, updateProject, ApiError } from '../services/apiService'
 import LoadingSpinner from '../components/common/LoadingSpinner.vue';
 import ErrorModal from '../components/common/ErrorModal.vue';
 import SuccessModal from '../components/common/SuccessModal.vue';
+import ProjectForm from '../components/forms/ProjectForm.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -195,65 +156,59 @@ onMounted(() => {
   }
 });
 
-// --- Computed Properties for Form Handling ---
-/**
- * Computed property to get/set techStack as a comma-separated string.
- * @type {import('vue').ComputedRef<string>}
- */
-const techStackString = computed({
-  get: () => (project.value && Array.isArray(project.value.techStack) ? project.value.techStack.join(', ') : ''),
-  set: (value) => {
-    if (project.value) {
-      project.value.techStack = value.split(',').map(tech => tech.trim()).filter(tech => tech);
-    }
-  },
-});
-
 // --- Form Handling & Navigation ---
 
 /**
  * Validates the project form data.
+ * @param {object} dataToValidate - The project data object to validate.
  * @returns {boolean} True if the form is valid, false otherwise.
  */
-const validateForm = () => {
+const validateForm = (dataToValidate) => {
   // Clear previous errors
   Object.keys(fieldErrors).forEach(key => fieldErrors[key] = null);
   let isValid = true;
 
-  if (!project.value.title?.trim()) {
+  if (!dataToValidate.title?.trim()) {
     fieldErrors.title = "Title is required.";
     isValid = false;
   }
-  if (!project.value.description?.trim()) {
+  if (!dataToValidate.description?.trim()) {
     fieldErrors.description = "Description is required.";
     isValid = false;
   }
   // Add more validation as needed (e.g., URL formats for imageUrl, repoUrl, liveUrl)
-  // For simplicity, we'll keep it to required fields for now.
 
-  // Example URL validation (optional, can be expanded)
   const urlPattern = /^(ftp|http|https):\/\/[^ "]+$/;
-  if (project.value.imageUrl && !urlPattern.test(project.value.imageUrl)) {
+  if (dataToValidate.imageUrl && !urlPattern.test(dataToValidate.imageUrl)) {
     fieldErrors.imageUrl = "Please enter a valid URL for the image.";
     isValid = false;
   }
-  if (project.value.repoUrl && !urlPattern.test(project.value.repoUrl)) {
+  if (dataToValidate.repoUrl && !urlPattern.test(dataToValidate.repoUrl)) {
     fieldErrors.repoUrl = "Please enter a valid URL for the repository.";
     isValid = false;
   }
-  if (project.value.liveUrl && !urlPattern.test(project.value.liveUrl)) {
+  if (dataToValidate.liveUrl && !urlPattern.test(dataToValidate.liveUrl)) {
     fieldErrors.liveUrl = "Please enter a valid URL for the live demo.";
     isValid = false;
   }
+  // Note: techStack validation (e.g., if it's required or format) can be added here if needed.
+  // The ProjectForm component now ensures techStack is an array.
 
   return isValid;
 };
 
 /**
- * Handles the submission of the updated project data.
+ * Handles the submission of the updated project data, received from ProjectForm.
+ * @param {object} formDataFromEvent - The project data emitted from ProjectForm.
  */
-const handleUpdateProject = async () => {
-  if (!validateForm()) {
+const handleUpdateProject = async (formDataFromEvent) => {
+  // project.value should be updated by the form's local data management if two-way binding was fully set up.
+  // However, ProjectForm emits the data. So, we use formDataFromEvent.
+  // We also need to ensure our local 'project' ref is updated if we want the title to reflect changes immediately
+  // without a re-fetch, or if validation relies on it.
+  // For now, validation will use formDataFromEvent.
+
+  if (!validateForm(formDataFromEvent)) {
     error.value = { title: "Validation Error", message: "Please correct the errors in the form." };
     showErrorModal.value = true;
     return;
@@ -267,18 +222,16 @@ const handleUpdateProject = async () => {
 
   try {
     const projectId = route.params.id;
-    // Ensure techStack is correctly formatted if it was stringified for the input
-    // The computed techStackString handles conversion back to array.
-    // The project.value should already have techStack as an array.
-    const updatedData = { ...project.value };
+    // The formDataFromEvent is the source of truth for what was submitted.
+    const updatedData = formDataFromEvent;
 
     await updateProject(projectId, updatedData);
 
     successMessage.value = "Project updated successfully!";
     showSuccessModal.value = true;
-    // Optionally, fetch fresh project details or navigate away after success modal is closed
-    // For now, we'll just show the success message.
-    // fetchProjectDetails(projectId); // Re-fetch to show updated data if staying on page
+    // Re-fetch project details to ensure form and page title reflect any backend transformations or successful save.
+    // This also updates the `project.value` which is passed as `initialData` to ProjectForm.
+    fetchProjectDetails(projectId);
   } catch (err) {
     console.error(`Failed to update project ID ${route.params.id}:`, err);
     let errorMessage = "Could not update project. Please try again later.";
