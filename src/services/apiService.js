@@ -249,6 +249,12 @@ export const updateProject = (id, projectData) => fetchWithAuth(`/projects/${id}
  */
 export const deleteProject = (id) => fetchWithAuth(`/projects/${id}`, { method: 'DELETE' }, true);
 
+/**
+ * Fetches all projects for the currently authenticated user.
+ * @returns {Promise<Array<object>>} List of ProjectDto.
+ */
+export const getMyProjects = () => fetchWithAuth('/users/me/projects', { method: 'GET' }, true);
+
 
 // --- Skill API Functions ---
 /**
