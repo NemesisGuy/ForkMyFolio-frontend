@@ -99,7 +99,7 @@ const formData = reactive({
  * @property {string|null} confirmPassword
  */
 
-/** @type {import('vue').Ref<FieldErrors>} */
+/** @type {FieldErrors} */
 const fieldErrors = reactive({
   firstName: null,
   lastName: null,
@@ -116,9 +116,10 @@ const fieldErrors = reactive({
  * @property {Array<{field?: string, message: string}>} [errors] - Detailed errors from API.
  */
 
-/** @type {import('vue').Ref<FormMessage>} */
+/** @type {FormMessage} */
 const formMessage = reactive({ text: null, type: null, errors: [] });
 
+/** @type {import('vue').Ref<boolean>} */
 const isLoading = ref(false);
 
 /**
