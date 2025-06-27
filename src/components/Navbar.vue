@@ -94,23 +94,37 @@ onBeforeUnmount(() => {
   }
 });
 
+/**
+ * Programmatically toggles the Bootstrap collapse instance for the navbar.
+ */
 const toggleNavbar = () => {
   if (bsCollapse) {
     bsCollapse.toggle();
   }
 };
 
+/**
+ * Programmatically hides the Bootstrap collapse instance for the navbar if it's currently shown.
+ * Useful for closing the mobile menu after a navigation link is clicked.
+ */
 const collapseNavbar = () => {
   if (bsCollapse && navbarNavCollapsible.value && navbarNavCollapsible.value.classList.contains('show')) {
     bsCollapse.hide();
   }
 };
 
-
+/**
+ * Computed property to check if the current user is an admin.
+ * @returns {boolean} True if the user is authenticated and has the 'ADMIN' role, false otherwise.
+ */
 const isAdmin = computed(() => {
   return authService.user.value && authService.user.value.roles && authService.user.value.roles.includes('ADMIN');
 });
 
+/**
+ * Handles the user logout process.
+ * Calls the authentication service to log out, then redirects to the login page.
+ */
 const handleLogout = async () => {
   collapseNavbar(); // Ensure navbar collapses on mobile after clicking logout
   try {
