@@ -21,6 +21,7 @@ const AdminDashboardPage = () => import('../views/AdminDashboardPage.vue');
 const DashboardPage = () => import('../views/DashboardPage.vue');
 const EditProjectPage = () => import('../views/EditProjectPage.vue');
 const CreateProjectPage = () => import('../views/CreateProjectPage.vue');
+const EditProfilePage = () => import('../views/EditProfilePage.vue');
 
 
 const routes = [
@@ -64,6 +65,12 @@ const routes = [
     path: '/profile',
     name: 'profile',
     component: ProfilePage,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/profile/edit',
+    name: 'edit-profile',
+    component: EditProfilePage,
     meta: { requiresAuth: true }
   },
   {

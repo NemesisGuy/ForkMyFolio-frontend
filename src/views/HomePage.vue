@@ -4,8 +4,8 @@
       <h1>Welcome to ForkMyFolio</h1>
       <p class="lead">The best place to showcase your amazing projects and skills!</p>
       <div class="mt-4">
-        <router-link class="btn btn-primary btn-lg me-2" to="/projects">View Projects</router-link>
-        <router-link class="btn btn-secondary btn-lg" to="/signup">Get Started</router-link>
+        <router-link to="/projects" class="btn btn-primary btn-lg me-2">View Projects</router-link>
+        <router-link to="/signup" class="btn btn-secondary btn-lg">Get Started</router-link>
       </div>
     </header>
 
@@ -44,7 +44,6 @@
   background-color: #f8f9fa; /* Light grey background for header */
   padding-bottom: 3rem !important; /* Ensure padding with Bootstrap */
 }
-
 .home-page h1 {
   font-weight: 300;
 }

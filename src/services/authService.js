@@ -213,7 +213,27 @@ export const authService = {
   getUser,
   getAccessToken,
   loadAuthState, // To be called on app init
+  updateLocalUser, // Method to update user state after profile edit
 };
+
+/**
+ * Updates the local user data in the auth state and localStorage.
+ * This is typically called after a successful profile update.
+ * Does not affect the access token.
+ * @param {object} updatedUserData - The new user data (UserDto).
+ */
+function updateLocalUser(updatedUserData) {
+  console.log('[AuthService] Updating local user data:', updatedUserData);
+  if (updatedUserData) {
+    state.user = { ...state.user, ...updatedUserData }; // Merge to preserve other potential state fields if any
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(state.user));
+  } else {
+    // Should not happen if backend returns updated user, but as a guard:
+    console.warn('[AuthService] updateLocalUser called with null/undefined userData. User state not changed.');
+  }
+  // state.isLoading should not be affected by this specific update type
+}
+
 
 // Dependency injection for apiService to use authService (for token and refresh logic)
 // This avoids circular dependency issues at module load time.

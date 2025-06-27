@@ -8,19 +8,7 @@
 // Import authService dynamically to avoid circular dependencies if apiService is imported by authService for API calls.
 // This is a common pattern: authService will set a callback or provide a getter for the token.
 let authServiceInstance;
-/*
 export const VUE_APP_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
-*/
-/*
-export const VUE_APP_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
-*/
-
-export const VUE_APP_API_BASE_URL =
-  (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL)
-    ? import.meta.env.VITE_API_BASE_URL
-    : 'http://localhost:8080/api/v1';
-
-
 
 /**
  * Sets the authService instance for dependency injection.
@@ -248,6 +236,13 @@ export const logout = () => fetchWithAuth('/auth/logout', { method: 'POST' }, tr
  * @returns {Promise<object>} UserDto.
  */
 export const getUserProfile = () => fetchWithAuth('/users/me/profile', { method: 'GET' }, true);
+
+/**
+ * Updates the current authenticated user's profile.
+ * @param {object} profileData - Data to update (e.g., { firstName, lastName, email, profileImageUrl }).
+ * @returns {Promise<object>} Updated UserDto.
+ */
+export const updateUserProfile = (profileData) => fetchWithAuth('/users/me/profile', { method: 'PATCH', body: profileData }, true);
 
 
 // --- Project API Functions ---
