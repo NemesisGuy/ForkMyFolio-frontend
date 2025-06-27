@@ -238,6 +238,13 @@ export const logout = () => fetchWithAuth('/auth/logout', { method: 'POST' }, tr
 export const getUserProfile = () => fetchWithAuth('/users/me/profile', { method: 'GET' }, true);
 
 /**
+ * (Admin) Fetches all users in the system.
+ * Requires admin role.
+ * @returns {Promise<Array<object>>} List of UserDto.
+ */
+export const getAllUsers = () => fetchWithAuth('/admin/users', { method: 'GET' }, true);
+
+/**
  * Updates the current authenticated user's profile.
  * @param {object} profileData - Data to update (e.g., { firstName, lastName, email, profileImageUrl }).
  * @returns {Promise<object>} Updated UserDto.

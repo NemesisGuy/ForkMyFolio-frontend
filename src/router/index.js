@@ -23,6 +23,7 @@ const EditProjectPage = () => import('../views/EditProjectPage.vue');
 const CreateProjectPage = () => import('../views/CreateProjectPage.vue');
 const EditProfilePage = () => import('../views/EditProfilePage.vue');
 const AdminProjectsPage = () => import('../views/admin/AdminProjectsPage.vue');
+const AdminUsersPage = () => import('../views/admin/AdminUsersPage.vue');
 
 
 const routes = [
@@ -103,6 +104,12 @@ const routes = [
     path: '/admin/projects',
     name: 'admin-projects',
     component: AdminProjectsPage,
+    meta: { requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/admin/users',
+    name: 'admin-users',
+    component: AdminUsersPage,
     meta: { requiresAuth: true, requiresAdmin: true }
   },
   // Error Pages
