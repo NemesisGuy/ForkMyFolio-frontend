@@ -8,14 +8,16 @@ const SkillsPage = () => import('../views/SkillsPage.vue');
 const ContactPage = () => import('../views/ContactPage.vue');
 const LoginPage = () => import('../views/LoginPage.vue');
 const SignupPage = () => import('../views/SignupPage.vue');
+const NotFoundPage = () => import('../views/NotFoundPage.vue');
+const UnauthorizedPage = () => import('../views/UnauthorizedPage.vue');
 
 // Placeholder for authenticated pages - will be added later with route guards
 import { authService } from '../services/authService'; // Import authService
 
 // Authenticated pages
 const ProfilePage = () => import('../views/ProfilePage.vue');
-const MyProjectsPage = () => import('../views/MyProjectsPage.vue'); // Will create this page
-const AdminDashboardPage = () => import('../views/AdminDashboardPage.vue'); // Will create this page
+const MyProjectsPage = () => import('../views/MyProjectsPage.vue');
+const AdminDashboardPage = () => import('../views/AdminDashboardPage.vue');
 
 
 const routes = [
@@ -66,6 +68,17 @@ const routes = [
     name: 'admin',
     component: AdminDashboardPage,
     meta: { requiresAuth: true, requiresAdmin: true }
+  },
+  // Error Pages
+  {
+    path: '/unauthorized',
+    name: 'unauthorized',
+    component: UnauthorizedPage,
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'not-found',
+    component: NotFoundPage
   }
 ];
 
@@ -88,10 +101,9 @@ router.beforeEach((to, from, next) => {
       query: { redirect: to.fullPath } // Pass the intended path for redirection after login
     });
   } else if (to.meta.requiresAdmin && (!user || !user.roles || !user.roles.includes('ADMIN'))) {
-    // If route requires admin and user is not an admin (or not logged in), redirect to home
-    // Or, you could redirect to a specific 'Unauthorized' page
+    // If route requires admin and user is not an admin (or not logged in), redirect to unauthorized page
     console.warn(`Unauthorized access attempt to admin route: ${to.path} by user:`, user);
-    next({ name: 'home' });
+    next({ name: 'unauthorized' });
   } else {
     // Otherwise, proceed to the route
     next();
