@@ -18,6 +18,7 @@ import { authService } from '../services/authService'; // Import authService
 const ProfilePage = () => import('../views/ProfilePage.vue');
 const MyProjectsPage = () => import('../views/MyProjectsPage.vue');
 const AdminDashboardPage = () => import('../views/AdminDashboardPage.vue');
+const DashboardPage = () => import('../views/DashboardPage.vue');
 
 
 const routes = [
@@ -50,6 +51,12 @@ const routes = [
     path: '/signup',
     name: 'signup',
     component: SignupPage,
+  },
+  {
+    path: '/dashboard',
+    name: 'dashboard',
+    component: DashboardPage,
+    meta: { requiresAuth: true }
   },
   {
     path: '/profile',
