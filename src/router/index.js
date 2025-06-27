@@ -19,6 +19,7 @@ const ProfilePage = () => import('../views/ProfilePage.vue');
 const MyProjectsPage = () => import('../views/MyProjectsPage.vue');
 const AdminDashboardPage = () => import('../views/AdminDashboardPage.vue');
 const DashboardPage = () => import('../views/DashboardPage.vue');
+const EditProjectPage = () => import('../views/EditProjectPage.vue');
 
 
 const routes = [
@@ -69,6 +70,13 @@ const routes = [
     name: 'my-projects',
     component: MyProjectsPage,
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/my-projects/:id/edit',
+    name: 'edit-project',
+    component: EditProjectPage,
+    meta: { requiresAuth: true },
+    props: true // Pass route params as props to the component
   },
   {
     path: '/admin',
