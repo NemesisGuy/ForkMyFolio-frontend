@@ -1,6 +1,6 @@
 <template>
   <div class="projects-page py-4">
-    <div class="container-fluid"> {/* Or 'container' if a max-width is desired for this specific page's content */}
+    <div class="container-fluid">
       <h1 class="mb-4 display-5">Projects</h1>
       <p class="lead mb-5">Browse through the amazing projects showcased on ForkMyFolio.</p>
 

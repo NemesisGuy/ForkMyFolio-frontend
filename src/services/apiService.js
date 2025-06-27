@@ -8,7 +8,19 @@
 // Import authService dynamically to avoid circular dependencies if apiService is imported by authService for API calls.
 // This is a common pattern: authService will set a callback or provide a getter for the token.
 let authServiceInstance;
+/*
 export const VUE_APP_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+*/
+/*
+export const VUE_APP_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
+*/
+
+export const VUE_APP_API_BASE_URL =
+  (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL)
+    ? import.meta.env.VITE_API_BASE_URL
+    : 'http://localhost:8080/api/v1';
+
+
 
 /**
  * Sets the authService instance for dependency injection.

@@ -1,7 +1,7 @@
 <script setup>
 // Using <script setup> which is Vue 3 composition API standard.
 // No specific lang attribute means JavaScript by default.
-import { RouterView } from 'vue-router';
+import {RouterView} from 'vue-router';
 import Navbar from './components/Navbar.vue'; // Will create this next
 
 /**
@@ -13,20 +13,23 @@ import Navbar from './components/Navbar.vue'; // Will create this next
 
 <template>
   <div id="app-layout" class="d-flex flex-column min-vh-100">
-    <Navbar />
+    <Navbar/>
 
-    <main class="flex-shrink-0 container-fluid py-4"> {/* Changed to container-fluid */}
-      <RouterView />
+    <main class="flex-shrink-0 container-fluid py-4">
+      <RouterView/>
     </main>
 
     <footer class="footer mt-auto py-3 bg-light border-top">
-      {/* Footer can remain container or be container-fluid based on preference, let's make it fluid too for consistency */}
       <div class="container-fluid text-center">
-        <span class="text-muted">
-          © {{ new Date().getFullYear() }} ForkMyFolio. All rights reserved.
-        </span>
+    <span class="text-muted">
+      © {{ new Date().getFullYear() }} NemesisNet. Built by <a href="https://github.com/NemesisGuy" target="_blank" rel="noopener noreferrer" class="text-decoration-none">Nemesis</a>. Powered by passion & code.
+    </span>
       </div>
     </footer>
+
+
+
+
   </div>
 </template>
 

@@ -1,9 +1,9 @@
 @import './base.css';
 
 #app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+  /*max-width: 1920px;*/
+  margin: 0 0;
+  padding: 0.2rem;
   font-weight: normal;
 }
 
@@ -23,13 +23,63 @@ a,
 
 @media (min-width: 1024px) {
   body {
-    display: flex;
-    place-items: center;
+    /*
+    width: auto;
+    */
+/*    display: flex;
+    place-items: center;*/
   }
 
-  #app {
+ /* #app {
     display: grid;
     grid-template-columns: 1fr 1fr;
     padding: 0 2rem;
+  }*/
+  #app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding: 0 .02rem;
   }
+
+}
+
+
+@media (max-width: 1023px) {
+  body {
+    padding: 0 0.2rem;
+  }
+  #app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding: 0 .02rem;
+  }
+}
+
+
+
+
+
+/*
+  Place this in a global CSS file (e.g., src/assets/main.css)
+  to fix the Bootstrap modal z-index issue.
+*/
+
+.modal {
+  /* Ensure the modal itself is on top */
+  z-index: 1056 !important;
+}
+
+.modal-open {
+  /* Ensure the modal itself is on top */
+  z-index: 1056 !important;
+}.modal-dialog {
+  /* Ensure the modal itself is on top */
+  z-index: 1056 !important;
+}
+
+.modal-backdrop {
+  /* Ensure the backdrop is behind the modal */
+  z-index: 1019 !important;
 }
