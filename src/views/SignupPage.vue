@@ -68,9 +68,9 @@
 <script setup>
 import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { authService } from '../services/authService'; // Corrected path
-import { ApiError } from '../services/apiService'; // Corrected path for ApiError
-import SuccessModal from '../components/common/SuccessModal.vue';
+import { authService } from '../../services/authService'; // Corrected path
+import { ApiError } from '../../services/apiService'; // Corrected path for ApiError
+import SuccessModal from '../../components/common/SuccessModal.vue';
 
 /**
  * @file src/views/SignupPage.vue

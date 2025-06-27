@@ -22,6 +22,7 @@ const DashboardPage = () => import('../views/DashboardPage.vue');
 const EditProjectPage = () => import('../views/EditProjectPage.vue');
 const CreateProjectPage = () => import('../views/CreateProjectPage.vue');
 const EditProfilePage = () => import('../views/EditProfilePage.vue');
+const AdminProjectsPage = () => import('../views/admin/AdminProjectsPage.vue');
 
 
 const routes = [
@@ -96,6 +97,12 @@ const routes = [
     path: '/admin',
     name: 'admin',
     component: AdminDashboardPage,
+    meta: { requiresAuth: true, requiresAdmin: true }
+  },
+  {
+    path: '/admin/projects',
+    name: 'admin-projects',
+    component: AdminProjectsPage,
     meta: { requiresAuth: true, requiresAdmin: true }
   },
   // Error Pages
