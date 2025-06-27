@@ -68,7 +68,7 @@ const credentials = reactive({
  * @property {string|null} password
  */
 
-/** @type {import('vue').Ref<FieldErrorsLogin>} */
+/** @type {FieldErrorsLogin} */
 const fieldErrors = reactive({ email: null, password: null });
 
 /**
@@ -78,9 +78,10 @@ const fieldErrors = reactive({ email: null, password: null });
  * @property {Array<{field?: string, message: string}>} [errors] - Detailed errors from API.
  */
 
-/** @type {import('vue').Ref<FormMessageLogin>} */
+/** @type {FormMessageLogin} */
 const formMessage = reactive({ text: null, type: null, errors: [] });
 
+/** @type {import('vue').Ref<boolean>} */
 const isLoading = ref(false);
 
 // Redirect if already logged in
