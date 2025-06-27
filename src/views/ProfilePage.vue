@@ -1,132 +1,127 @@
 <template>
-  <div class="profile-page container mt-4 mb-5">
-    <h1 class="mb-4">My Profile</h1>
-
-    <div v-if="isLoading" class="text-center">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading profile...</span>
-      </div>
-      <p class="mt-2">Loading profile...</p>
-    </div>
-
-    <div v-else-if="error" class="alert alert-danger" role="alert">
-      <h4 class="alert-heading">Error Loading Profile</h4>
-      <p>{{ error.message || 'Could not fetch your profile information. Please try again later.' }}</p>
-      <hr v-if="error.errors && error.errors.length > 0">
-      <ul v-if="error.errors && error.errors.length > 0" class="mb-0">
-        <li v-for="(err, index) in error.errors" :key="index">
-          {{ err.field ? `${err.field}: ` : '' }}{{ err.message }}
-        </li>
-      </ul>
-    </div>
-
-    <div v-else-if="profile" class="card">
-      <div class="card-header">
-        User Details
-      </div>
-      <div class="card-body">
-        <div class="row">
-          <div class="col-md-3 text-center mb-3 mb-md-0">
-            <img
-              :src="profile.profileImageUrl || 'https://via.placeholder.com/150'"
-              class="img-fluid rounded-circle"
-              alt="Profile image"
-              style="width: 150px; height: 150px; object-fit: cover;"
-            >
+  <div class="profile-page py-4">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-8">
+          <div v-if="isLoading" class="loading-spinner-container d-flex justify-content-center align-items-center py-5">
+            <LoadingSpinner />
           </div>
-          <div class="col-md-9">
-            <h5 class="card-title mb-3">
-              {{ profile.firstName || '' }} {{ profile.lastName || '' }}
-              <small class="text-muted">(@{{ profile.username || profile.email }})</small>
-            </h5>
-            <p><strong>Email:</strong> {{ profile.email }}</p>
-            <p v-if="profile.firstName"><strong>First Name:</strong> {{ profile.firstName }}</p>
-            <p v-if="profile.lastName"><strong>Last Name:</strong> {{ profile.lastName }}</p>
-            <p><strong>Roles:</strong> <span v-for="(role, index) in profile.roles" :key="role" class="badge bg-secondary me-1">{{ role }}</span></p>
-            <p v-if="profile.createdAt"><strong>Joined:</strong> {{ formattedJoinDate }}</p>
-            <!-- Add more profile fields as needed -->
-            <!-- <button class="btn btn-outline-primary mt-3">Edit Profile (Placeholder)</button> -->
+          <div v-else-if="userProfile" class="card profile-card shadow-sm p-4">
+            <h5 class="card-title mb-4">User Profile</h5>
+            <div class="mb-3">
+              <strong>Name:</strong> {{ userProfile.firstName }} {{ userProfile.lastName }}
+            </div>
+            <div class="mb-3">
+              <strong>Email:</strong> {{ userProfile.email }}
+            </div>
+            <div class="mb-3">
+              <strong>Roles:</strong>
+              <span v-for="role in userProfile.roles" :key="role" class="badge bg-info text-dark me-1">
+                {{ role }}
+              </span>
+            </div>
+            <!-- Example: Displaying creation date if available from UserDto and needed -->
+            <!--
+            <div class="mb-3" v-if="userProfile.createdAt">
+              <strong>Joined:</strong> {{ formatDate(userProfile.createdAt, { year: 'numeric', month: 'long' }) }}
+            </div>
+            -->
+            <button class="btn btn-outline-primary mt-3 align-self-start">Edit Profile</button>
+          </div>
+          <div v-else-if="!isLoading && !showErrorModal" class="text-center py-5">
+             <!-- This message shows if not loading, no profile, and no error modal is active -->
+            <h2 class="display-6 text-muted">Profile Information Not Available</h2>
+            <p class="lead">We could not load your profile details at this time.</p>
           </div>
         </div>
       </div>
     </div>
-     <div v-else class="alert alert-info">
-      No profile data available. You might need to log in again or complete your profile.
-    </div>
+    <ErrorModal
+      v-if="error"
+      :visible="showErrorModal"
+      :title="error?.title || 'Error'"
+      :message="error?.message || 'An unexpected error occurred.'"
+      @close="closeErrorModal"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import { authService } from '../services/authService'; // To check if user is initially available
-import { getUserProfile } from '../services/apiService'; // Direct API call
-import { ApiError } from '../services/apiService';
-import { formatDate } from '../utils'; // Import formatDate utility
-
 /**
  * @file src/views/ProfilePage.vue
- * @description Displays the authenticated user's profile information.
+ * @description Page to display the authenticated user's profile information.
+ * Fetches data from /api/v1/users/me/profile.
  */
+import { ref, onMounted } from 'vue';
+import { getUserProfile, ApiError } from '../services/apiService';
+import LoadingSpinner from '../components/common/LoadingSpinner.vue';
+import ErrorModal from '../components/common/ErrorModal.vue';
+// import { formatDate } from '../utils'; // Will re-add if creation dates are displayed from UserDto
 
+// --- Reactive State ---
 /** @type {import('vue').Ref<object|null>} UserDto - The user's profile data. */
-const profile = ref(null);
-/** @type {import('vue').Ref<boolean>} */
+const userProfile = ref(null);
+/** @type {import('vue').Ref<boolean>} - Loading state for fetching profile. */
 const isLoading = ref(true);
-/** @type {import('vue').Ref<ApiError|Error|null>} */
+/** @type {import('vue').Ref<{title: string, message: string|string[], details?: any[]}|null>} - Error object for ErrorModal. */
 const error = ref(null);
+/** @type {import('vue').Ref<boolean>} - Controls visibility of the ErrorModal. */
+const showErrorModal = ref(false);
+
+// --- Lifecycle Hooks & Fetch Logic ---
 
 /**
- * Fetches the user profile data from the API.
+ * Fetches the user profile from the API.
  */
-const fetchProfile = async () => {
+const fetchUserProfile = async () => {
   isLoading.value = true;
   error.value = null;
+  showErrorModal.value = false;
   try {
-    // getUserProfile from apiService returns the unwrapped UserDto
-    const userProfileData = await getUserProfile();
-    profile.value = userProfileData;
+    const profileData = await getUserProfile();
+    userProfile.value = profileData;
   } catch (err) {
-    console.error('Failed to fetch profile:', err);
-    if (err instanceof ApiError) {
-      error.value = err; // Store the structured ApiError
-    } else {
-      error.value = { message: err.message || 'An unexpected error occurred.' };
+    console.error("Failed to load user profile:", err);
+    let errorMessage = 'Could not fetch user profile. Please try again later.';
+    if (err instanceof ApiError && err.errors && err.errors.length > 0) {
+      // If ApiError has specific error messages, use them.
+      // ErrorModal is designed to take a string or array for its message prop.
+      errorMessage = err.errors.map(e => e.message);
+      if (errorMessage.length === 1) errorMessage = errorMessage[0]; // Single error as string
+    } else if (err.message) {
+      errorMessage = err.message;
     }
+    error.value = {
+      title: 'Profile Load Error',
+      message: errorMessage,
+    };
+    showErrorModal.value = true;
   } finally {
     isLoading.value = false;
   }
 };
 
-/**
- * Computed property to format the join date.
- * @returns {string} Formatted date string or empty if no date.
- */
-const formattedJoinDate = computed(() => {
-  if (profile.value && profile.value.createdAt) {
-    return formatDate(profile.value.createdAt, { year: 'numeric', month: 'long', day: 'numeric' });
-  }
-  return '';
+onMounted(() => {
+  fetchUserProfile();
 });
 
-// Fetch profile when component is mounted
-onMounted(() => {
-  // Check if user data is already available from authService (e.g. after login)
-  // This provides immediate data if available, otherwise fetch.
-  // The API spec says /users/me/profile is the source of truth for full UserDto.
-  // authService.user.value might be a slightly different/minimal DTO post-login initially.
-  // So, always fetching from /users/me/profile is more robust for this page.
-  fetchProfile();
-});
+// --- Methods ---
+/**
+ * Closes the error modal.
+ */
+const closeErrorModal = () => {
+  showErrorModal.value = false;
+  error.value = null; // Optionally clear the error state
+};
+
 </script>
 
 <style scoped>
-.profile-page h1 {
-  font-weight: 300;
+.profile-page {
+  /* Basic page styling */
 }
-.card-header {
-  font-weight: 500;
-}
-.badge {
-  text-transform: capitalize;
+/* Ensure spinner is centered if not wrapped in a card yet */
+.loading-spinner-container {
+  min-height: 200px; /* Ensure container has height for centering */
 }
 </style>
