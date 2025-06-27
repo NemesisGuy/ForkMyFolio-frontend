@@ -42,7 +42,7 @@
                 <li><router-link class="dropdown-item" to="/profile" @click="collapseNavbar">Profile</router-link></li>
                 <li><router-link class="dropdown-item" to="/my-projects" @click="collapseNavbar">My Projects</router-link></li>
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="#" @click.prevent="handleLogout">Logout</a></li>
+                <li><a class="dropdown-item" href="#" @click.prevent="requestLogoutConfirmation">Logout</a></li>
               </ul>
             </li>
           </template>
@@ -57,6 +57,16 @@
         </ul>
       </div>
     </div>
+    <ConfirmModal
+      :visible="showLogoutConfirmModal"
+      :title="logoutConfirmTitle"
+      :message="logoutConfirmMessage"
+      confirmText="Logout"
+      cancelText="Cancel"
+      @confirm="executeLogout"
+      @cancel="cancelLogout"
+      @close="cancelLogout"
+    />
   </nav>
 </template>
 
@@ -65,6 +75,7 @@ import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { authService } from '../services/authService'; // Corrected path
 import { Collapse } from 'bootstrap'; // Import Bootstrap Collapse for manual toggling
+import ConfirmModal from './common/ConfirmModal.vue';
 
 /**
  * @file src/components/Navbar.vue
@@ -136,6 +147,46 @@ const handleLogout = async () => {
     // For instance, display a toast message
   }
 };
+
+// --- Logout Confirmation Modal State ---
+/** @type {import('vue').Ref<boolean>} Controls visibility of the logout confirmation modal. */
+const showLogoutConfirmModal = ref(false);
+/** @type {string} Title for the logout confirmation modal. */
+const logoutConfirmTitle = "Confirm Logout";
+/** @type {string} Message for the logout confirmation modal. */
+const logoutConfirmMessage = "Are you sure you want to logout?";
+
+/**
+ * Initiates the logout confirmation process by displaying the ConfirmModal.
+ */
+const requestLogoutConfirmation = () => {
+  collapseNavbar(); // Ensure navbar collapses on mobile before showing modal
+  showLogoutConfirmModal.value = true;
+};
+
+/**
+ * Executes the actual logout process after user confirmation.
+ * Calls the authentication service to log out, then redirects to the login page.
+ */
+const executeLogout = async () => {
+  showLogoutConfirmModal.value = false; // Hide modal first
+  try {
+    await authService.logout();
+    router.push('/login'); // Navigate to login after logout
+  } catch (error) {
+    console.error('Error during logout:', error);
+    // Optionally, show an error modal/toast if logout itself fails critically
+    // For now, authService clears state regardless, and redirection happens.
+  }
+};
+
+/**
+ * Cancels the logout process by hiding the ConfirmModal.
+ */
+const cancelLogout = () => {
+  showLogoutConfirmModal.value = false;
+};
+
 </script>
 
 <style scoped>
