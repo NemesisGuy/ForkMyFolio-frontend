@@ -51,6 +51,7 @@ function loadAuthState() {
  * @param {object} userData - The user data (UserDto).
  */
 function updateAuthState(newAccessToken, userData) {
+  console.log('[AuthService] Updating auth state. New access token:', newAccessToken ? 'SET' : 'CLEARED', 'User data:', userData ? 'SET' : 'CLEARED');
   state.accessToken = newAccessToken;
   state.user = userData;
   if (userData) {
@@ -65,6 +66,7 @@ function updateAuthState(newAccessToken, userData) {
  * Clears the authentication state.
  */
 function clearAuthState() {
+  console.log('[AuthService] Clearing auth state.');
   state.accessToken = null;
   state.user = null;
   localStorage.removeItem(USER_STORAGE_KEY);
@@ -125,13 +127,16 @@ async function refreshToken() {
   // and shouldn't block UI in the same way login/register might.
   // The interceptor in apiService handles retrying the original request.
   try {
+    console.log('[AuthService] Attempting token refresh via apiService.refreshToken()');
     const authResponse = await apiService.refreshToken(); // This specific call in apiService should not trigger its own refresh loop
+    console.log('[AuthService] Token refresh successful via apiService.');
     updateAuthState(authResponse.accessToken, authResponse.user);
     return true;
   } catch (error) {
-    console.error('authService: refreshToken failed', error);
+    console.error('[AuthService] refreshToken failed:', error);
     // If refresh fails, the interceptor in apiService should handle logout.
     // We clear auth state here as a safeguard if called directly and it fails.
+    console.log('[AuthService] refreshToken failed, initiating logout(false).');
     await logout(false); // Pass false to indicate not to call backend logout again if refresh failed
     return false;
   }
@@ -147,11 +152,15 @@ async function logout(callBackend = true) {
   state.isLoading = true;
   if (callBackend) {
     try {
+      console.log('[AuthService] Attempting backend logout via apiService.logout()');
       await apiService.logout(); // Ignores response data as per API spec (Map<String,String>)
+      console.log('[AuthService] Backend logout call completed.');
     } catch (error) {
       // Log error but proceed with client-side logout regardless
-      console.error('Backend logout failed:', error);
+      console.error('[AuthService] Backend logout failed:', error);
     }
+  } else {
+    console.log('[AuthService] Skipping backend logout call.');
   }
   clearAuthState();
   // Router redirection should be handled by the component or route guard calling logout

@@ -62,12 +62,17 @@ async function fetchWithAuth(endpoint, options = {}, requiresAuth = true) {
     const token = authServiceInstance.getAccessToken();
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
+      console.log(`[ApiService] fetchWithAuth: Added Bearer token for ${endpoint}.`);
     } else if (endpoint !== '/auth/refresh-token') { // Don't error if no token for refresh itself
-      // If auth is required but no token, and it's not a refresh attempt, could throw or let backend handle.
-      // For now, let it proceed; backend will 401, triggering refresh if applicable.
-      console.warn('Auth required, but no access token found for endpoint:', endpoint);
+      console.warn(`[ApiService] fetchWithAuth: Auth required for ${endpoint}, but no access token found. Proceeding, expect 401 or public access.`);
+    } else {
+      console.log(`[ApiService] fetchWithAuth: No token needed or available for ${endpoint} (refresh token call).`);
     }
+  } else if (requiresAuth && !authServiceInstance) {
+    console.error('[ApiService] fetchWithAuth: authServiceInstance is not set, cannot perform authenticated request.');
+    // Potentially throw an error here or handle as unauthenticated
   }
+
 
   const fetchOptions = { ...options, headers };
   if (options.body && typeof options.body !== 'string' && !(options.body instanceof FormData)) {
@@ -95,14 +100,24 @@ async function fetchWithAuth(endpoint, options = {}, requiresAuth = true) {
   }
 
   if (!response.ok) { // HTTP status is not 2xx
+    console.log(`[ApiService] fetchWithAuth: Request to ${endpoint} failed with HTTP status ${response.status}. Response Body:`, responseDataWrapper);
     if (response.status === 401 && requiresAuth && authServiceInstance && endpoint !== '/auth/refresh-token') {
+      console.log(`[ApiService] fetchWithAuth: Received 401 for ${endpoint}. Attempting token refresh.`);
       try {
-        console.log('Access token expired or invalid. Attempting refresh...');
+        // console.log('Access token expired or invalid. Attempting refresh...'); // Old log
         const refreshSuccess = await authServiceInstance.refreshToken();
         if (refreshSuccess) {
-          console.log('Token refreshed successfully. Retrying original request...');
+          console.log(`[ApiService] fetchWithAuth: Token refreshed successfully for ${endpoint}. Retrying original request...`);
           // Update headers with new token for the retry
-          fetchOptions.headers['Authorization'] = `Bearer ${authServiceInstance.getAccessToken()}`;
+          // Ensure new token is actually fetched and logged for debugging
+          const newToken = authServiceInstance.getAccessToken();
+          if (!newToken) {
+            console.error(`[ApiService] fetchWithAuth: New token is null after successful refresh for ${endpoint}. This should not happen.`);
+            // Fall through to logout or throw specific error
+            authServiceInstance.logout(); // Logout as state is inconsistent
+            throw new ApiError('Session error after refresh. Please login again.', 401, 'token_refresh_missing_new_token');
+          }
+          fetchOptions.headers['Authorization'] = `Bearer ${newToken}`;
           // Perform the original request again
           // IMPORTANT: This simple retry doesn't handle FormData correctly if it was consumed.
           // For FormData, a more complex retry or pre-request cloning is needed.
@@ -134,21 +149,34 @@ async function fetchWithAuth(endpoint, options = {}, requiresAuth = true) {
           }
         } else {
           // Refresh token failed
-          console.log('Token refresh failed. Logging out.');
-          authServiceInstance.logout(); // This should redirect to login
-          throw new ApiError('Session expired. Please login again.', 401, 'token_refresh_failed', responseDataWrapper.errors);
+          console.log(`[ApiService] fetchWithAuth: Token refresh failed for ${endpoint}. Logging out.`);
+          // authServiceInstance.logout(); // This is now awaited in refreshToken's catch block or if refreshSuccess is false here
+          // The refreshToken function itself now handles logout if it returns false.
+          // If logout() was not awaited in refreshToken, we would need it here.
+          // Given refreshToken's structure, it should have already called logout.
+          // We just need to throw the error.
+          throw new ApiError('Session expired. Please login again.', 401, 'token_refresh_failed', responseDataWrapper?.errors || []);
         }
       } catch (refreshError) {
-        // Catch errors from refreshToken() itself or the logout process
-        console.error('Error during token refresh or subsequent logout:', refreshError);
-        if (!(refreshError instanceof ApiError)) { // Ensure it's an ApiError
-            authServiceInstance.logout(); // Ensure logout if not already done
-            throw new ApiError('Session refresh failed. Please login again.', 401, 'token_refresh_exception', [{field: 'general', message: refreshError.message}]);
+        // Catch errors from refreshToken() itself or the logout process if it threw an error
+        console.error(`[ApiService] fetchWithAuth: Error during token refresh process for ${endpoint}:`, refreshError);
+        // Ensure logout if refreshError implies session is unrecoverable
+        // (e.g., if refreshError isn't an ApiError that already caused logout)
+        // authService.refreshToken() is designed to call logout(false) internally on its own failure path
+        // and then return false, which is handled above.
+        // This catch block is more for truly unexpected errors from within refreshToken()
+        // or if refreshToken() re-throws an error that wasn't an ApiError causing logout.
+
+        if (!(refreshError instanceof ApiError)) {
+            console.error('[ApiService] fetchWithAuth: Uncaught error during refresh process, ensuring logout and wrapping error.', refreshError);
+            await authServiceInstance.logout(); // Ensure logout is awaited
+            throw new ApiError('Session refresh failed due to an unexpected error. Please login again.', 401, 'token_refresh_unexpected_exception', [{ field: 'general', message: refreshError.message }]);
         }
-        throw refreshError; // Re-throw if it's already an ApiError (e.g. from logout API call)
+        // If it's already an ApiError (e.g., one that might have been thrown by logout() itself if called within refreshToken), re-throw.
+        throw refreshError;
       }
     }
-    // For non-401 errors, or 401s that shouldn't trigger refresh
+    // For non-401 errors, or 401s that shouldn't trigger refresh (e.g. /auth/refresh-token itself failing with 401)
     throw new ApiError(
       responseDataWrapper.errors?.[0]?.message || `API request failed with HTTP status ${response.status}`,
       response.status,
