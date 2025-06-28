@@ -5,7 +5,9 @@
         <h1 class="card-title text-center mb-4 fs-3">Login</h1>
 
         <!-- This alert is now primarily for client-side validation summary -->
-        <div v-if="formMessage.text" :class="['alert', formMessage.type === 'success' ? 'alert-success' : 'alert-danger']" role="alert">
+        <div v-if="formMessage.text"
+             :class="['alert', formMessage.type === 'success' ? 'alert-success' : 'alert-danger']"
+             role="alert">
           {{ formMessage.text }}
           <!-- Detailed errors from API will now go into ErrorModal, so this list is less critical here -->
           <ul v-if="formMessage.errors && formMessage.errors.length > 0" class="mb-0 mt-2">
@@ -15,24 +17,32 @@
           </ul>
         </div>
 
-        <form @submit.prevent="handleLogin" novalidate>
+        <form novalidate @submit.prevent="handleLogin">
           <div class="mb-3">
-            <label for="email" class="form-label">Email address</label>
-            <input type="email" class="form-control" :class="{'is-invalid': fieldErrors.email}" id="email" v-model="credentials.email" required>
+            <label class="form-label" for="email">Email address</label>
+            <input id="email" v-model="credentials.email" :class="{'is-invalid': fieldErrors.email}"
+                   class="form-control" required type="email">
             <div v-if="fieldErrors.email" class="invalid-feedback">{{ fieldErrors.email }}</div>
           </div>
           <div class="mb-3">
-            <label for="password" class="form-label">Password</label>
-            <input type="password" class="form-control" :class="{'is-invalid': fieldErrors.password}" id="password" v-model="credentials.password" required>
-            <div v-if="fieldErrors.password" class="invalid-feedback">{{ fieldErrors.password }}</div>
+            <label class="form-label" for="password">Password</label>
+            <input id="password" v-model="credentials.password"
+                   :class="{'is-invalid': fieldErrors.password}" class="form-control"
+                   required type="password">
+            <div v-if="fieldErrors.password" class="invalid-feedback">{{
+                fieldErrors.password
+              }}
+            </div>
           </div>
-          <button type="submit" class="btn btn-primary w-100" :disabled="isLoading">
-            <span v-if="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          <button :disabled="isLoading" class="btn btn-primary w-100" type="submit">
+            <span v-if="isLoading" aria-hidden="true" class="spinner-border spinner-border-sm"
+                  role="status"></span>
             {{ isLoading ? 'Logging in...' : 'Login' }}
           </button>
         </form>
         <p class="mt-4 text-center">
-          Don't have an account? <router-link to="/signup">Sign Up</router-link>
+          Don't have an account?
+          <router-link to="/signup">Sign Up</router-link>
         </p>
       </div>
     </div>
@@ -40,17 +50,17 @@
     <!-- UPDATED: Added v-if to prevent rendering with null data -->
     <SuccessModal
       v-if="loginSuccessMessage"
+      :message="loginSuccessMessage"
       :visible="showLoginSuccessModal"
       title="Login Successful"
-      :message="loginSuccessMessage"
       @close="closeLoginSuccessModal"
     />
 
     <!-- Error Modal for API errors -->
     <ErrorModal
-      :visible="showLoginErrorModal"
-      :title="loginErrorTitle"
       :message="loginErrorMessage"
+      :title="loginErrorTitle"
+      :visible="showLoginErrorModal"
       @close="closeLoginErrorModal"
     />
   </div>
@@ -58,10 +68,10 @@
 
 <script setup>
 // The script section remains unchanged.
-import { reactive, ref, onMounted } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
-import { authService } from '@/services/authService';
-import { ApiError } from '@/services/api';
+import {onMounted, reactive, ref} from 'vue';
+import {useRoute, useRouter} from 'vue-router';
+import {authService} from '@/services/authService';
+import {ApiError} from '@/services/api';
 import SuccessModal from '@/components/common/SuccessModal.vue';
 import ErrorModal from '@/components/common/ErrorModal.vue';
 
@@ -78,9 +88,9 @@ const credentials = reactive({
   password: ''
 });
 
-const fieldErrors = reactive({ email: null, password: null });
+const fieldErrors = reactive({email: null, password: null});
 
-const formMessage = reactive({ text: null, type: null, errors: [] });
+const formMessage = reactive({text: null, type: null, errors: []});
 
 const isLoading = ref(false);
 
@@ -209,9 +219,11 @@ const handleLogin = async () => {
   border: none;
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
 }
+
 .is-invalid {
   border-color: var(--bs-danger);
 }
+
 .invalid-feedback {
   display: block;
   width: 100%;

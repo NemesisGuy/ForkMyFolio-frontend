@@ -1,9 +1,9 @@
 <template>
-  <label class="theme-switch" for="theme-switch-checkbox" aria-label="Toggle theme">
+  <label aria-label="Toggle theme" class="theme-switch" for="theme-switch-checkbox">
     <input
-      type="checkbox"
       id="theme-switch-checkbox"
       :checked="isDarkMode"
+      type="checkbox"
       @change="themeService.toggleTheme"
     />
     <div class="slider">
@@ -16,8 +16,8 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import { themeService } from '@/services/themeService';
+import {computed} from 'vue';
+import {themeService} from '@/services/themeService';
 
 /**
  * @file src/components/common/ThemeToggle.vue

@@ -3,42 +3,42 @@
     <div class="container">
       <h1 class="display-5 mb-4">Skill Management</h1>
 
-      <LoadingModal :visible="isLoading" />
-      <ErrorModal v-if="error.message" :visible="showErrorModal" :title="error.title" :message="error.message" @close="closeErrorModal" />
+      <LoadingModal :visible="isLoading"/>
+      <ErrorModal v-if="error.message" :message="error.message" :title="error.title"
+                  :visible="showErrorModal" @close="closeErrorModal"/>
       <ConfirmModal
+        :message="`Are you sure you want to delete the skill: '${skillToDelete?.name}'?`"
         :visible="showDeleteConfirmModal"
         title="Confirm Deletion"
-        :message="`Are you sure you want to delete the skill: '${skillToDelete?.name}'?`"
-        @confirm="executeDelete"
         @cancel="cancelDelete"
+        @confirm="executeDelete"
       />
 
       <div class="row g-5">
         <!-- Add New Skill Form -->
         <div class="col-lg-4">
-          <div class="card shadow-sm">
+          <div class="card shadow-sm sticky-top" style="top: 20px;">
             <div class="card-body">
               <h5 class="card-title mb-3">Add New Skill</h5>
               <form @submit.prevent="handleCreateSkill">
-                <!-- Skill Name Input -->
                 <div class="mb-3">
-                  <label for="skillName" class="form-label">Skill Name</label>
-                  <input type="text" class="form-control" id="skillName" v-model="newSkill.name" required>
+                  <label class="form-label" for="skillName">Skill Name</label>
+                  <input id="skillName" v-model="newSkill.name" class="form-control" placeholder="e.g., Vue.js"
+                         required type="text">
                 </div>
 
-                <!-- START: Skill Level Dropdown -->
                 <div class="mb-3">
-                  <label for="skillLevel" class="form-label">Proficiency Level</label>
-                  <select class="form-select" id="skillLevel" v-model="newSkill.level" required>
+                  <label class="form-label" for="skillLevel">Proficiency Level</label>
+                  <select id="skillLevel" v-model="newSkill.level" class="form-select" required>
                     <option v-for="level in skillLevels" :key="level" :value="level">
                       {{ level.charAt(0).toUpperCase() + level.slice(1).toLowerCase() }}
                     </option>
                   </select>
                 </div>
-                <!-- END: Skill Level Dropdown -->
 
-                <button type="submit" class="btn btn-primary w-100" :disabled="isSaving">
-                  <span v-if="isSaving" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                <button :disabled="isSaving" class="btn btn-primary w-100" type="submit">
+                  <span v-if="isSaving" aria-hidden="true" class="spinner-border spinner-border-sm me-1"
+                        role="status"></span>
                   {{ isSaving ? 'Adding...' : 'Add Skill' }}
                 </button>
               </form>
@@ -53,23 +53,28 @@
               Existing Skills
             </div>
             <ul class="list-group list-group-flush">
-              <!-- UPDATED: Display skill level -->
-              <li v-for="skill in skills" :key="skill.id" class="list-group-item d-flex justify-content-between align-items-center">
+              <li v-for="skill in skills" :key="skill.id"
+                  class="list-group-item d-flex justify-content-between align-items-center">
                 <span>
                   {{ skill.name }}
-                  <span class="badge rounded-pill ms-2" :class="getSkillBadgeClass(skill.level)">
-                    {{ skill.level }}
+                  <span :class="getSkillBadgeClass(skill.level)" class="badge rounded-pill ms-2">
+                    {{ skill.level.toLowerCase() }}
                   </span>
                 </span>
-                <button class="btn btn-sm btn-outline-danger" @click="requestDelete(skill)" title="Delete Skill">
-                  <i class="bi bi-x-lg"></i>
+                <button class="btn btn-sm btn-outline-danger" title="Delete Skill"
+                        @click="requestDelete(skill)">
+                  <i class="bi bi-trash-fill"></i>
                 </button>
               </li>
             </ul>
           </div>
-          <div v-else-if="!isLoading && !error.message" class="text-center py-5">
-            <p class="lead text-muted">No skills found. Add one to get started!</p>
-          </div>
+          <!-- REFACTORED: Use the reusable EmptyState component -->
+          <EmptyState
+            v-else-if="!isLoading && !error.message"
+            icon-class="bi-tags-fill"
+            message="Add a new skill using the form to get started."
+            title="No Skills Found"
+          />
         </div>
       </div>
     </div>
@@ -77,20 +82,24 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
-import { getAllSkills, createSkill, deleteSkill, ApiError } from '@/services/api';
+import {onMounted, reactive, ref} from 'vue';
+// Import from the API barrel file
+import {ApiError, createSkill, deleteSkill, getPublicSkills} from '@/services/api';
+// Import shared components
 import LoadingModal from '@/components/common/LoadingModal.vue';
 import ErrorModal from '@/components/common/ErrorModal.vue';
 import ConfirmModal from '@/components/common/ConfirmModal.vue';
+import EmptyState from '@/components/common/EmptyState.vue';
+// REFACTORED: Import the shared utility function
+import {getSkillBadgeClass} from '@/utils/skillUtils';
 
 const skills = ref([]);
-// UPDATED: Initialize newSkill with a default level
-const newSkill = reactive({ name: '', level: 'INTERMEDIATE' });
-const skillLevels = ['BEGINNER', 'INTERMEDIATE', 'EXPERT']; // From SkillLevel enum
+const newSkill = reactive({name: '', level: 'INTERMEDIATE'});
+const skillLevels = ['BEGINNER', 'INTERMEDIATE', 'EXPERT'];
 
 const isLoading = ref(true);
 const isSaving = ref(false);
-const error = ref({ title: '', message: '' });
+const error = ref({title: '', message: ''});
 const showErrorModal = ref(false);
 
 const showDeleteConfirmModal = ref(false);
@@ -98,14 +107,14 @@ const skillToDelete = ref(null);
 
 const closeErrorModal = () => {
   showErrorModal.value = false;
-  error.value = { title: '', message: '' };
+  error.value = {title: '', message: ''};
 };
 
 const fetchSkills = async () => {
   isLoading.value = true;
   try {
-    // Sort skills alphabetically for better display
-    const fetchedSkills = await getAllSkills();
+    const fetchedSkills = await getPublicSkills();
+    // Sort skills by name for consistent ordering
     skills.value = fetchedSkills.sort((a, b) => a.name.localeCompare(b.name));
   } catch (err) {
     console.error("Failed to fetch skills:", err);
@@ -123,12 +132,11 @@ const handleCreateSkill = async () => {
   if (!newSkill.name.trim()) return;
   isSaving.value = true;
   try {
-    // UPDATED: Send the complete newSkill object
-    await createSkill({ name: newSkill.name, level: newSkill.level });
-    // UPDATED: Reset the form
+    await createSkill({name: newSkill.name, level: newSkill.level});
+    // Reset the form to its initial state
     newSkill.name = '';
     newSkill.level = 'INTERMEDIATE';
-    await fetchSkills(); // Refresh the list
+    await fetchSkills(); // Refresh the list with the new data
   } catch (err) {
     console.error("Failed to create skill:", err);
     error.value = {
@@ -153,7 +161,7 @@ const cancelDelete = () => {
 
 const executeDelete = async () => {
   if (!skillToDelete.value) return;
-  isLoading.value = true;
+  isSaving.value = true; // Use isSaving to disable buttons during delete
   try {
     await deleteSkill(skillToDelete.value.id);
     await fetchSkills(); // Refresh the list
@@ -165,22 +173,8 @@ const executeDelete = async () => {
     };
     showErrorModal.value = true;
   } finally {
-    isLoading.value = false;
+    isSaving.value = false;
     cancelDelete();
-  }
-};
-
-// ADDED: Helper function for styling skill level badges
-const getSkillBadgeClass = (level) => {
-  switch (level) {
-    case 'EXPERT':
-      return 'bg-primary';
-    case 'INTERMEDIATE':
-      return 'bg-success';
-    case 'BEGINNER':
-      return 'bg-secondary';
-    default:
-      return 'bg-light text-dark';
   }
 };
 
@@ -190,5 +184,15 @@ onMounted(fetchSkills);
 <style scoped>
 .admin-skills-page h1 {
   font-weight: 300;
+}
+
+.list-group-item .btn {
+  /* Make delete button less prominent until hover */
+  opacity: 0.5;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.list-group-item:hover .btn {
+  opacity: 1;
 }
 </style>

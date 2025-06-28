@@ -5,7 +5,7 @@
       <p class="lead mb-5">Browse through the amazing projects showcased on ForkMyFolio.</p>
 
       <!-- Use a full-screen loading modal for a better UX -->
-      <LoadingModal :visible="isLoading" />
+      <LoadingModal :visible="isLoading"/>
 
       <!-- This content will only be rendered once loading is complete -->
       <div v-if="!isLoading">
@@ -20,32 +20,44 @@
           </ul>
         </div>
 
-        <div v-else-if="projects && projects.length > 0" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        <div v-else-if="projects && projects.length > 0"
+             class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
           <div v-for="project in projects" :key="project.id" class="col">
             <div class="card h-100 shadow-sm">
               <img
+                :alt="project.title"
                 :src="project.imageUrl || 'https://via.placeholder.com/400x250?text=Project+Image'"
                 class="card-img-top"
-                :alt="project.title"
                 style="height: 200px; object-fit: cover;"
               >
               <div class="card-body d-flex flex-column">
                 <h5 class="card-title">{{ project.title }}</h5>
                 <p class="card-text text-muted small">
-                  {{ project.description?.substring(0, 100) }}{{ project.description?.length > 100 ? '...' : '' }}
+                  {{
+                    project.description?.substring(0, 100)
+                  }}{{ project.description?.length > 100 ? '...' : '' }}
                 </p>
 
                 <div v-if="project.techStack && project.techStack.length" class="mb-2">
-                  <span v-for="tech in project.techStack" :key="tech" class="badge bg-secondary me-1 mb-1">{{ tech }}</span>
+                  <span v-for="tech in project.techStack" :key="tech"
+                        class="badge bg-secondary me-1 mb-1">{{ tech }}</span>
                 </div>
 
                 <div class="mt-auto d-flex justify-content-between align-items-center pt-2">
                   <div>
-                    <a v-if="project.liveUrl" :href="project.liveUrl" target="_blank" class="btn btn-sm btn-outline-primary me-2">Live Demo</a>
-                    <a v-if="project.repoUrl" :href="project.repoUrl" target="_blank" class="btn btn-sm btn-outline-secondary">Source Code</a>
+                    <a v-if="project.liveUrl" :href="project.liveUrl" class="btn btn-sm btn-outline-primary me-2"
+                       target="_blank">Live Demo</a>
+                    <a v-if="project.repoUrl" :href="project.repoUrl" class="btn btn-sm btn-outline-secondary"
+                       target="_blank">Source Code</a>
                   </div>
-                  <small class="text-muted" v-if="project.createdAt">
-                    {{ formatDate(project.createdAt, { year: 'numeric', month: 'short', day: 'numeric' }) }}
+                  <small v-if="project.createdAt" class="text-muted">
+                    {{
+                      formatDate(project.createdAt, {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                      })
+                    }}
                   </small>
                 </div>
               </div>
@@ -55,7 +67,8 @@
 
         <div v-else class="text-center py-5">
           <h2 class="display-6">No Projects Yet</h2>
-          <p class="lead text-muted">Check back later to see new projects, or be the first to add one!</p>
+          <p class="lead text-muted">Check back later to see new projects, or be the first to add
+            one!</p>
         </div>
       </div>
     </div>
@@ -63,10 +76,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { getPublicProjects } from '@/services/api'; // CORRECT: Uses the public function
-import { ApiError } from '@/services/api';
-import { formatDate } from '@/utils';
+import {onMounted, ref} from 'vue';
+import {ApiError, getPublicProjects} from '@/services/api'; // CORRECT: Uses the public function
+import {formatDate} from '@/utils';
 import LoadingModal from '@/components/common/LoadingModal.vue';
 
 /**
@@ -94,7 +106,7 @@ const fetchProjects = async () => {
     if (err instanceof ApiError) {
       error.value = err;
     } else {
-      error.value = { message: err.message || 'An unexpected error occurred while fetching projects.' };
+      error.value = {message: err.message || 'An unexpected error occurred while fetching projects.'};
     }
     projects.value = []; // Clear projects on error
   } finally {
@@ -110,20 +122,25 @@ onMounted(fetchProjects);
 .projects-page h1, .projects-page .display-5, .projects-page .display-6 {
   font-weight: 300;
 }
+
 .card-img-top {
   border-bottom: 1px solid #dee2e6;
 }
+
 .card {
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
+
 .card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15) !important;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, .15) !important;
 }
+
 .badge {
   font-size: 0.75rem;
   padding: 0.3em 0.6em;
 }
+
 .card-body {
   flex-grow: 1;
 }

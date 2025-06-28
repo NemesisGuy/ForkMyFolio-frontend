@@ -37,7 +37,7 @@ export class ApiError extends Error {
  * @throws {ApiError}
  */
 export async function fetchWithAuth(endpoint, options = {}, requiresAuth = true) {
-  const headers = { ...options.headers };
+  const headers = {...options.headers};
 
   if (options.body && !headers['Content-Type'] && !(options.body instanceof FormData)) {
     headers['Content-Type'] = 'application/json';

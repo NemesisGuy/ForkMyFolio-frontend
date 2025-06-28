@@ -5,7 +5,7 @@
       <div class="loading-modal-backdrop"></div>
       <!-- Spinner Container -->
       <div class="loading-modal-content">
-        <LoadingSpinner class="text-light" />
+        <LoadingSpinner class="text-light"/>
       </div>
     </div>
   </teleport>

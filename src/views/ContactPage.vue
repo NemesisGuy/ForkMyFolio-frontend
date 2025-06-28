@@ -1,27 +1,29 @@
 <template>
   <div class="contact-page container mt-4" style="max-width: 600px;">
     <h1 class="mb-4 text-center">Contact Us</h1>
-    <p class="lead mb-4 text-center">Have a question or want to work together? Fill out the form below.</p>
+    <p class="lead mb-4 text-center">Have a question or want to work together? Fill out the form
+      below.</p>
     <form @submit.prevent="handleSubmit">
       <div class="mb-3">
-        <label for="name" class="form-label">Name</label>
-        <input type="text" class="form-control" id="name" v-model="form.name" required>
+        <label class="form-label" for="name">Name</label>
+        <input id="name" v-model="form.name" class="form-control" required type="text">
       </div>
       <div class="mb-3">
-        <label for="email" class="form-label">Email address</label>
-        <input type="email" class="form-control" id="email" v-model="form.email" required>
+        <label class="form-label" for="email">Email address</label>
+        <input id="email" v-model="form.email" class="form-control" required type="email">
       </div>
       <div class="mb-3">
-        <label for="message" class="form-label">Message</label>
-        <textarea class="form-control" id="message" rows="5" v-model="form.message" required></textarea>
+        <label class="form-label" for="message">Message</label>
+        <textarea id="message" v-model="form.message" class="form-control" required
+                  rows="5"></textarea>
       </div>
-      <button type="submit" class="btn btn-primary w-100">Send Message (Placeholder)</button>
+      <button class="btn btn-primary w-100" type="submit">Send Message (Placeholder)</button>
     </form>
   </div>
 </template>
 
 <script setup>
-import { reactive } from 'vue';
+import {reactive} from 'vue';
 
 // JSDoc for the component
 /**
@@ -50,7 +52,7 @@ const form = reactive({
 const handleSubmit = () => {
   // TODO: Implement actual form submission logic (e.g., API call)
   // TODO: Add validation and user feedback (loading/error/success states)
-  console.log('Form submitted (placeholder):', { ...form });
+  console.log('Form submitted (placeholder):', {...form});
   alert('Message sent (placeholder)! Thank you.');
   // Reset form
   form.name = '';

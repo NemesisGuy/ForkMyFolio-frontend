@@ -27,34 +27,34 @@
 
     <!-- Modals to be tested -->
     <SuccessModal
-      :visible="showSuccess"
-      :title="successTitle"
       :message="successMessage"
+      :title="successTitle"
+      :visible="showSuccess"
       @close="closeSuccessModal"
     />
 
     <ErrorModal
-      :visible="showError"
-      :title="errorTitle"
       :message="errorMessage"
+      :title="errorTitle"
+      :visible="showError"
       @close="closeErrorModal"
     />
 
     <ConfirmModal
-      :visible="showConfirm"
-      :title="confirmTitle"
-      :message="confirmMessage"
-      :confirmText="confirmButtonText"
       :cancelText="cancelButtonText"
-      @confirm="handleConfirm"
+      :confirmText="confirmButtonText"
+      :message="confirmMessage"
+      :title="confirmTitle"
+      :visible="showConfirm"
       @cancel="handleCancel"
       @close="handleCancel"
+      @confirm="handleConfirm"
     />
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import {ref} from 'vue';
 import SuccessModal from '@/components/common/SuccessModal.vue';
 import ErrorModal from '@/components/common/ErrorModal.vue';
 import ConfirmModal from '@/components/common/ConfirmModal.vue'; // Import ConfirmModal

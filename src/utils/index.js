@@ -14,7 +14,7 @@
  * formatDate('2024-07-04T10:30:00Z'); // "July 4, 2024" (depending on locale and default options)
  * formatDate(new Date(), { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
  */
-export function formatDate(dateInput, options = { year: 'numeric', month: 'long', day: 'numeric' }) {
+export function formatDate(dateInput, options = {year: 'numeric', month: 'long', day: 'numeric'}) {
   if (!dateInput) {
     return '';
   }

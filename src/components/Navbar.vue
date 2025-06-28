@@ -54,13 +54,16 @@
             </li>
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" id="navbarUserDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                {{ authService.user.value?.username || authService.user.value?.firstName || 'User' }}
+                {{ authService.user.value?.firstName || 'User' }}
               </a>
               <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarUserDropdown">
-                <li><router-link class="dropdown-item" to="/profile" @click="collapseNavbar">Profile</router-link></li>
-<!--
-                <li><router-link class="dropdown-item" to="/my-projects" @click="collapseNavbar">My Projects</router-link></li>
--->
+                <!--
+                  KEY CHANGE:
+                  - "View Profile" now correctly links to the Home page ('/').
+                  - "Edit Profile" is added, linking to the correct editor page.
+                -->
+                <li><router-link class="dropdown-item" to="/" @click="collapseNavbar">View Profile</router-link></li>
+                <li><router-link class="dropdown-item" to="/profile/edit" @click="collapseNavbar">Edit Profile</router-link></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="#" @click.prevent="requestLogoutConfirmation">Logout</a></li>
               </ul>
@@ -97,7 +100,7 @@ import { useRouter } from 'vue-router';
 import { authService } from '../services/authService';
 import { themeService } from '../services/themeService';
 import ConfirmModal from './common/ConfirmModal.vue';
-import ThemeToggle from './common/ThemeToggle.vue'; // <-- IMPORT THE NEW COMPONENT
+import ThemeToggle from './common/ThemeToggle.vue';
 
 const router = useRouter();
 const navbarToggler = ref(null);

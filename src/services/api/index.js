@@ -1,13 +1,12 @@
 /**
  * @file src/services/api/index.js
- * @description Barrel file to re-export all API service functions.
- * This allows for clean, single-line imports in components.
- * e.g., import { login, getPublicProjects, createSkill } from '@/services/api';
+ * @description Barrel file to export all API functions for easy importing.
  */
 
-export * from './auth.api';
 export * from './public.api';
 export * from './admin.api';
+export * from './auth.api';
+export * from './user.api'; // <-- Exporting our new user-related functions
 
-// Also re-export the ApiError class for type checking in components
+// Also export the custom error class for convenience
 export { ApiError } from './apiClient';

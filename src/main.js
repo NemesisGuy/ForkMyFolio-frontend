@@ -1,8 +1,8 @@
-import { createApp } from 'vue';
+import {createApp} from 'vue';
 import App from './App.vue';
 import router from './router';
 // CORRECTED: Import the authService from its actual location.
-import { authService } from '@/services/authService.js';
+import {authService} from '@/services/authService.js';
 
 // Import Bootstrap CSS and JS
 import 'bootstrap/dist/css/bootstrap.min.css';

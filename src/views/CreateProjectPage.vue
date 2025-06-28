@@ -4,29 +4,29 @@
       <h1 class="display-5 mb-4">Create New Project</h1>
 
       <ProjectForm
+        :field-errors="fieldErrors"
         :initial-data="newProject"
         :is-saving="isSaving"
-        :field-errors="fieldErrors"
-        submit-text="Create Project"
         saving-text="Creating..."
-        @submit-form="handleCreateProject"
+        submit-text="Create Project"
         @cancel="cancelCreation"
+        @submit-form="handleCreateProject"
       />
     </div>
 
     <ErrorModal
       v-if="error"
-      :visible="showErrorModal"
-      :title="error.title"
       :message="error.message"
+      :title="error.title"
+      :visible="showErrorModal"
       @close="closeErrorModal"
     />
 
     <SuccessModal
       v-if="successMessage"
+      :message="successMessage"
       :visible="showSuccessModal"
       title="Project Created"
-      :message="successMessage"
       @close="closeSuccessModalAndRedirect"
     />
   </div>
@@ -37,9 +37,9 @@
  * @file src/views/CreateProjectPage.vue
  * @description Page for creating a new project.
  */
-import { ref, reactive } from 'vue';
-import { useRouter } from 'vue-router';
-import { createProject, ApiError } from '../services/api';
+import {reactive, ref} from 'vue';
+import {useRouter} from 'vue-router';
+import {ApiError, createProject} from '../services/api';
 import ProjectForm from '../components/forms/ProjectForm.vue';
 import ErrorModal from '../components/common/ErrorModal.vue';
 import SuccessModal from '../components/common/SuccessModal.vue';
@@ -137,7 +137,7 @@ const validateForm = (dataToValidate) => {
  */
 const handleCreateProject = async (projectDataFromForm) => {
   if (!validateForm(projectDataFromForm)) {
-    error.value = { title: "Validation Error", message: "Please correct the errors in the form." };
+    error.value = {title: "Validation Error", message: "Please correct the errors in the form."};
     showErrorModal.value = true;
     return;
   }
@@ -178,7 +178,7 @@ const handleCreateProject = async (projectDataFromForm) => {
           }
           // If API returns general error related to techStack, map it to form's techStack field
           else if (apiErr.field === 'techStackRequest' && fieldErrors.hasOwnProperty('techStack')) {
-             fieldErrors.techStack = apiErr.message;
+            fieldErrors.techStack = apiErr.message;
           }
         });
       }
@@ -210,6 +210,7 @@ const cancelCreation = () => {
 .create-project-page h1, .create-project-page .display-5 {
   font-weight: 300;
 }
+
 /* Styles from EditProjectPage can be reused or centralized if common form page styling is desired */
 .form-label {
   font-weight: 500;

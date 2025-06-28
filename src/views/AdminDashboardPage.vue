@@ -4,42 +4,88 @@
       <h1 class="display-5 mb-4">Admin Dashboard</h1>
       <p class="lead mb-5">Manage your portfolio content from this central hub.</p>
 
-      <!-- UPDATED: Using justify-content-center for better alignment with fewer items -->
       <div class="row g-4 justify-content-center">
 
-        <!-- Manage All Projects Section -->
-        <!-- UPDATED: Changed col-lg-4 to col-lg-5 for a better two-item layout -->
-        <div class="col-md-6 col-lg-5">
+        <!-- Edit Profile Section -->
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title"><i class="bi bi-person-badge-fill me-2"></i>Edit Profile</h5>
+              <p class="card-text small text-muted">
+                Update your headline, summary, contact info, and social links.
+              </p>
+              <router-link class="btn btn-outline-primary mt-auto align-self-start"
+                           to="/profile/edit">
+                Go to Profile Editor
+              </router-link>
+            </div>
+          </div>
+        </div>
+
+        <!-- Manage Projects Section -->
+        <div class="col-md-6 col-lg-4">
           <div class="card h-100 shadow-sm">
             <div class="card-body d-flex flex-column">
               <h5 class="card-title"><i class="bi bi-kanban-fill me-2"></i>Manage Projects</h5>
               <p class="card-text small text-muted">
                 Oversee, edit, or delete any project in the system.
               </p>
-              <router-link to="/admin/projects" class="btn btn-outline-primary mt-auto align-self-start">
+              <router-link class="btn btn-outline-primary mt-auto align-self-start"
+                           to="/admin/projects">
                 Go to Project Management
               </router-link>
             </div>
           </div>
         </div>
 
-        <!-- Manage All Skills Section -->
-        <!-- UPDATED: Changed col-lg-4 to col-lg-5 for a better two-item layout -->
-        <div class="col-md-6 col-lg-5">
+        <!-- Manage Skills Section -->
+        <div class="col-md-6 col-lg-4">
           <div class="card h-100 shadow-sm">
             <div class="card-body d-flex flex-column">
               <h5 class="card-title"><i class="bi bi-tags-fill me-2"></i>Manage Skills</h5>
               <p class="card-text small text-muted">
                 Add, edit, or remove skills available in the system.
               </p>
-              <router-link to="/admin/skills" class="btn btn-outline-primary mt-auto align-self-start">
+              <router-link class="btn btn-outline-primary mt-auto align-self-start"
+                           to="/admin/skills">
                 Go to Skill Management
               </router-link>
             </div>
           </div>
         </div>
 
-        <!-- Future admin sections can be added here -->
+        <!-- Manage Experience Section -->
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title"><i class="bi bi-briefcase-fill me-2"></i>Manage Experience</h5>
+              <p class="card-text small text-muted">
+                Add and edit your work history and professional experience.
+              </p>
+              <router-link class="btn btn-outline-primary mt-auto align-self-start"
+                           to="/admin/experience">
+                Go to Experience
+              </router-link>
+            </div>
+          </div>
+        </div>
+
+        <!-- Manage Testimonials Section -->
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title"><i class="bi bi-chat-quote-fill me-2"></i>Manage Testimonials
+              </h5>
+              <p class="card-text small text-muted">
+                Curate quotes and recommendations from colleagues and clients.
+              </p>
+              <router-link class="btn btn-outline-primary mt-auto align-self-start"
+                           to="/admin/testimonials">
+                Go to Testimonials
+              </router-link>
+            </div>
+          </div>
+        </div>
 
       </div>
     </div>
@@ -50,14 +96,7 @@
 /**
  * @file src/views/AdminDashboardPage.vue
  * @description Admin dashboard providing links to various management sections.
- * This page requires admin privileges.
  */
-// import { useRouter } from 'vue-router'; // For programmatic navigation if needed
-
-// const router = useRouter(); // Uncomment if needed
-
-// No specific data fetching or complex logic needed for this initial dashboard structure.
-// It primarily serves as a navigation hub for admin functionalities.
 </script>
 
 <style scoped>
@@ -71,14 +110,14 @@
 
 .card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 0.6rem 1.2rem rgba(0,0,0,.175) !important;
+  box-shadow: 0 0.6rem 1.2rem rgba(0, 0, 0, .175) !important;
 }
 
 .card-title {
   font-weight: 500;
 }
 
-.card-title i { /* Bootstrap Icons styling */
+.card-title i {
   vertical-align: text-bottom;
 }
 </style>

@@ -3,11 +3,13 @@
     <div class="container">
       <div v-if="user" class="mb-4">
         <h1 class="display-5">Welcome, {{ user.firstName || 'User' }}!</h1>
-        <p class="lead">This is your personal dashboard. Manage your profile and projects from here.</p>
+        <p class="lead">This is your personal dashboard. Manage your profile and projects from
+          here.</p>
       </div>
       <div v-else class="mb-4">
         <h1 class="display-5">Dashboard</h1>
-         <p class="lead">Loading user information...</p> <!-- Fallback if user data isn't immediately available -->
+        <p class="lead">Loading user information...</p>
+        <!-- Fallback if user data isn't immediately available -->
       </div>
 
       <div class="row g-4">
@@ -19,7 +21,7 @@
               <p class="card-text small text-muted">
                 View and update your personal information.
               </p>
-              <router-link to="/profile" class="btn btn-outline-primary mt-auto align-self-start">
+              <router-link class="btn btn-outline-primary mt-auto align-self-start" to="/profile">
                 Go to Profile
               </router-link>
             </div>
@@ -34,7 +36,8 @@
               <p class="card-text small text-muted">
                 Access and manage all your projects.
               </p>
-              <router-link to="/my-projects" class="btn btn-outline-primary mt-auto align-self-start">
+              <router-link class="btn btn-outline-primary mt-auto align-self-start"
+                           to="/my-projects">
                 View My Projects
               </router-link>
             </div>
@@ -45,11 +48,12 @@
         <div class="col-md-6 col-lg-4">
           <div class="card h-100 shadow-sm bg-light border-success">
             <div class="card-body d-flex flex-column text-center justify-content-center">
-              <h5 class="card-title"><i class="bi bi-plus-circle-fill me-2 text-success"></i>Create Project</h5>
+              <h5 class="card-title"><i class="bi bi-plus-circle-fill me-2 text-success"></i>Create
+                Project</h5>
               <p class="card-text small text-muted">
                 Start a new project and showcase your work.
               </p>
-              <router-link to="/projects/create" class="btn btn-success mt-3">
+              <router-link class="btn btn-success mt-3" to="/projects/create">
                 Create New Project
               </router-link>
             </div>
@@ -64,8 +68,8 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import { authService } from '../services/authService';
+import {computed} from 'vue';
+import {authService} from '../services/authService';
 // import { useRouter } from 'vue-router'; // For programmatic navigation if needed
 
 /**
@@ -100,7 +104,7 @@ const user = computed(() => authService.user.value);
 
 .card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 0.6rem 1.2rem rgba(0,0,0,.175) !important;
+  box-shadow: 0 0.6rem 1.2rem rgba(0, 0, 0, .175) !important;
 }
 
 .card-title {
@@ -112,6 +116,6 @@ const user = computed(() => authService.user.value);
 }
 
 .bg-light.border-success {
-    border-width: 2px !important;
+  border-width: 2px !important;
 }
 </style>

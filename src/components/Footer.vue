@@ -5,9 +5,10 @@
   <footer class="footer mt-auto py-3 bg-body-tertiary border-top">
     <div class="container-fluid text-center">
       <!-- REFACTORED: Using flexbox for better spacing and alignment -->
-      <div class="text-body-secondary d-flex flex-wrap justify-content-center align-items-center gap-1 gap-sm-3">
+      <div
+        class="text-body-secondary d-flex flex-wrap justify-content-center align-items-center gap-1 gap-sm-3">
         <span>
-          © {{ formatDate(new Date(), { month: 'long', year: 'numeric' }) }} ForkMyFolio
+          © {{ formatDate(new Date(), {month: 'long', year: 'numeric'}) }} ForkMyFolio
         </span>
 
         <span class="d-none d-sm-inline">|</span>
@@ -15,10 +16,10 @@
         <span>
           Built by
           <a
-            href="https://github.com/NemesisGuy"
-            target="_blank"
-            rel="noopener noreferrer"
             class="text-body-secondary fw-semibold"
+            href="https://github.com/NemesisGuy"
+            rel="noopener noreferrer"
+            target="_blank"
           >
             <i class="bi bi-github me-1"></i>NemesisGuy
           </a>
@@ -29,10 +30,10 @@
         <span>
           Powered by
           <a
-            href="https://nemesis.co.za"
-            target="_blank"
-            rel="noopener noreferrer"
             class="text-body-secondary fw-semibold"
+            href="https://nemesis.co.za"
+            rel="noopener noreferrer"
+            target="_blank"
           >
             Nemesis.co.za
           </a>
@@ -43,7 +44,7 @@
 </template>
 
 <script setup>
-import { formatDate } from '@/utils'; // <-- Import the utility
+import {formatDate} from '@/utils'; // <-- Import the utility
 
 /**
  * @file src/components/Footer.vue

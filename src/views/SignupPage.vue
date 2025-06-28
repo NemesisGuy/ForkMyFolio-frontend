@@ -5,7 +5,9 @@
         <h1 class="card-title text-center mb-4 fs-3">Create Account</h1>
 
         <!-- This alert is now primarily for client-side validation summary -->
-        <div v-if="formMessage.text" :class="['alert', formMessage.type === 'success' ? 'alert-success' : 'alert-danger']" role="alert">
+        <div v-if="formMessage.text"
+             :class="['alert', formMessage.type === 'success' ? 'alert-success' : 'alert-danger']"
+             role="alert">
           {{ formMessage.text }}
           <!-- Detailed errors from API will now go into ErrorModal, so this list is less critical here -->
           <!-- Keeping it for consistency if formMessage is ever used for detailed client-side errors -->
@@ -16,44 +18,68 @@
           </ul>
         </div>
 
-        <form @submit.prevent="handleSignup" novalidate>
+        <form novalidate @submit.prevent="handleSignup">
           <div class="mb-3">
-            <label for="firstName" class="form-label">First Name</label>
-            <input type="text" class="form-control" :class="{'is-invalid': fieldErrors.firstName}" id="firstName" v-model="formData.firstName" required>
-            <div v-if="fieldErrors.firstName" class="invalid-feedback">{{ fieldErrors.firstName }}</div>
+            <label class="form-label" for="firstName">First Name</label>
+            <input id="firstName" v-model="formData.firstName" :class="{'is-invalid': fieldErrors.firstName}"
+                   class="form-control" required type="text">
+            <div v-if="fieldErrors.firstName" class="invalid-feedback">{{
+                fieldErrors.firstName
+              }}
+            </div>
           </div>
           <div class="mb-3">
-            <label for="lastName" class="form-label">Last Name</label>
-            <input type="text" class="form-control" :class="{'is-invalid': fieldErrors.lastName}" id="lastName" v-model="formData.lastName" required>
-            <div v-if="fieldErrors.lastName" class="invalid-feedback">{{ fieldErrors.lastName }}</div>
+            <label class="form-label" for="lastName">Last Name</label>
+            <input id="lastName" v-model="formData.lastName" :class="{'is-invalid': fieldErrors.lastName}"
+                   class="form-control" required type="text">
+            <div v-if="fieldErrors.lastName" class="invalid-feedback">{{
+                fieldErrors.lastName
+              }}
+            </div>
           </div>
           <div class="mb-3">
-            <label for="username" class="form-label">Username</label>
-            <input type="text" class="form-control" :class="{'is-invalid': fieldErrors.username}" id="username" v-model="formData.username" required>
-            <div v-if="fieldErrors.username" class="invalid-feedback">{{ fieldErrors.username }}</div>
+            <label class="form-label" for="username">Username</label>
+            <input id="username" v-model="formData.username" :class="{'is-invalid': fieldErrors.username}"
+                   class="form-control" required type="text">
+            <div v-if="fieldErrors.username" class="invalid-feedback">{{
+                fieldErrors.username
+              }}
+            </div>
           </div>
           <div class="mb-3">
-            <label for="email" class="form-label">Email address</label>
-            <input type="email" class="form-control" :class="{'is-invalid': fieldErrors.email}" id="email" v-model="formData.email" required>
+            <label class="form-label" for="email">Email address</label>
+            <input id="email" v-model="formData.email" :class="{'is-invalid': fieldErrors.email}"
+                   class="form-control" required type="email">
             <div v-if="fieldErrors.email" class="invalid-feedback">{{ fieldErrors.email }}</div>
           </div>
           <div class="mb-3">
-            <label for="password" class="form-label">Password</label>
-            <input type="password" class="form-control" :class="{'is-invalid': fieldErrors.password}" id="password" v-model="formData.password" required>
-            <div v-if="fieldErrors.password" class="invalid-feedback">{{ fieldErrors.password }}</div>
+            <label class="form-label" for="password">Password</label>
+            <input id="password" v-model="formData.password"
+                   :class="{'is-invalid': fieldErrors.password}" class="form-control"
+                   required type="password">
+            <div v-if="fieldErrors.password" class="invalid-feedback">{{
+                fieldErrors.password
+              }}
+            </div>
           </div>
           <div class="mb-3">
-            <label for="confirmPassword" class="form-label">Confirm Password</label>
-            <input type="password" class="form-control" :class="{'is-invalid': fieldErrors.confirmPassword}" id="confirmPassword" v-model="formData.confirmPassword" required>
-            <div v-if="fieldErrors.confirmPassword" class="invalid-feedback">{{ fieldErrors.confirmPassword }}</div>
+            <label class="form-label" for="confirmPassword">Confirm Password</label>
+            <input id="confirmPassword" v-model="formData.confirmPassword"
+                   :class="{'is-invalid': fieldErrors.confirmPassword}" class="form-control"
+                   required type="password">
+            <div v-if="fieldErrors.confirmPassword" class="invalid-feedback">
+              {{ fieldErrors.confirmPassword }}
+            </div>
           </div>
-          <button type="submit" class="btn btn-primary w-100" :disabled="isLoading">
-            <span v-if="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          <button :disabled="isLoading" class="btn btn-primary w-100" type="submit">
+            <span v-if="isLoading" aria-hidden="true" class="spinner-border spinner-border-sm"
+                  role="status"></span>
             {{ isLoading ? 'Creating Account...' : 'Create Account' }}
           </button>
         </form>
         <p class="mt-4 text-center">
-          Already have an account? <router-link to="/login">Login</router-link>
+          Already have an account?
+          <router-link to="/login">Login</router-link>
         </p>
       </div>
     </div>
@@ -61,17 +87,17 @@
     <!-- UPDATED: Added v-if to prevent rendering with null data -->
     <SuccessModal
       v-if="signupSuccessMessage"
+      :message="signupSuccessMessage"
       :visible="showSignupSuccessModal"
       title="Registration Successful"
-      :message="signupSuccessMessage"
       @close="closeSignupSuccessModal"
     />
 
     <!-- Error Modal for API errors -->
     <ErrorModal
-      :visible="showSignupErrorModal"
-      :title="signupErrorTitle"
       :message="signupErrorMessage"
+      :title="signupErrorTitle"
+      :visible="showSignupErrorModal"
       @close="closeSignupErrorModal"
     />
   </div>
@@ -79,10 +105,10 @@
 
 <script setup>
 // The script section remains unchanged.
-import { reactive, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { authService } from '@/services/authService';
-import { ApiError } from '@/services/api';
+import {reactive, ref} from 'vue';
+import {useRouter} from 'vue-router';
+import {authService} from '@/services/authService';
+import {ApiError} from '@/services/api';
 import SuccessModal from '@/components/common/SuccessModal.vue';
 import ErrorModal from '@/components/common/ErrorModal.vue';
 
@@ -111,7 +137,7 @@ const fieldErrors = reactive({
   confirmPassword: null
 });
 
-const formMessage = reactive({ text: null, type: null, errors: [] });
+const formMessage = reactive({text: null, type: null, errors: []});
 
 const isLoading = ref(false);
 
@@ -259,9 +285,11 @@ const handleSignup = async () => {
   border: none;
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
 }
+
 .is-invalid {
   border-color: var(--bs-danger);
 }
+
 .invalid-feedback {
   display: block; /* Bootstrap default is none, make it visible */
   width: 100%;

@@ -5,32 +5,32 @@
       <div class="modal-backdrop fade show"></div>
       <!-- Modal Dialog -->
       <div
-        class="modal fade show"
-        style="display: block"
-        tabindex="-1"
         :aria-labelledby="modalId + 'Label'"
         aria-modal="true"
+        class="modal fade show"
         role="dialog"
+        style="display: block"
+        tabindex="-1"
       >
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title" :id="modalId + 'Label'">{{ title }}</h5>
+              <h5 :id="modalId + 'Label'" class="modal-title">{{ title }}</h5>
               <button
-                type="button"
-                class="btn-close"
-                @click="handleCancel"
                 aria-label="Close"
+                class="btn-close"
+                type="button"
+                @click="handleCancel"
               ></button>
             </div>
             <div class="modal-body">
               <p>{{ message }}</p>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-outline-secondary" @click="handleCancel">
+              <button class="btn btn-outline-secondary" type="button" @click="handleCancel">
                 {{ cancelText }}
               </button>
-              <button type="button" class="btn btn-primary" @click="handleConfirm">
+              <button class="btn btn-primary" type="button" @click="handleConfirm">
                 {{ confirmText }}
               </button>
             </div>
@@ -129,6 +129,7 @@ const handleCancel = () => {
 .modal-header {
   /* Standard Bootstrap header, can be customized if needed */
 }
+
 /* Ensure button spacing or specific styling if defaults aren't ideal */
 .modal-footer .btn + .btn {
   margin-left: 0.5rem;

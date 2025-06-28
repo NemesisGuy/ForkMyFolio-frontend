@@ -11,40 +11,42 @@
         <h1 class="display-5 mb-4">Edit Project</h1>
       </div>
 
-      <div v-if="isLoading" class="loading-spinner-container d-flex justify-content-center align-items-center py-5">
-        <LoadingSpinner />
+      <div v-if="isLoading"
+           class="loading-spinner-container d-flex justify-content-center align-items-center py-5">
+        <LoadingSpinner/>
       </div>
 
       <ProjectForm
         v-if="project && !isLoading"
+        :field-errors="fieldErrors"
         :initial-data="project"
         :is-saving="isSaving"
-        :field-errors="fieldErrors"
-        submit-text="Save Changes"
-        saving-text="Saving..."
-        @submit-form="handleUpdateProject"
-        @cancel="cancelEdit"
         class="mt-3"
+        saving-text="Saving..."
+        submit-text="Save Changes"
+        @cancel="cancelEdit"
+        @submit-form="handleUpdateProject"
       />
 
-      <div v-else-if="!isLoading && !project && !showErrorModal" class="alert alert-warning text-center" role="alert">
+      <div v-else-if="!isLoading && !project && !showErrorModal"
+           class="alert alert-warning text-center" role="alert">
         Project data could not be loaded, or the project does not exist.
       </div>
     </div>
 
     <ErrorModal
       v-if="error"
-      :visible="showErrorModal"
-      :title="error.title"
       :message="error.message"
+      :title="error.title"
+      :visible="showErrorModal"
       @close="closeErrorModal"
     />
 
     <SuccessModal
       v-if="successMessage"
+      :message="successMessage"
       :visible="showSuccessModal"
       title="Project Updated"
-      :message="successMessage"
       @close="closeSuccessModal"
     />
   </div>
@@ -55,9 +57,9 @@
  * @file src/views/EditProjectPage.vue
  * @description Page for editing an existing project.
  */
-import { ref, onMounted, reactive } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { getProjectById, updateProject, ApiError } from '@/services/api';
+import {onMounted, reactive, ref} from 'vue';
+import {useRoute, useRouter} from 'vue-router';
+import {ApiError, getProjectById, updateProject} from '@/services/api';
 import LoadingSpinner from '../components/common/LoadingSpinner.vue';
 import ErrorModal from '../components/common/ErrorModal.vue';
 import SuccessModal from '../components/common/SuccessModal.vue';
@@ -117,7 +119,7 @@ const fetchProjectDetails = async (projectId) => {
     if (data) {
       // Ensure techStack is an array for easier v-model binding if needed,
       // or for consistent data structure. Default to empty array if not present.
-      project.value = { ...data, techStack: data.techStack || [] };
+      project.value = {...data, techStack: data.techStack || []};
     } else {
       throw new Error('Project data not found.'); // Or handle as a specific type of error
     }
@@ -209,7 +211,7 @@ const handleUpdateProject = async (formDataFromEvent) => {
   // For now, validation will use formDataFromEvent.
 
   if (!validateForm(formDataFromEvent)) {
-    error.value = { title: "Validation Error", message: "Please correct the errors in the form." };
+    error.value = {title: "Validation Error", message: "Please correct the errors in the form."};
     showErrorModal.value = true;
     return;
   }
@@ -276,11 +278,14 @@ const cancelEdit = () => {
 .edit-project-page h1, .edit-project-page .display-5 {
   font-weight: 300;
 }
+
 .form-label {
   font-weight: 500;
 }
+
 .loading-spinner-container {
   min-height: 200px; /* Ensure container has height for centering */
 }
+
 /* Add more styles as needed */
 </style>

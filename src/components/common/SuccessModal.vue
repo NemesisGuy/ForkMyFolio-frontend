@@ -5,29 +5,29 @@
       <div class="modal-backdrop fade show"></div>
       <!-- Modal Dialog -->
       <div
-        class="modal fade show"
-        style="display: block"
-        tabindex="-1"
         :aria-labelledby="modalId + 'Label'"
         aria-modal="true"
+        class="modal fade show"
         role="dialog"
+        style="display: block"
+        tabindex="-1"
       >
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
             <div class="modal-header bg-success text-white">
-              <h5 class="modal-title" :id="modalId + 'Label'">{{ title }}</h5>
+              <h5 :id="modalId + 'Label'" class="modal-title">{{ title }}</h5>
               <button
-                type="button"
-                class="btn-close btn-close-white"
-                @click="handleClose"
                 aria-label="Close"
+                class="btn-close btn-close-white"
+                type="button"
+                @click="handleClose"
               ></button>
             </div>
             <div class="modal-body">
               <p>{{ message }}</p>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-outline-success" @click="handleClose">
+              <button class="btn btn-outline-success" type="button" @click="handleClose">
                 OK
               </button>
             </div>
@@ -102,6 +102,7 @@ const handleClose = () => {
 .modal-header.bg-success {
   /* Customizations for success header if Bootstrap defaults aren't enough */
 }
+
 .btn-outline-success {
   /* Ensure good contrast and theming */
 }

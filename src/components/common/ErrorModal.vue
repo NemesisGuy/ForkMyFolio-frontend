@@ -5,22 +5,22 @@
       <div class="modal-backdrop fade show"></div>
       <!-- Modal Dialog -->
       <div
-        class="modal fade show"
-        style="display: block"
-        tabindex="-1"
         :aria-labelledby="modalId + 'Label'"
         aria-modal="true"
+        class="modal fade show"
         role="dialog"
+        style="display: block"
+        tabindex="-1"
       >
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
             <div class="modal-header bg-danger text-white">
-              <h5 class="modal-title" :id="modalId + 'Label'">{{ title }}</h5>
+              <h5 :id="modalId + 'Label'" class="modal-title">{{ title }}</h5>
               <button
-                type="button"
-                class="btn-close btn-close-white"
-                @click="handleClose"
                 aria-label="Close"
+                class="btn-close btn-close-white"
+                type="button"
+                @click="handleClose"
               ></button>
             </div>
             <div class="modal-body">
@@ -34,7 +34,7 @@
               </template>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-outline-danger" @click="handleClose">
+              <button class="btn btn-outline-danger" type="button" @click="handleClose">
                 OK
               </button>
             </div>
@@ -107,9 +107,11 @@ const handleClose = () => {
 .modal-header.bg-danger {
   /* Customizations for error header if Bootstrap defaults aren't enough */
 }
+
 .btn-outline-danger {
   /* Ensure good contrast and theming */
 }
+
 .modal-body ul {
   text-align: left;
 }

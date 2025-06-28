@@ -5,45 +5,68 @@
         <div class="col-md-8 col-lg-6">
           <h1 class="display-5 mb-4">Edit Your Profile</h1>
 
-          <form @submit.prevent="handleUpdateProfile" class="needs-validation" novalidate>
+          <form class="needs-validation" novalidate @submit.prevent="handleUpdateProfile">
             <div class="card shadow-sm">
               <div class="card-body p-4">
                 <div class="mb-3">
-                  <label for="firstName" class="form-label">First Name</label>
-                  <input type="text" class="form-control" id="firstName" v-model="formData.firstName" required :class="{'is-invalid': fieldErrors.firstName}">
-                  <div v-if="fieldErrors.firstName" class="invalid-feedback">{{ fieldErrors.firstName }}</div>
+                  <label class="form-label" for="firstName">First Name</label>
+                  <input id="firstName" v-model="formData.firstName" :class="{'is-invalid': fieldErrors.firstName}"
+                         class="form-control" required
+                         type="text">
+                  <div v-if="fieldErrors.firstName" class="invalid-feedback">
+                    {{ fieldErrors.firstName }}
+                  </div>
                 </div>
 
                 <div class="mb-3">
-                  <label for="lastName" class="form-label">Last Name</label>
-                  <input type="text" class="form-control" id="lastName" v-model="formData.lastName" required :class="{'is-invalid': fieldErrors.lastName}">
-                  <div v-if="fieldErrors.lastName" class="invalid-feedback">{{ fieldErrors.lastName }}</div>
+                  <label class="form-label" for="lastName">Last Name</label>
+                  <input id="lastName" v-model="formData.lastName" :class="{'is-invalid': fieldErrors.lastName}" class="form-control"
+                         required type="text">
+                  <div v-if="fieldErrors.lastName" class="invalid-feedback">{{
+                      fieldErrors.lastName
+                    }}
+                  </div>
                 </div>
 
                 <div class="mb-3">
-                  <label for="email" class="form-label">Email</label>
-                  <input type="email" class="form-control" id="email" v-model="formData.email" required :class="{'is-invalid': fieldErrors.email}">
-                  <div class="form-text">Note: Changing your email might require re-verification.</div>
-                  <div v-if="fieldErrors.email" class="invalid-feedback">{{ fieldErrors.email }}</div>
+                  <label class="form-label" for="email">Email</label>
+                  <input id="email" v-model="formData.email" :class="{'is-invalid': fieldErrors.email}" class="form-control"
+                         required type="email">
+                  <div class="form-text">Note: Changing your email might require re-verification.
+                  </div>
+                  <div v-if="fieldErrors.email" class="invalid-feedback">{{
+                      fieldErrors.email
+                    }}
+                  </div>
                 </div>
 
                 <div class="mb-3">
-                  <label for="profileImageUrl" class="form-label">Profile Image URL</label>
-                  <input type="url" class="form-control" id="profileImageUrl" v-model="formData.profileImageUrl" :class="{'is-invalid': fieldErrors.profileImageUrl}">
-                  <div v-if="fieldErrors.profileImageUrl" class="invalid-feedback">{{ fieldErrors.profileImageUrl }}</div>
+                  <label class="form-label" for="profileImageUrl">Profile Image URL</label>
+                  <input id="profileImageUrl" v-model="formData.profileImageUrl" :class="{'is-invalid': fieldErrors.profileImageUrl}"
+                         class="form-control"
+                         type="url">
+                  <div v-if="fieldErrors.profileImageUrl" class="invalid-feedback">
+                    {{ fieldErrors.profileImageUrl }}
+                  </div>
 
                   <!-- ENHANCEMENT: Live image preview -->
                   <div v-if="formData.profileImageUrl" class="mt-3 text-center">
                     <p class="form-text mb-2">Image Preview:</p>
-                    <img :src="formData.profileImageUrl" @error="onImageError" v-if="!imageLoadError" alt="Profile Preview" class="img-thumbnail" style="max-width: 150px; max-height: 150px; object-fit: cover;">
-                    <p v-if="imageLoadError" class="text-danger small">Could not load image preview.</p>
+                    <img v-if="!imageLoadError" :src="formData.profileImageUrl"
+                         alt="Profile Preview" class="img-thumbnail" style="max-width: 150px; max-height: 150px; object-fit: cover;"
+                         @error="onImageError">
+                    <p v-if="imageLoadError" class="text-danger small">Could not load image
+                      preview.</p>
                   </div>
                 </div>
 
                 <div class="mt-4 d-flex justify-content-end">
-                  <button type="button" class="btn btn-outline-secondary me-2" @click="cancelEdit">Cancel</button>
-                  <button type="submit" class="btn btn-primary" :disabled="isSaving">
-                    <span v-if="isSaving" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                  <button class="btn btn-outline-secondary me-2" type="button" @click="cancelEdit">
+                    Cancel
+                  </button>
+                  <button :disabled="isSaving" class="btn btn-primary" type="submit">
+                    <span v-if="isSaving" aria-hidden="true"
+                          class="spinner-border spinner-border-sm me-1" role="status"></span>
                     {{ isSaving ? 'Saving...' : 'Save Changes' }}
                   </button>
                 </div>
@@ -57,18 +80,18 @@
     <!-- UPDATED: Added v-if="error" to prevent rendering with null data -->
     <ErrorModal
       v-if="error"
-      :visible="showErrorModal"
-      :title="error.title"
       :message="error.message"
+      :title="error.title"
+      :visible="showErrorModal"
       @close="closeErrorModal"
     />
 
     <!-- UPDATED: Added v-if="successMessage" to prevent prop validation warning -->
     <SuccessModal
       v-if="successMessage"
+      :message="successMessage"
       :visible="showSuccessModal"
       title="Profile Updated"
-      :message="successMessage"
       @close="closeSuccessModal"
     />
   </div>
@@ -79,11 +102,11 @@
  * @file src/views/EditProfilePage.vue
  * @description Page for users to edit their profile information.
  */
-import { ref, reactive, onMounted, watch } from 'vue';
-import { useRouter } from 'vue-router';
-import { authService } from '../services/authService';
+import {onMounted, reactive, ref, watch} from 'vue';
+import {useRouter} from 'vue-router';
+import {authService} from '../services/authService';
 // UPDATED: Corrected import from 'updateUserProfile' to 'updateProfile'
-import { updateProfile, ApiError } from '../services/api';
+import {ApiError, updateProfile} from '../services/api';
 import ErrorModal from '../components/common/ErrorModal.vue';
 import SuccessModal from '../components/common/SuccessModal.vue';
 
@@ -225,9 +248,11 @@ const handleUpdateProfile = async () => {
 .edit-profile-page h1 {
   font-weight: 300;
 }
+
 .form-label {
   font-weight: 500;
 }
+
 .invalid-feedback {
   display: block;
 }
