@@ -39,7 +39,7 @@
  */
 import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
-import { createProject, ApiError } from '../services/apiService';
+import { createProject, ApiError } from '../services/api';
 import ProjectForm from '../components/forms/ProjectForm.vue';
 import ErrorModal from '../components/common/ErrorModal.vue';
 import SuccessModal from '../components/common/SuccessModal.vue';

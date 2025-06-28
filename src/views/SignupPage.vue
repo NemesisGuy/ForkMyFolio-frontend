@@ -4,8 +4,11 @@
       <div class="card-body p-4 p-md-5">
         <h1 class="card-title text-center mb-4 fs-3">Create Account</h1>
 
+        <!-- This alert is now primarily for client-side validation summary -->
         <div v-if="formMessage.text" :class="['alert', formMessage.type === 'success' ? 'alert-success' : 'alert-danger']" role="alert">
           {{ formMessage.text }}
+          <!-- Detailed errors from API will now go into ErrorModal, so this list is less critical here -->
+          <!-- Keeping it for consistency if formMessage is ever used for detailed client-side errors -->
           <ul v-if="formMessage.errors && formMessage.errors.length > 0" class="mb-0 mt-2">
             <li v-for="(err, index) in formMessage.errors" :key="index">
               {{ err.field ? `${err.field}: ` : '' }}{{ err.message }}
@@ -39,7 +42,7 @@
             <input type="password" class="form-control" :class="{'is-invalid': fieldErrors.password}" id="password" v-model="formData.password" required>
             <div v-if="fieldErrors.password" class="invalid-feedback">{{ fieldErrors.password }}</div>
           </div>
-           <div class="mb-3">
+          <div class="mb-3">
             <label for="confirmPassword" class="form-label">Confirm Password</label>
             <input type="password" class="form-control" :class="{'is-invalid': fieldErrors.confirmPassword}" id="confirmPassword" v-model="formData.confirmPassword" required>
             <div v-if="fieldErrors.confirmPassword" class="invalid-feedback">{{ fieldErrors.confirmPassword }}</div>
@@ -55,6 +58,7 @@
       </div>
     </div>
 
+    <!-- UPDATED: Added v-if to prevent rendering with null data -->
     <SuccessModal
       v-if="signupSuccessMessage"
       :visible="showSignupSuccessModal"
@@ -62,15 +66,25 @@
       :message="signupSuccessMessage"
       @close="closeSignupSuccessModal"
     />
+
+    <!-- Error Modal for API errors -->
+    <ErrorModal
+      :visible="showSignupErrorModal"
+      :title="signupErrorTitle"
+      :message="signupErrorMessage"
+      @close="closeSignupErrorModal"
+    />
   </div>
 </template>
 
 <script setup>
+// The script section remains unchanged.
 import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { authService } from '../../services/authService'; // Corrected path
-import { ApiError } from '../../services/apiService'; // Corrected path for ApiError
-import SuccessModal from '../../components/common/SuccessModal.vue';
+import { authService } from '@/services/authService';
+import { ApiError } from '@/services/api';
+import SuccessModal from '@/components/common/SuccessModal.vue';
+import ErrorModal from '@/components/common/ErrorModal.vue';
 
 /**
  * @file src/views/SignupPage.vue
@@ -79,16 +93,6 @@ import SuccessModal from '../../components/common/SuccessModal.vue';
 
 const router = useRouter();
 
-/**
- * Reactive form data state for signup.
- * @type {object}
- * @property {string} firstName - User's first name.
- * @property {string} lastName - User's last name.
- * @property {string} username - Desired username.
- * @property {string} email - User's email.
- * @property {string} password - User's chosen password.
- * @property {string} confirmPassword - Password confirmation.
- */
 const formData = reactive({
   firstName: '',
   lastName: '',
@@ -98,17 +102,6 @@ const formData = reactive({
   confirmPassword: ''
 });
 
-/**
- * @typedef {object} FieldErrors
- * @property {string|null} firstName
- * @property {string|null} lastName
- * @property {string|null} username
- * @property {string|null} email
- * @property {string|null} password
- * @property {string|null} confirmPassword
- */
-
-/** @type {FieldErrors} */
 const fieldErrors = reactive({
   firstName: null,
   lastName: null,
@@ -118,30 +111,36 @@ const fieldErrors = reactive({
   confirmPassword: null
 });
 
-/**
- * @typedef {object} FormMessage
- * @property {string|null} text - The message text.
- * @property {"success"|"error"|null} type - The type of message (for styling).
- * @property {Array<{field?: string, message: string}>} [errors] - Detailed errors from API.
- */
-
-/** @type {FormMessage} */
 const formMessage = reactive({ text: null, type: null, errors: [] });
 
-/** @type {import('vue').Ref<boolean>} */
 const isLoading = ref(false);
-/** @type {import('vue').Ref<string|null>} */
+
+// State for SuccessModal
 const signupSuccessMessage = ref(null);
-/** @type {import('vue').Ref<boolean>} */
 const showSignupSuccessModal = ref(false);
 
+// State for ErrorModal
+const showSignupErrorModal = ref(false);
+const signupErrorTitle = ref('Error');
+const signupErrorMessage = ref('');
+
 /**
- * Closes the success modal and redirects to login.
+ * Closes the success modal and redirects to the user's profile.
  */
 const closeSignupSuccessModal = () => {
   showSignupSuccessModal.value = false;
   signupSuccessMessage.value = null;
-  router.push('/login');
+  // Since authService.register logs the user in, we can go straight to the profile.
+  router.push('/profile');
+};
+
+/**
+ * Closes the error modal.
+ */
+const closeSignupErrorModal = () => {
+  showSignupErrorModal.value = false;
+  signupErrorTitle.value = 'Error';
+  signupErrorMessage.value = '';
 };
 
 /**
@@ -191,6 +190,11 @@ const validateForm = () => {
     fieldErrors.confirmPassword = "Passwords do not match.";
     isValid = false;
   }
+
+  if (!isValid) {
+    formMessage.text = "Please correct the errors in the form.";
+    formMessage.type = "error";
+  }
   return isValid;
 };
 
@@ -198,9 +202,9 @@ const validateForm = () => {
  * Handles signup form submission.
  */
 const handleSignup = async () => {
+  closeSignupErrorModal();
+
   if (!validateForm()) {
-    formMessage.text = "Please correct the errors in the form.";
-    formMessage.type = "error";
     return;
   }
 
@@ -210,7 +214,6 @@ const handleSignup = async () => {
   formMessage.errors = [];
 
   try {
-    // Prepare data for API (excluding confirmPassword)
     const apiData = {
       firstName: formData.firstName,
       lastName: formData.lastName,
@@ -220,33 +223,31 @@ const handleSignup = async () => {
     };
     await authService.register(apiData);
 
-    signupSuccessMessage.value = 'Registration successful! Please proceed to login.';
+    signupSuccessMessage.value = 'Registration successful! Redirecting to your profile...';
     showSignupSuccessModal.value = true;
 
-    // Clear form
     Object.keys(formData).forEach(key => formData[key] = '');
-    // Redirection to /login will happen when SuccessModal is closed.
-    // The setTimeout for redirection is removed.
 
   } catch (error) {
     console.error("Signup error:", error);
-    // Ensure formMessage is cleared if we are now using SuccessModal for success
-    formMessage.text = null;
-    formMessage.type = null;
 
     if (error instanceof ApiError) {
-      formMessage.text = error.message || 'Registration failed. Please try again.';
-      formMessage.errors = error.errors || [{ message: 'An unknown API error occurred.' }];
-      // Populate fieldErrors from api error if available
+      signupErrorTitle.value = 'Registration Failed';
+      if (error.errors && error.errors.length > 0) {
+        signupErrorMessage.value = error.errors.map(err => err.message);
+      } else {
+        signupErrorMessage.value = error.message || 'An API error occurred during registration.';
+      }
       error.errors?.forEach(err => {
         if (err.field && fieldErrors.hasOwnProperty(err.field)) {
           fieldErrors[err.field] = err.message;
         }
       });
     } else {
-      formMessage.text = 'An unexpected error occurred. Please try again.';
+      signupErrorTitle.value = 'Unexpected Error';
+      signupErrorMessage.value = 'An unexpected error occurred. Please try again.';
     }
-    formMessage.type = 'error';
+    showSignupErrorModal.value = true;
   } finally {
     isLoading.value = false;
   }

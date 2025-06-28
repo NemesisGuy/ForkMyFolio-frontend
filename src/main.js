@@ -1,19 +1,31 @@
-import './assets/main.css';
-import 'bootstrap/dist/css/bootstrap.min.css'; // Added Bootstrap CSS
-
 import { createApp } from 'vue';
-// import { createPinia } from 'pinia'; // Removed Pinia import
-
 import App from './App.vue';
 import router from './router';
-import { authService } from './services/authService'; // Import authService
+// CORRECTED: Import the authService from its actual location.
+import { authService } from '@/services/authService.js';
 
-// Initialize auth state before mounting the app
-authService.loadAuthState();
+// Import Bootstrap CSS and JS
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap';
 
-const app = createApp(App);
+// Import Bootstrap Icons
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
-// app.use(createPinia()); // Removed Pinia usage
-app.use(router);
+// --- KEY CHANGE: Initialize Auth State Before App Mount ---
+// We use an async IIFE (Immediately Invoked Function Expression)
+// to ensure the auth check completes before we mount the app.
+(async () => {
+  try {
+    // This now correctly calls initAuth() on the real authService instance.
+    await authService.initAuth();
+  } catch (e) {
+    console.error("Critical error during application initialization:", e);
+  }
 
-app.mount('#app');
+  // Now that the auth state is resolved, create and mount the app.
+  const app = createApp(App);
+
+  app.use(router);
+
+  app.mount('#app');
+})();

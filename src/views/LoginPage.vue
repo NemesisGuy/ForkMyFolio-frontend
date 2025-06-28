@@ -4,9 +4,11 @@
       <div class="card-body p-4 p-md-5">
         <h1 class="card-title text-center mb-4 fs-3">Login</h1>
 
+        <!-- This alert is now primarily for client-side validation summary -->
         <div v-if="formMessage.text" :class="['alert', formMessage.type === 'success' ? 'alert-success' : 'alert-danger']" role="alert">
           {{ formMessage.text }}
-           <ul v-if="formMessage.errors && formMessage.errors.length > 0" class="mb-0 mt-2">
+          <!-- Detailed errors from API will now go into ErrorModal, so this list is less critical here -->
+          <ul v-if="formMessage.errors && formMessage.errors.length > 0" class="mb-0 mt-2">
             <li v-for="(err, index) in formMessage.errors" :key="index">
               {{ err.field ? `${err.field}: ` : '' }}{{ err.message }}
             </li>
@@ -35,6 +37,7 @@
       </div>
     </div>
 
+    <!-- UPDATED: Added v-if to prevent rendering with null data -->
     <SuccessModal
       v-if="loginSuccessMessage"
       :visible="showLoginSuccessModal"
@@ -42,15 +45,25 @@
       :message="loginSuccessMessage"
       @close="closeLoginSuccessModal"
     />
+
+    <!-- Error Modal for API errors -->
+    <ErrorModal
+      :visible="showLoginErrorModal"
+      :title="loginErrorTitle"
+      :message="loginErrorMessage"
+      @close="closeLoginErrorModal"
+    />
   </div>
 </template>
 
 <script setup>
+// The script section remains unchanged.
 import { reactive, ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { authService } from '../../services/authService'; // Corrected path
-import { ApiError } from '../../services/apiService'; // Corrected path
-import SuccessModal from '../../components/common/SuccessModal.vue';
+import { authService } from '@/services/authService';
+import { ApiError } from '@/services/api';
+import SuccessModal from '@/components/common/SuccessModal.vue';
+import ErrorModal from '@/components/common/ErrorModal.vue';
 
 /**
  * @file src/views/LoginPage.vue
@@ -60,46 +73,29 @@ import SuccessModal from '../../components/common/SuccessModal.vue';
 const router = useRouter();
 const route = useRoute();
 
-/**
- * Reactive credentials state.
- * @type {object}
- * @property {string} email - User's email.
- * @property {string} password - User's password.
- */
 const credentials = reactive({
   email: '',
   password: ''
 });
 
-/**
- * @typedef {object} FieldErrorsLogin
- * @property {string|null} email
- * @property {string|null} password
- */
-
-/** @type {FieldErrorsLogin} */
 const fieldErrors = reactive({ email: null, password: null });
 
-/**
- * @typedef {object} FormMessageLogin
- * @property {string|null} text - The message text.
- * @property {"success"|"error"|null} type - The type of message (for styling).
- * @property {Array<{field?: string, message: string}>} [errors] - Detailed errors from API.
- */
-
-/** @type {FormMessageLogin} */
 const formMessage = reactive({ text: null, type: null, errors: [] });
 
-/** @type {import('vue').Ref<boolean>} */
 const isLoading = ref(false);
-/** @type {import('vue').Ref<string|null>} */
+
+// State for SuccessModal
 const loginSuccessMessage = ref(null);
-/** @type {import('vue').Ref<boolean>} */
 const showLoginSuccessModal = ref(false);
 
-let redirectPathOnSuccess = '/'; // Store redirect path
+// State for ErrorModal
+const showLoginErrorModal = ref(false);
+const loginErrorTitle = ref('Error');
+const loginErrorMessage = ref('');
 
-// Redirect if already logged in
+// This variable will hold the path to redirect to after a successful login.
+let redirectPathOnSuccess = '/profile'; // Default to /profile
+
 onMounted(() => {
   if (authService.isAuthenticated.value) {
     router.replace(route.query.redirect || '/');
@@ -112,7 +108,17 @@ onMounted(() => {
 const closeLoginSuccessModal = () => {
   showLoginSuccessModal.value = false;
   loginSuccessMessage.value = null;
-  router.replace(redirectPathOnSuccess); // Use stored redirect path
+  // Use the stored path. This respects the ?redirect query param or defaults to /profile.
+  router.replace(redirectPathOnSuccess);
+};
+
+/**
+ * Closes the error modal.
+ */
+const closeLoginErrorModal = () => {
+  showLoginErrorModal.value = false;
+  loginErrorTitle.value = 'Error';
+  loginErrorMessage.value = '';
 };
 
 /**
@@ -138,6 +144,11 @@ const validateForm = () => {
     fieldErrors.password = "Password is required.";
     isValid = false;
   }
+
+  if (!isValid) {
+    formMessage.text = "Please correct the errors in the form.";
+    formMessage.type = "error";
+  }
   return isValid;
 };
 
@@ -145,9 +156,9 @@ const validateForm = () => {
  * Handles login form submission.
  */
 const handleLogin = async () => {
+  closeLoginErrorModal();
+
   if (!validateForm()) {
-    formMessage.text = "Please correct the errors in the form.";
-    formMessage.type = "error";
     return;
   }
 
@@ -159,26 +170,34 @@ const handleLogin = async () => {
   try {
     await authService.login(credentials);
 
-    loginSuccessMessage.value = "Login successful! Redirecting to your dashboard...";
-    showLoginSuccessModal.value = true;
-    redirectPathOnSuccess = route.query.redirect || '/'; // Store the intended path
+    // Determine the redirect path. Use the query param if it exists, otherwise default to /profile.
+    redirectPathOnSuccess = route.query.redirect || '/profile';
 
-    // Redirection will now happen when the SuccessModal is closed by the user
-    // or after a timeout if we implement auto-close later.
+
+    // Update the success message to be more accurate.
+    loginSuccessMessage.value = "Login successful! Redirecting...";
+    showLoginSuccessModal.value = true;
+
   } catch (error) {
     console.error("Login error:", error);
+
     if (error instanceof ApiError) {
-      formMessage.text = error.message || 'Login failed. Please check your credentials.';
-      formMessage.errors = error.errors || [{ message: 'An unknown API error occurred.' }];
+      loginErrorTitle.value = 'Login Failed';
+      if (error.errors && error.errors.length > 0) {
+        loginErrorMessage.value = error.errors.map(err => err.message);
+      } else {
+        loginErrorMessage.value = error.message || 'An API error occurred during login.';
+      }
       error.errors?.forEach(err => {
         if (err.field && fieldErrors.hasOwnProperty(err.field)) {
           fieldErrors[err.field] = err.message;
         }
       });
     } else {
-      formMessage.text = 'An unexpected error occurred. Please try again.';
+      loginErrorTitle.value = 'Unexpected Error';
+      loginErrorMessage.value = 'An unexpected error occurred. Please try again.';
     }
-    formMessage.type = 'error';
+    showLoginErrorModal.value = true;
   } finally {
     isLoading.value = false;
   }

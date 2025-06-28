@@ -57,7 +57,7 @@
  */
 import { ref, onMounted, reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { getProjectById, updateProject, ApiError } from '../services/apiService';
+import { getProjectById, updateProject, ApiError } from '@/services/api';
 import LoadingSpinner from '../components/common/LoadingSpinner.vue';
 import ErrorModal from '../components/common/ErrorModal.vue';
 import SuccessModal from '../components/common/SuccessModal.vue';

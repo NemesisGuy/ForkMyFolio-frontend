@@ -2,28 +2,29 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 // Route level code-splitting (lazy loading) for page components.
 // This generates a separate chunk for each route which is lazy-loaded when the route is visited.
-const HomePage = () => import('../views/HomePage.vue');
-const ProjectsPage = () => import('../views/ProjectsPage.vue');
-const SkillsPage = () => import('../views/SkillsPage.vue');
-const ContactPage = () => import('../views/ContactPage.vue');
-const LoginPage = () => import('../views/LoginPage.vue');
-const SignupPage = () => import('../views/SignupPage.vue');
-const NotFoundPage = () => import('../views/NotFoundPage.vue');
-const UnauthorizedPage = () => import('../views/UnauthorizedPage.vue');
+const HomePage = () => import('@/views/HomePage.vue');
+const ProjectsPage = () => import('@/views/ProjectsPage.vue');
+const SkillsPage = () => import('@/views/SkillsPage.vue');
+const ContactPage = () => import('@/views/ContactPage.vue');
+const LoginPage = () => import('@/views/LoginPage.vue');
+const SignupPage = () => import('@/views/SignupPage.vue');
+const NotFoundPage = () => import('@/views/NotFoundPage.vue');
+const UnauthorizedPage = () => import('@/views/UnauthorizedPage.vue');
 
 // Placeholder for authenticated pages - will be added later with route guards
-import { authService } from '../services/authService'; // Import authService
+import { authService } from '@/services/authService';
+import AdminSkillsPage from "@/views/admin/AdminSkillsPage.vue"; // Import authService
 
 // Authenticated pages
-const ProfilePage = () => import('../views/ProfilePage.vue');
-const MyProjectsPage = () => import('../views/MyProjectsPage.vue');
-const AdminDashboardPage = () => import('../views/AdminDashboardPage.vue');
-const DashboardPage = () => import('../views/DashboardPage.vue');
-const EditProjectPage = () => import('../views/EditProjectPage.vue');
-const CreateProjectPage = () => import('../views/CreateProjectPage.vue');
-const EditProfilePage = () => import('../views/EditProfilePage.vue');
-const AdminProjectsPage = () => import('../views/admin/AdminProjectsPage.vue');
-const AdminUsersPage = () => import('../views/admin/AdminUsersPage.vue');
+const ProfilePage = () => import('@/views/ProfilePage.vue');
+const MyProjectsPage = () => import('@/views/MyProjectsPage.vue');
+const AdminDashboardPage = () => import('@/views/AdminDashboardPage.vue');
+const DashboardPage = () => import('@/views/DashboardPage.vue');
+const EditProjectPage = () => import('@/views/EditProjectPage.vue');
+const CreateProjectPage = () => import('@/views/CreateProjectPage.vue');
+const EditProfilePage = () => import('@/views/EditProfilePage.vue');
+const AdminProjectsPage = () => import('@/views/admin/AdminProjectsPage.vue');
+// REMOVED: No longer importing AdminUsersPage
 
 
 const routes = [
@@ -106,10 +107,11 @@ const routes = [
     component: AdminProjectsPage,
     meta: { requiresAuth: true, requiresAdmin: true }
   },
+  // REMOVED: The route for /admin/users is gone
   {
-    path: '/admin/users',
-    name: 'admin-users',
-    component: AdminUsersPage,
+    path: '/admin/skills',
+    name: 'admin-skills',
+    component: AdminSkillsPage,
     meta: { requiresAuth: true, requiresAdmin: true }
   },
   // Error Pages
@@ -124,6 +126,19 @@ const routes = [
     component: NotFoundPage
   }
 ];
+
+// --- ADDITION START ---
+// Add development-only routes
+if (import.meta.env.DEV) {
+  const ModalTestPage = () => import('@/views/dev/ModalTestPage.vue');
+  routes.push({
+    path: '/dev/test-modals',
+    name: 'test-modals',
+    component: ModalTestPage,
+  });
+  console.log('Development routes enabled. Modal test page available at /dev/test-modals');
+}
+// --- ADDITION END ---
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),

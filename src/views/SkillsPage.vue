@@ -48,8 +48,8 @@
  * Fetches and shows skills from the backend with loading and error states.
  */
 import { ref, onMounted } from 'vue';
-import { getSkills } from '../services/apiService';
-import { ApiError } from '../services/apiService';
+import { getPublicSkills } from '../services/api';
+import { ApiError } from '../services/api';
 import LoadingSpinner from '../components/common/LoadingSpinner.vue';
 import { formatDate } from '../utils'; // Assuming this path is correct and utils/index.js exports it
 
@@ -67,8 +67,8 @@ const fetchSkills = async () => {
   isLoading.value = true;
   error.value = null;
   try {
-    // getSkills from apiService is expected to return the unwrapped List<SkillDto>
-    const data = await getSkills();
+    // getSkills from api is expected to return the unwrapped List<SkillDto>
+    const data = await getPublicSkills();
     skills.value = data || []; // Ensure skills is an array even if data is null/undefined
   } catch (err) {
     console.error('Failed to fetch skills:', err);

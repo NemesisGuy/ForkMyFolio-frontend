@@ -23,7 +23,7 @@
                 <div class="mb-3">
                   <label for="email" class="form-label">Email</label>
                   <input type="email" class="form-control" id="email" v-model="formData.email" required :class="{'is-invalid': fieldErrors.email}">
-                  <div class="form-text">Note: Changing your email might require re-verification depending on system setup.</div>
+                  <div class="form-text">Note: Changing your email might require re-verification.</div>
                   <div v-if="fieldErrors.email" class="invalid-feedback">{{ fieldErrors.email }}</div>
                 </div>
 
@@ -31,6 +31,13 @@
                   <label for="profileImageUrl" class="form-label">Profile Image URL</label>
                   <input type="url" class="form-control" id="profileImageUrl" v-model="formData.profileImageUrl" :class="{'is-invalid': fieldErrors.profileImageUrl}">
                   <div v-if="fieldErrors.profileImageUrl" class="invalid-feedback">{{ fieldErrors.profileImageUrl }}</div>
+
+                  <!-- ENHANCEMENT: Live image preview -->
+                  <div v-if="formData.profileImageUrl" class="mt-3 text-center">
+                    <p class="form-text mb-2">Image Preview:</p>
+                    <img :src="formData.profileImageUrl" @error="onImageError" v-if="!imageLoadError" alt="Profile Preview" class="img-thumbnail" style="max-width: 150px; max-height: 150px; object-fit: cover;">
+                    <p v-if="imageLoadError" class="text-danger small">Could not load image preview.</p>
+                  </div>
                 </div>
 
                 <div class="mt-4 d-flex justify-content-end">
@@ -43,11 +50,12 @@
               </div>
             </div>
           </form>
-          <!-- Modals will be integrated below the form or at root of component template -->
         </div>
       </div>
     </div>
-     <ErrorModal
+
+    <!-- UPDATED: Added v-if="error" to prevent rendering with null data -->
+    <ErrorModal
       v-if="error"
       :visible="showErrorModal"
       :title="error.title"
@@ -55,6 +63,7 @@
       @close="closeErrorModal"
     />
 
+    <!-- UPDATED: Added v-if="successMessage" to prevent prop validation warning -->
     <SuccessModal
       v-if="successMessage"
       :visible="showSuccessModal"
@@ -70,95 +79,80 @@
  * @file src/views/EditProfilePage.vue
  * @description Page for users to edit their profile information.
  */
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { authService } from '../services/authService';
-import { updateUserProfile, ApiError } from '../services/apiService';
-// import LoadingSpinner from '../components/common/LoadingSpinner.vue'; // No initial page load spinner if pre-filling from authService.user
+// UPDATED: Corrected import from 'updateUserProfile' to 'updateProfile'
+import { updateProfile, ApiError } from '../services/api';
 import ErrorModal from '../components/common/ErrorModal.vue';
 import SuccessModal from '../components/common/SuccessModal.vue';
 
 const router = useRouter();
 
-// --- Reactive State for Form Data & Page ---
-/** @type {import('vue').Ref<object>} Form data for user profile. */
+// --- Reactive State ---
 const formData = ref({
   firstName: '',
   lastName: '',
   email: '',
   profileImageUrl: ''
 });
-
-/** @type {import('vue').Ref<boolean>} Saving state for when the form is submitted. */
 const isSaving = ref(false);
-
-/** @type {import('vue').Ref<{title: string, message: string|string[]}|null>} Error object for ErrorModal. */
 const error = ref(null);
-/** @type {import('vue').Ref<boolean>} Controls visibility of the ErrorModal. */
 const showErrorModal = ref(false);
-
-/** @type {import('vue').Ref<string|null>} Success message for SuccessModal. */
 const successMessage = ref(null);
-/** @type {import('vue').Ref<boolean>} Controls visibility of the SuccessModal. */
 const showSuccessModal = ref(false);
-
-/** @type {Reactive<object>} Object to hold field-specific validation errors. */
 const fieldErrors = reactive({});
+const imageLoadError = ref(false);
 
-// --- Modal Control Methods ---
-/** Closes the error modal. */
+// --- Image Preview Logic ---
+watch(() => formData.value.profileImageUrl, () => {
+  imageLoadError.value = false; // Reset error on new URL
+});
+
+const onImageError = () => {
+  imageLoadError.value = true;
+};
+
+// --- Modal Control ---
 const closeErrorModal = () => {
   showErrorModal.value = false;
   error.value = null;
 };
 
-/** Closes the success modal. */
 const closeSuccessModal = () => {
   showSuccessModal.value = false;
   successMessage.value = null;
-  // Optionally, navigate away or refresh data if needed after profile update
-  // For now, just closes the modal.
+  router.push('/profile'); // Navigate back to profile after success
 };
 
-// --- Lifecycle Hooks & Form Pre-fill ---
+// --- Lifecycle & Data Loading ---
 onMounted(() => {
   const currentUser = authService.user.value;
   if (currentUser) {
     formData.value = {
       firstName: currentUser.firstName || '',
       lastName: currentUser.lastName || '',
-      email: currentUser.email || '', // Email might not be editable, depending on backend rules
+      email: currentUser.email || '',
       profileImageUrl: currentUser.profileImageUrl || ''
     };
   } else {
-    // This case should ideally not happen if the page is protected by requiresAuth
-    // and authService correctly populates user on login.
-    console.error("EditProfilePage: Current user data not available from authService.");
+    console.error("EditProfilePage: User data not available.");
     error.value = {
-      title: "Error",
-      message: "User data not available. Please try logging in again."
+      title: "Authentication Error",
+      message: "User data not found. Please log in again."
     };
     showErrorModal.value = true;
-    // Optionally redirect to login if user data is critical and missing
-    // router.push('/login');
+    router.push('/login');
   }
 });
 
-// --- Methods (Form handling, validation - To be implemented) ---
-/**
- * Handles cancelling the edit operation.
- * Navigates back to the profile page.
- */
+// --- Form Handling ---
 const cancelEdit = () => {
   router.push('/profile');
 };
 
-/**
- * Validates the profile form data.
- * @returns {boolean} True if the form is valid, false otherwise.
- */
 const validateForm = () => {
-  Object.keys(fieldErrors).forEach(key => fieldErrors[key] = null);
+  Object.keys(fieldErrors).forEach(key => delete fieldErrors[key]);
   let isValid = true;
 
   if (!formData.value.firstName?.trim()) {
@@ -177,71 +171,43 @@ const validateForm = () => {
     isValid = false;
   }
   if (formData.value.profileImageUrl && !/^(ftp|http|https):\/\/[^ "]+$/.test(formData.value.profileImageUrl)) {
-    fieldErrors.profileImageUrl = "Please enter a valid URL for the profile image.";
+    fieldErrors.profileImageUrl = "Please enter a valid URL.";
     isValid = false;
   }
   return isValid;
 };
 
-/**
- * Handles the submission of the updated user profile data.
- */
 const handleUpdateProfile = async () => {
   if (!validateForm()) {
-    error.value = { title: "Validation Error", message: "Please correct the errors in the form." };
-    showErrorModal.value = true;
     return;
   }
 
   isSaving.value = true;
   error.value = null;
-  showErrorModal.value = false;
-  successMessage.value = null;
-  showSuccessModal.value = false;
 
   try {
-    // Only send fields that are meant to be updated by this form
-    const profileDataToUpdate = {
-      firstName: formData.value.firstName,
-      lastName: formData.value.lastName,
-      email: formData.value.email,
-      profileImageUrl: formData.value.profileImageUrl,
-    };
+    // UPDATED: Corrected function call
+    const updatedUser = await updateProfile(formData.value);
+    authService.updateLocalUser(updatedUser);
 
-    const updatedUser = await updateUserProfile(profileDataToUpdate);
-
-    // Crucially, update the user state in authService
-    authService.updateLocalUser(updatedUser); // Assumes/Requires this method in authService
-
-    successMessage.value = "Profile updated successfully!";
+    successMessage.value = "Your profile has been updated successfully!";
     showSuccessModal.value = true;
-
-    // Re-populate form with potentially transformed data from backend (already done by authService update if it sets the same ref)
-    // Or, if authService.user is a different ref, update formData directly:
-    formData.value = {
-        firstName: updatedUser.firstName || '',
-        lastName: updatedUser.lastName || '',
-        email: updatedUser.email || '',
-        profileImageUrl: updatedUser.profileImageUrl || ''
-    };
 
   } catch (err) {
     console.error("Failed to update profile:", err);
-    let errorMessage = "Could not update profile. Please try again later.";
     const errorDetails = [];
+    let errorMessage = "Could not update your profile. Please try again.";
 
     if (err instanceof ApiError) {
       errorMessage = err.message || errorMessage;
       if (err.errors && err.errors.length > 0) {
         err.errors.forEach(apiErr => {
           errorDetails.push(apiErr.message);
-          if (apiErr.field && fieldErrors.hasOwnProperty(apiErr.field)) {
+          if (apiErr.field && formData.value.hasOwnProperty(apiErr.field)) {
             fieldErrors[apiErr.field] = apiErr.message;
           }
         });
       }
-    } else if (err.message) {
-      errorMessage = err.message;
     }
 
     error.value = {
@@ -256,10 +222,13 @@ const handleUpdateProfile = async () => {
 </script>
 
 <style scoped>
-.edit-profile-page h1, .edit-profile-page .display-5 {
+.edit-profile-page h1 {
   font-weight: 300;
 }
 .form-label {
   font-weight: 500;
+}
+.invalid-feedback {
+  display: block;
 }
 </style>

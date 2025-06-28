@@ -1,10 +1,11 @@
+<!--
 <template>
   <div class="my-projects-page py-4">
     <div class="container-fluid">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="display-5">My Projects</h1>
-        <!-- Optional: "Create Project" button can be added here later -->
-        <!-- <button class="btn btn-primary">Create New Project</button> -->
+        &lt;!&ndash; Optional: "Create Project" button can be added here later &ndash;&gt;
+        &lt;!&ndash; <button class="btn btn-primary">Create New Project</button> &ndash;&gt;
       </div>
       <p class="lead mb-5">View and manage projects associated with your account.</p>
 
@@ -33,8 +34,8 @@
                   <a v-if="project.liveUrl" :href="project.liveUrl" target="_blank" class="btn btn-sm btn-outline-primary me-2">Live Demo</a>
                   <a v-if="project.repoUrl" :href="project.repoUrl" target="_blank" class="btn btn-sm btn-outline-secondary">Source Code</a>
                 </div>
-                <!-- Optional: Add project date if available and formatDate is imported -->
-                <!-- <small class="text-muted" v-if="project.createdAt">{{ formatDate(project.createdAt, { year: 'numeric', month: 'short', day: 'numeric' }) }}</small> -->
+                &lt;!&ndash; Optional: Add project date if available and formatDate is imported &ndash;&gt;
+                &lt;!&ndash; <small class="text-muted" v-if="project.createdAt">{{ formatDate(project.createdAt, { year: 'numeric', month: 'short', day: 'numeric' }) }}</small> &ndash;&gt;
               </div>
             </div>
           </div>
@@ -44,8 +45,8 @@
       <div v-else-if="!isLoading && !showErrorModal" class="alert alert-info text-center" role="alert">
         <h4 class="alert-heading">No Projects Found</h4>
         <p>You have not created or been associated with any projects yet.</p>
-        <!-- Optional: Link to create project page -->
-        <!-- <router-link to="/projects/create" class="btn btn-primary mt-2">Create Your First Project</router-link> -->
+        &lt;!&ndash; Optional: Link to create project page &ndash;&gt;
+        &lt;!&ndash; <router-link to="/projects/create" class="btn btn-primary mt-2">Create Your First Project</router-link> &ndash;&gt;
       </div>
     </div>
     <ErrorModal
@@ -65,12 +66,12 @@
  * Fetches projects from /api/v1/users/me/projects.
  */
 import { ref, onMounted } from 'vue';
-import { getMyProjects, ApiError } from '../services/apiService';
+import { getMyProjects, ApiError } from '../services/api';
 import LoadingSpinner from '../components/common/LoadingSpinner.vue';
 import ErrorModal from '../components/common/ErrorModal.vue';
 // import { formatDate } from '../utils'; // If project dates are to be displayed
 
-// --- Reactive State ---
+// -&#45;&#45; Reactive State -&#45;&#45;
 /** @type {import('vue').Ref<Array<object>>} List of ProjectDto for the current user. */
 const myProjects = ref([]);
 /** @type {import('vue').Ref<boolean>} Loading state for fetching projects. */
@@ -80,7 +81,7 @@ const error = ref(null);
 /** @type {import('vue').Ref<boolean>} Controls visibility of the ErrorModal. */
 const showErrorModal = ref(false);
 
-// --- Lifecycle Hooks & Fetch Logic ---
+// -&#45;&#45; Lifecycle Hooks & Fetch Logic -&#45;&#45;
 /**
  * Fetches the authenticated user's projects from the API.
  */
@@ -115,7 +116,7 @@ onMounted(() => {
   fetchMyProjects();
 });
 
-// --- Methods ---
+// -&#45;&#45; Methods -&#45;&#45;
 /**
  * Closes the error modal.
  */
@@ -154,3 +155,4 @@ const closeErrorModal = () => {
   min-height: 200px;
 }
 </style>
+-->

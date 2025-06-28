@@ -2,26 +2,14 @@
   <div class="admin-dashboard-page py-4">
     <div class="container">
       <h1 class="display-5 mb-4">Admin Dashboard</h1>
-      <p class="lead mb-5">Manage application data and users from this central hub.</p>
+      <p class="lead mb-5">Manage your portfolio content from this central hub.</p>
 
-      <div class="row g-4">
-        <!-- Manage Users Section -->
-        <div class="col-md-6 col-lg-4">
-          <div class="card h-100 shadow-sm">
-            <div class="card-body d-flex flex-column">
-              <h5 class="card-title"><i class="bi bi-people-fill me-2"></i>Manage Users</h5>
-              <p class="card-text small text-muted">
-                View, edit, or manage user accounts and roles.
-              </p>
-              <router-link to="/admin/users" class="btn btn-outline-primary mt-auto align-self-start">
-                Go to User Management
-              </router-link>
-            </div>
-          </div>
-        </div>
+      <!-- UPDATED: Using justify-content-center for better alignment with fewer items -->
+      <div class="row g-4 justify-content-center">
 
         <!-- Manage All Projects Section -->
-        <div class="col-md-6 col-lg-4">
+        <!-- UPDATED: Changed col-lg-4 to col-lg-5 for a better two-item layout -->
+        <div class="col-md-6 col-lg-5">
           <div class="card h-100 shadow-sm">
             <div class="card-body d-flex flex-column">
               <h5 class="card-title"><i class="bi bi-kanban-fill me-2"></i>Manage Projects</h5>
@@ -36,7 +24,8 @@
         </div>
 
         <!-- Manage All Skills Section -->
-        <div class="col-md-6 col-lg-4">
+        <!-- UPDATED: Changed col-lg-4 to col-lg-5 for a better two-item layout -->
+        <div class="col-md-6 col-lg-5">
           <div class="card h-100 shadow-sm">
             <div class="card-body d-flex flex-column">
               <h5 class="card-title"><i class="bi bi-tags-fill me-2"></i>Manage Skills</h5>
