@@ -2,10 +2,10 @@ import {fetchWithAuth} from './apiClient';
 
 /**
  * Fetches the public portfolio profile of the owner.
- * @returns {Promise<object>} ProfileDto
+ * @returns {Promise<object>} PortfolioProfileDto
  */
-// KEY CHANGE: This now correctly points to the public, unauthenticated endpoint.
-export const getPublicProfile = () => fetchWithAuth('/profile', {method: 'GET'}, false);
+// KEY CHANGE: The endpoint is updated from '/profile' to '/portfolio-profile'
+export const getPublicProfile = () => fetchWithAuth('/portfolio-profile', {method: 'GET'}, false);
 
 /**
  * Fetches all public projects for the portfolio.
@@ -14,11 +14,11 @@ export const getPublicProfile = () => fetchWithAuth('/profile', {method: 'GET'},
 export const getPublicProjects = () => fetchWithAuth('/projects', {method: 'GET'}, false);
 
 /**
- * Fetches a single public project by its ID.
- * @param {string|number} id - The ID of the project.
+ * Fetches a single public project by its UUID.
+ * @param {string} uuid - The UUID of the project.
  * @returns {Promise<object>} ProjectDto
  */
-export const getPublicProjectById = (id) => fetchWithAuth(`/projects/${id}`, {method: 'GET'}, false);
+export const getPublicProjectById = (uuid) => fetchWithAuth(`/projects/${uuid}`, {method: 'GET'}, false);
 
 /**
  * Fetches the list of all skills.
@@ -37,6 +37,12 @@ export const getPublicExperience = () => fetchWithAuth('/experience', {method: '
  * @returns {Promise<Array<object>>} List of TestimonialDto
  */
 export const getPublicTestimonials = () => fetchWithAuth('/testimonials', {method: 'GET'}, false);
+
+/**
+ * Fetches the list of all qualifications.
+ * @returns {Promise<Array<object>>} List of QualificationDto
+ */
+export const getPublicQualifications = () => fetchWithAuth('/qualifications', {method: 'GET'}, false);
 
 /**
  * Submits a contact form message.

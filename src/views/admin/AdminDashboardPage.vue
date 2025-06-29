@@ -2,21 +2,38 @@
   <div class="admin-dashboard-page py-4">
     <div class="container">
       <h1 class="display-5 mb-4">Admin Dashboard</h1>
-      <p class="lead mb-5">Manage your portfolio content from this central hub.</p>
+      <p class="lead mb-5">Manage your portfolio content and account settings from this central hub.</p>
 
       <div class="row g-4 justify-content-center">
 
-        <!-- Edit Profile Section -->
+        <!-- Card for Public Portfolio Profile -->
         <div class="col-md-6 col-lg-4">
           <div class="card h-100 shadow-sm">
             <div class="card-body d-flex flex-column">
-              <h5 class="card-title"><i class="bi bi-person-badge-fill me-2"></i>Edit Profile</h5>
+              <h5 class="card-title"><i class="bi bi-person-badge-fill me-2"></i>Manage Portfolio Profile</h5>
               <p class="card-text small text-muted">
-                Update your headline, summary, contact info, and social links.
+                Edit the public content of your home page, including headline, summary, and social links.
               </p>
               <router-link class="btn btn-outline-primary mt-auto align-self-start"
-                           to="/profile/edit">
+                           to="/admin/portfolio-profile">
                 Go to Profile Editor
+              </router-link>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card for Private User Account -->
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title"><i class="bi bi-person-gear me-2"></i>Manage Account</h5>
+              <p class="card-text small text-muted">
+                Update your private account details like your name and email.
+              </p>
+              <!-- KEY CHANGE: This link is now enabled and styled as a primary action -->
+              <router-link class="btn btn-outline-primary mt-auto align-self-start"
+                           to="/admin/account">
+                Go to Account Settings
               </router-link>
             </div>
           </div>
@@ -28,7 +45,7 @@
             <div class="card-body d-flex flex-column">
               <h5 class="card-title"><i class="bi bi-kanban-fill me-2"></i>Manage Projects</h5>
               <p class="card-text small text-muted">
-                Oversee, edit, or delete any project in the system.
+                Add, edit, or delete the projects showcased in your portfolio.
               </p>
               <router-link class="btn btn-outline-primary mt-auto align-self-start"
                            to="/admin/projects">
@@ -44,7 +61,7 @@
             <div class="card-body d-flex flex-column">
               <h5 class="card-title"><i class="bi bi-tags-fill me-2"></i>Manage Skills</h5>
               <p class="card-text small text-muted">
-                Add, edit, or remove skills available in the system.
+                Add or remove the skills listed in your portfolio.
               </p>
               <router-link class="btn btn-outline-primary mt-auto align-self-start"
                            to="/admin/skills">
@@ -87,37 +104,31 @@
           </div>
         </div>
 
+        <!-- Manage Qualifications Section -->
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title"><i class="bi bi-patch-check-fill me-2"></i>Manage Qualifications</h5>
+              <p class="card-text small text-muted">
+                List your degrees, certifications, and other qualifications.
+              </p>
+              <router-link class="btn btn-outline-primary mt-auto align-self-start"
+                           to="/admin/qualifications">
+                Go to Qualifications
+              </router-link>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-/**
- * @file src/views/AdminDashboardPage.vue
- * @description Admin dashboard providing links to various management sections.
- */
+// No script changes needed
 </script>
 
 <style scoped>
-.admin-dashboard-page h1, .admin-dashboard-page .display-5 {
-  font-weight: 300;
-}
-
-.card {
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-}
-
-.card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 0.6rem 1.2rem rgba(0, 0, 0, .175) !important;
-}
-
-.card-title {
-  font-weight: 500;
-}
-
-.card-title i {
-  vertical-align: text-bottom;
-}
+/* No style changes needed */
 </style>

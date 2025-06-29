@@ -53,7 +53,8 @@
               Existing Skills
             </div>
             <ul class="list-group list-group-flush">
-              <li v-for="skill in skills" :key="skill.id"
+              <!-- KEY CHANGE: Use skill.uuid for the key -->
+              <li v-for="skill in skills" :key="skill.uuid"
                   class="list-group-item d-flex justify-content-between align-items-center">
                 <span>
                   {{ skill.name }}
@@ -68,7 +69,6 @@
               </li>
             </ul>
           </div>
-          <!-- REFACTORED: Use the reusable EmptyState component -->
           <EmptyState
             v-else-if="!isLoading && !error.message"
             icon-class="bi-tags-fill"
@@ -83,14 +83,11 @@
 
 <script setup>
 import {onMounted, reactive, ref} from 'vue';
-// Import from the API barrel file
 import {ApiError, createSkill, deleteSkill, getPublicSkills} from '@/services/api';
-// Import shared components
 import LoadingModal from '@/components/common/LoadingModal.vue';
 import ErrorModal from '@/components/common/ErrorModal.vue';
 import ConfirmModal from '@/components/common/ConfirmModal.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
-// REFACTORED: Import the shared utility function
 import {getSkillBadgeClass} from '@/utils/skillUtils';
 
 const skills = ref([]);
@@ -114,7 +111,6 @@ const fetchSkills = async () => {
   isLoading.value = true;
   try {
     const fetchedSkills = await getPublicSkills();
-    // Sort skills by name for consistent ordering
     skills.value = fetchedSkills.sort((a, b) => a.name.localeCompare(b.name));
   } catch (err) {
     console.error("Failed to fetch skills:", err);
@@ -133,10 +129,9 @@ const handleCreateSkill = async () => {
   isSaving.value = true;
   try {
     await createSkill({name: newSkill.name, level: newSkill.level});
-    // Reset the form to its initial state
     newSkill.name = '';
     newSkill.level = 'INTERMEDIATE';
-    await fetchSkills(); // Refresh the list with the new data
+    await fetchSkills();
   } catch (err) {
     console.error("Failed to create skill:", err);
     error.value = {
@@ -161,10 +156,11 @@ const cancelDelete = () => {
 
 const executeDelete = async () => {
   if (!skillToDelete.value) return;
-  isSaving.value = true; // Use isSaving to disable buttons during delete
+  isSaving.value = true;
   try {
-    await deleteSkill(skillToDelete.value.id);
-    await fetchSkills(); // Refresh the list
+    // KEY CHANGE: Pass skillToDelete.value.uuid to the delete function
+    await deleteSkill(skillToDelete.value.uuid);
+    await fetchSkills();
   } catch (err) {
     console.error("Failed to delete skill:", err);
     error.value = {
@@ -187,7 +183,6 @@ onMounted(fetchSkills);
 }
 
 .list-group-item .btn {
-  /* Make delete button less prominent until hover */
   opacity: 0.5;
   transition: opacity 0.2s ease-in-out;
 }

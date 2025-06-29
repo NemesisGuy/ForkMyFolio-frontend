@@ -3,15 +3,14 @@
     <div class="container">
       <h1 class="display-5 mb-4">Project Management</h1>
 
-      <LoadingModal :visible="isLoading"/>
-      <ErrorModal v-if="error.message" :message="error.message" :title="error.title"
-                  :visible="showErrorModal" @close="closeErrorModal"/>
+      <LoadingModal :visible="isLoading" />
+      <ErrorModal v-if="error.message" :visible="showErrorModal" :title="error.title" :message="error.message" @close="closeErrorModal" />
       <ConfirmModal
-        :message="`Are you sure you want to delete the project: '${formState.name}'?`"
         :visible="showDeleteConfirmModal"
         title="Confirm Deletion"
-        @cancel="cancelDelete"
+        :message="`Are you sure you want to delete the project: '${formState.name}'?`"
         @confirm="executeDelete"
+        @cancel="cancelDelete"
       />
 
       <div class="row g-5">
@@ -23,41 +22,35 @@
               <form @submit.prevent="handleSave">
                 <div class="row g-3">
                   <div class="col-12">
-                    <label class="form-label" for="projectName">Project Name</label>
-                    <input id="projectName" v-model="formState.name" class="form-control"
-                           required type="text">
+                    <label for="projectName" class="form-label">Project Name</label>
+                    <input type="text" class="form-control" id="projectName" v-model="formState.name" required>
                   </div>
                   <div class="col-12">
-                    <label class="form-label" for="description">Description</label>
-                    <textarea id="description" v-model="formState.description" class="form-control"
-                              required rows="4"></textarea>
+                    <label for="description" class="form-label">Description</label>
+                    <textarea class="form-control" id="description" rows="4" v-model="formState.description" required></textarea>
                   </div>
                   <div class="col-12">
-                    <label class="form-label" for="imageUrl">Image URL</label>
-                    <input id="imageUrl" v-model="formState.imageUrl" class="form-control"
-                           placeholder="https://example.com/image.png" type="url">
+                    <label for="imageUrl" class="form-label">Image URL</label>
+                    <input type="url" class="form-control" id="imageUrl" v-model="formState.imageUrl" placeholder="https://example.com/image.png">
                   </div>
                   <div class="col-12">
-                    <label class="form-label" for="repoUrl">Repository URL (GitHub, etc.)</label>
-                    <input id="repoUrl" v-model="formState.repoUrl" class="form-control" type="url">
+                    <label for="repoUrl" class="form-label">Repository URL (GitHub, etc.)</label>
+                    <input type="url" class="form-control" id="repoUrl" v-model="formState.repoUrl">
                   </div>
                   <div class="col-12">
-                    <label class="form-label" for="liveUrl">Live Demo URL</label>
-                    <input id="liveUrl" v-model="formState.liveUrl" class="form-control" type="url">
+                    <label for="liveUrl" class="form-label">Live Demo URL</label>
+                    <input type="url" class="form-control" id="liveUrl" v-model="formState.liveUrl">
                   </div>
                   <div class="col-12">
                     <div class="form-check form-switch">
-                      <input id="isPublished" v-model="formState.published" class="form-check-input" role="switch"
-                             type="checkbox">
+                      <input class="form-check-input" type="checkbox" role="switch" id="isPublished" v-model="formState.published">
                       <label class="form-check-label" for="isPublished">Published</label>
                     </div>
                   </div>
                 </div>
                 <div class="d-flex justify-content-end mt-4">
-                  <button v-if="isEditing" class="btn btn-secondary me-2" type="button"
-                          @click="resetForm">Cancel Edit
-                  </button>
-                  <button :disabled="isSaving" class="btn btn-primary" type="submit">
+                  <button type="button" v-if="isEditing" class="btn btn-secondary me-2" @click="resetForm">Cancel Edit</button>
+                  <button type="submit" class="btn btn-primary" :disabled="isSaving">
                     <span v-if="isSaving" class="spinner-border spinner-border-sm me-1"></span>
                     {{ isEditing ? 'Save Changes' : 'Add Project' }}
                   </button>
@@ -70,29 +63,30 @@
         <!-- Existing Projects List -->
         <div class="col-lg-7">
           <div v-if="!isLoading && projects.length > 0">
-            <div v-for="project in projects" :key="project.id" class="card shadow-sm mb-3">
+            <!-- KEY CHANGE: Use project.uuid for the key -->
+            <div v-for="project in projects" :key="project.uuid" class="card shadow-sm mb-3">
               <div class="card-body">
                 <div class="d-flex justify-content-between">
                   <div>
                     <h5 class="card-title mb-1">{{ project.name }}</h5>
-                    <span :class="project.published ? 'bg-success' : 'bg-secondary'" class="badge">
+                    <span class="badge" :class="project.published ? 'bg-success' : 'bg-secondary'">
                       {{ project.published ? 'Published' : 'Draft' }}
                     </span>
                   </div>
                   <div class="flex-shrink-0">
-                    <button class="btn btn-sm btn-outline-secondary me-2"
-                            title="Edit" @click="selectForEdit(project)"><i
-                      class="bi bi-pencil-fill"></i></button>
-                    <button class="btn btn-sm btn-outline-danger" title="Delete"
-                            @click="requestDelete(project)"><i class="bi bi-trash-fill"></i></button>
+                    <button class="btn btn-sm btn-outline-secondary me-2" @click="selectForEdit(project)" title="Edit"><i class="bi bi-pencil-fill"></i></button>
+                    <button class="btn btn-sm btn-outline-danger" @click="requestDelete(project)" title="Delete"><i class="bi bi-trash-fill"></i></button>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <div v-else-if="!isLoading && !error.message" class="text-center py-5">
-            <p class="lead text-muted">No projects added yet. Use the form to get started!</p>
-          </div>
+          <EmptyState
+            v-else-if="!isLoading && !error.message"
+            title="No Projects Found"
+            message="Add a new project using the form to get started."
+            icon-class="bi-kanban-fill"
+          />
         </div>
       </div>
     </div>
@@ -100,23 +94,26 @@
 </template>
 
 <script setup>
-import {onMounted, reactive, ref} from 'vue';
-import {createProject, deleteProject, getPublicProjects, updateProject} from '@/services/api';
+import { ref, reactive, onMounted } from 'vue';
+// Import from the API barrel file, which now includes the admin functions
+import { getPublicProjects, createProject, updateProject, deleteProject, ApiError } from '@/services/api';
 import LoadingModal from '@/components/common/LoadingModal.vue';
 import ErrorModal from '@/components/common/ErrorModal.vue';
 import ConfirmModal from '@/components/common/ConfirmModal.vue';
+import EmptyState from '@/components/common/EmptyState.vue';
 
 const projects = ref([]);
 const isLoading = ref(true);
 const isSaving = ref(false);
 const isEditing = ref(false);
-const error = ref({title: '', message: ''});
+const error = ref({ title: '', message: '' });
 const showErrorModal = ref(false);
 const showDeleteConfirmModal = ref(false);
 const projectToDelete = ref(null);
 
 const initialFormState = {
-  id: null,
+  // KEY CHANGE: Use uuid instead of id
+  uuid: null,
   name: '',
   description: '',
   imageUrl: '',
@@ -125,11 +122,11 @@ const initialFormState = {
   published: true,
 };
 
-const formState = reactive({...initialFormState});
+const formState = reactive({ ...initialFormState });
 
 const closeErrorModal = () => {
   showErrorModal.value = false;
-  error.value = {title: '', message: ''};
+  error.value = { title: '', message: '' };
 };
 
 const fetchProjects = async () => {
@@ -139,10 +136,7 @@ const fetchProjects = async () => {
     projects.value = data.sort((a, b) => a.name.localeCompare(b.name));
   } catch (err) {
     console.error("Failed to fetch projects:", err);
-    error.value = {
-      title: 'Failed to Load Data',
-      message: err.message || 'An unexpected error occurred.'
-    };
+    error.value = { title: 'Failed to Load Data', message: err.message || 'An unexpected error occurred.' };
     showErrorModal.value = true;
   } finally {
     isLoading.value = false;
@@ -153,7 +147,8 @@ const handleSave = async () => {
   isSaving.value = true;
   try {
     if (isEditing.value) {
-      await updateProject(formState.id, formState);
+      // KEY CHANGE: Pass formState.uuid to the update function
+      await updateProject(formState.uuid, formState);
     } else {
       await createProject(formState);
     }
@@ -161,7 +156,7 @@ const handleSave = async () => {
     await fetchProjects();
   } catch (err) {
     console.error("Failed to save project:", err);
-    error.value = {title: 'Save Failed', message: err.message || 'Could not save the project.'};
+    error.value = { title: 'Save Failed', message: err.message || 'Could not save the project.' };
     showErrorModal.value = true;
   } finally {
     isSaving.value = false;
@@ -171,7 +166,7 @@ const handleSave = async () => {
 const selectForEdit = (project) => {
   Object.assign(formState, project);
   isEditing.value = true;
-  window.scrollTo({top: 0, behavior: 'smooth'});
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
 const resetForm = () => {
@@ -180,9 +175,10 @@ const resetForm = () => {
 };
 
 const requestDelete = (project) => {
-  // Use the full project object for the confirmation message, but store only the ID for deletion.
+  // Store the full project object for the confirmation message and deletion.
+  projectToDelete.value = project;
+  // Also populate formState so the name appears in the modal correctly.
   Object.assign(formState, project);
-  projectToDelete.value = project.id;
   showDeleteConfirmModal.value = true;
 };
 
@@ -196,17 +192,15 @@ const executeDelete = async () => {
   if (!projectToDelete.value) return;
   isSaving.value = true;
   try {
-    await deleteProject(projectToDelete.value);
+    // KEY CHANGE: Pass the project's uuid to the delete function
+    await deleteProject(projectToDelete.value.uuid);
     await fetchProjects();
-    if (isEditing.value && formState.id === projectToDelete.value) {
+    if (isEditing.value && formState.uuid === projectToDelete.value.uuid) {
       resetForm();
     }
   } catch (err) {
     console.error("Failed to delete project:", err);
-    error.value = {
-      title: 'Deletion Failed',
-      message: err.message || 'Could not delete the project.'
-    };
+    error.value = { title: 'Deletion Failed', message: err.message || 'Could not delete the project.' };
     showErrorModal.value = true;
   } finally {
     isSaving.value = false;

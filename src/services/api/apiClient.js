@@ -63,12 +63,25 @@ export async function fetchWithAuth(endpoint, options = {}, requiresAuth = true)
   try {
     const response = await fetch(`${VUE_APP_API_BASE_URL}${endpoint}`, fetchOptions);
 
-    // Handle empty response (e.g., 204 No Content)
     if (response.status === 204) {
       return null;
     }
 
-    const responseData = await response.json();
+    const responseText = await response.text();
+    if (!responseText && response.ok) {
+      return null;
+    }
+
+    // --- ENHANCEMENT: Safely parse JSON ---
+    let responseData;
+    try {
+      responseData = JSON.parse(responseText);
+    } catch (parseError) {
+      // If parsing fails, throw a specific error.
+      console.error('Failed to parse JSON response:', responseText);
+      throw new ApiError('Invalid response format from server.', response.status, 'parse_error');
+    }
+    // --- END ENHANCEMENT ---
 
     if (!response.ok) {
       // Handle 401 Unauthorized with token refresh

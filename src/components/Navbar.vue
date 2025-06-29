@@ -1,5 +1,4 @@
 <template>
-  <!-- The nav classes are already dynamic, which is perfect. -->
   <nav :class="[
     'navbar',
     'navbar-expand-lg',
@@ -11,6 +10,7 @@
     <div class="container-fluid">
       <router-link class="navbar-brand" to="/">ForkMyFolio</router-link>
       <button
+        ref="navbarToggler"
         class="navbar-toggler"
         type="button"
         data-bs-toggle="collapse"
@@ -19,30 +19,50 @@
         aria-expanded="false"
         aria-label="Toggle navigation"
         @click="toggleNavbar"
-        ref="navbarToggler"
       >
         <span class="navbar-toggler-icon"></span>
       </button>
-      <div class="collapse navbar-collapse" id="navbarNav" ref="navbarNavCollapsible">
+      <div id="navbarNav" ref="navbarNavCollapsible" class="collapse navbar-collapse">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
           <li class="nav-item">
-            <router-link class="nav-link" active-class="active" to="/" @click="collapseNavbar">Home</router-link>
+            <router-link class="nav-link" active-class="active" to="/" @click="collapseNavbar">
+              Home
+            </router-link>
           </li>
           <li class="nav-item">
-            <router-link class="nav-link" active-class="active" to="/projects" @click="collapseNavbar">Projects</router-link>
+            <router-link class="nav-link" active-class="active" to="/projects" @click="collapseNavbar">
+              Projects
+            </router-link>
           </li>
           <li class="nav-item">
-            <router-link class="nav-link" active-class="active" to="/skills" @click="collapseNavbar">Skills</router-link>
+            <router-link class="nav-link" active-class="active" to="/skills" @click="collapseNavbar">
+              Skills
+            </router-link>
           </li>
           <li class="nav-item">
-            <router-link class="nav-link" active-class="active" to="/contact" @click="collapseNavbar">Contact</router-link>
+            <router-link class="nav-link" active-class="active" to="/experience" @click="collapseNavbar">
+              Experience
+            </router-link>
+          </li>
+          <li class="nav-item">
+            <router-link class="nav-link" active-class="active" to="/testimonials" @click="collapseNavbar">
+              Testimonials
+            </router-link>
+          </li>
+          <li class="nav-item">
+            <router-link class="nav-link" active-class="active" to="/qualifications" @click="collapseNavbar">
+              Qualifications
+            </router-link>
+          </li>
+          <li class="nav-item">
+            <router-link class="nav-link" active-class="active" to="/contact" @click="collapseNavbar">
+              Contact
+            </router-link>
           </li>
 
-          <!-- THEME TOGGLE SWITCH START -->
           <li class="nav-item d-flex align-items-center ms-lg-2">
-            <ThemeToggle />
+            <ThemeToggle/>
           </li>
-          <!-- THEME TOGGLE SWITCH END -->
 
           <li class="nav-item d-none d-lg-block mx-1">
             <div class="vr"></div>
@@ -50,31 +70,43 @@
 
           <template v-if="authService.isAuthenticated.value">
             <li v-if="isAdmin" class="nav-item">
-              <router-link class="nav-link" active-class="active" to="/admin" @click="collapseNavbar">Admin</router-link>
+              <router-link class="nav-link" active-class="active" to="/admin" @click="collapseNavbar">
+                Admin
+              </router-link>
             </li>
             <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" id="navbarUserDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <a id="navbarUserDropdown" class="nav-link dropdown-toggle" href="#" role="button"
+                 data-bs-toggle="dropdown" aria-expanded="false">
                 {{ authService.user.value?.firstName || 'User' }}
               </a>
               <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarUserDropdown">
-                <!--
-                  KEY CHANGE:
-                  - "View Profile" now correctly links to the Home page ('/').
-                  - "Edit Profile" is added, linking to the correct editor page.
-                -->
-                <li><router-link class="dropdown-item" to="/" @click="collapseNavbar">View Profile</router-link></li>
-                <li><router-link class="dropdown-item" to="/profile/edit" @click="collapseNavbar">Edit Profile</router-link></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="#" @click.prevent="requestLogoutConfirmation">Logout</a></li>
+                <li>
+                  <router-link class="dropdown-item" to="/" @click="collapseNavbar">View Public Page</router-link>
+                </li>
+                <li>
+                  <!-- KEY CHANGE: Link updated to the new, correct admin route and text is clearer -->
+                  <router-link class="dropdown-item" to="/admin/portfolio-profile" @click="collapseNavbar">
+                    Edit Portfolio
+                  </router-link>
+                </li>
+                <li>
+                  <hr class="dropdown-divider">
+                </li>
+                <li><a class="dropdown-item" href="#" @click.prevent="requestLogoutConfirmation">Logout</a>
+                </li>
               </ul>
             </li>
           </template>
           <template v-else>
             <li class="nav-item">
-              <router-link class="nav-link" active-class="active" to="/login" @click="collapseNavbar">Login</router-link>
+              <router-link class="nav-link" active-class="active" to="/login" @click="collapseNavbar">
+                Login
+              </router-link>
             </li>
             <li class="nav-item">
-              <router-link class="btn btn-primary btn-sm ms-lg-2" to="/signup" @click="collapseNavbar">Sign Up</router-link>
+              <router-link class="btn btn-primary btn-sm ms-lg-2" to="/signup" @click="collapseNavbar">
+                Sign Up
+              </router-link>
             </li>
           </template>
         </ul>
@@ -95,10 +127,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
-import { useRouter } from 'vue-router';
-import { authService } from '../services/authService';
-import { themeService } from '../services/themeService';
+import {ref, computed, onMounted, onBeforeUnmount} from 'vue';
+import {useRouter} from 'vue-router';
+import {authService} from '../services/authService';
+import {themeService} from '../services/themeService';
 import ConfirmModal from './common/ConfirmModal.vue';
 import ThemeToggle from './common/ThemeToggle.vue';
 
@@ -174,21 +206,24 @@ const cancelLogout = () => {
 .navbar-brand {
   font-weight: bold;
 }
+
 .nav-link.active {
   font-weight: 500;
 }
+
 @media (max-width: 991.98px) {
   .navbar-nav .btn-primary {
     margin-top: 0.5rem;
     display: block;
     width: fit-content;
   }
-  /* Updated: Target the new theme switch for better mobile layout */
+
   .navbar-nav .nav-item:has(.theme-switch) {
     margin-top: 0.5rem;
     margin-bottom: 0.5rem;
   }
 }
+
 .vr {
   height: 25px;
 }
