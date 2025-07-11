@@ -2,8 +2,8 @@
 
 #app {
   max-width: 100%;
-  margin: 0 0;
-  padding: 0.1rem;
+  margin: 0 auto;
+  padding: 2rem;
   font-weight: normal;
 }
 
@@ -27,8 +27,13 @@ a,
   }
 
   #app {
-    /*display: grid;
-    grid-template-columns: 1fr 1fr;*/
-    padding: 0 0.1rem;
+
+    padding: 0 2rem;
   }
 }
+
+.modal-backdrop {
+  z-index: 1019 !important;
+}
+
+

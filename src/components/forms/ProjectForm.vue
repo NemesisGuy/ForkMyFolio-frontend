@@ -1,49 +1,80 @@
 <template>
-  <form @submit.prevent="handleSubmit" class="needs-validation" novalidate>
+  <form class="needs-validation" novalidate @submit.prevent="handleSubmit">
     <div class="card shadow-sm">
       <div class="card-body p-4">
         <div class="mb-3">
-          <label for="projectTitle" class="form-label">Title</label>
-          <input type="text" class="form-control" id="projectTitle" v-model="editableProjectData.title" required :class="{'is-invalid': fieldErrors?.title}">
+          <label class="form-label" for="projectTitle">Title</label>
+          <input id="projectTitle" v-model="editableProjectData.title" :class="{'is-invalid': fieldErrors?.title}"
+                 class="form-control" required
+                 type="text">
           <div v-if="fieldErrors?.title" class="invalid-feedback">{{ fieldErrors.title }}</div>
         </div>
 
         <div class="mb-3">
-          <label for="projectDescription" class="form-label">Description</label>
-          <textarea class="form-control" id="projectDescription" v-model="editableProjectData.description" rows="5" required :class="{'is-invalid': fieldErrors?.description}"></textarea>
-          <div v-if="fieldErrors?.description" class="invalid-feedback">{{ fieldErrors.description }}</div>
+          <label class="form-label" for="projectDescription">Description</label>
+          <textarea id="projectDescription" v-model="editableProjectData.description"
+                    :class="{'is-invalid': fieldErrors?.description}" class="form-control" required
+                    rows="5"></textarea>
+          <div v-if="fieldErrors?.description" class="invalid-feedback">{{
+              fieldErrors.description
+            }}
+          </div>
         </div>
 
         <div class="mb-3">
-          <label for="projectTechStack" class="form-label">Tech Stack (comma-separated)</label>
-          <input type="text" class="form-control" id="projectTechStack" v-model="techStackString" :class="{'is-invalid': fieldErrors?.techStack}">
-          <div class="form-text">Enter technologies separated by commas (e.g., Vue, Node.js, PostgreSQL).</div>
-          <div v-if="fieldErrors?.techStack" class="invalid-feedback">{{ fieldErrors.techStack }}</div>
+          <label class="form-label" for="projectTechStack">Tech Stack (comma-separated)</label>
+          <input id="projectTechStack" v-model="techStackString" :class="{'is-invalid': fieldErrors?.techStack}" class="form-control"
+                 type="text">
+          <div class="form-text">Enter technologies separated by commas (e.g., Vue, Node.js,
+            PostgreSQL).
+          </div>
+          <div v-if="fieldErrors?.techStack" class="invalid-feedback">{{
+              fieldErrors.techStack
+            }}
+          </div>
         </div>
 
         <div class="mb-3">
-          <label for="projectImageUrl" class="form-label">Image URL</label>
-          <input type="url" class="form-control" id="projectImageUrl" v-model="editableProjectData.imageUrl" :class="{'is-invalid': fieldErrors?.imageUrl}">
-          <div v-if="fieldErrors?.imageUrl" class="invalid-feedback">{{ fieldErrors.imageUrl }}</div>
+          <label class="form-label" for="projectImageUrl">Image URL</label>
+          <input id="projectImageUrl" v-model="editableProjectData.imageUrl" :class="{'is-invalid': fieldErrors?.imageUrl}"
+                 class="form-control"
+                 type="url">
+          <div v-if="fieldErrors?.imageUrl" class="invalid-feedback">{{
+              fieldErrors.imageUrl
+            }}
+          </div>
         </div>
 
         <div class="row">
           <div class="col-md-6 mb-3">
-            <label for="projectRepoUrl" class="form-label">Repository URL</label>
-            <input type="url" class="form-control" id="projectRepoUrl" v-model="editableProjectData.repoUrl" :class="{'is-invalid': fieldErrors?.repoUrl}">
-            <div v-if="fieldErrors?.repoUrl" class="invalid-feedback">{{ fieldErrors.repoUrl }}</div>
+            <label class="form-label" for="projectRepoUrl">Repository URL</label>
+            <input id="projectRepoUrl" v-model="editableProjectData.repoUrl" :class="{'is-invalid': fieldErrors?.repoUrl}"
+                   class="form-control"
+                   type="url">
+            <div v-if="fieldErrors?.repoUrl" class="invalid-feedback">{{
+                fieldErrors.repoUrl
+              }}
+            </div>
           </div>
           <div class="col-md-6 mb-3">
-            <label for="projectLiveUrl" class="form-label">Live URL</label>
-            <input type="url" class="form-control" id="projectLiveUrl" v-model="editableProjectData.liveUrl" :class="{'is-invalid': fieldErrors?.liveUrl}">
-            <div v-if="fieldErrors?.liveUrl" class="invalid-feedback">{{ fieldErrors.liveUrl }}</div>
+            <label class="form-label" for="projectLiveUrl">Live URL</label>
+            <input id="projectLiveUrl" v-model="editableProjectData.liveUrl" :class="{'is-invalid': fieldErrors?.liveUrl}"
+                   class="form-control"
+                   type="url">
+            <div v-if="fieldErrors?.liveUrl" class="invalid-feedback">{{
+                fieldErrors.liveUrl
+              }}
+            </div>
           </div>
         </div>
 
         <div class="mt-4 d-flex justify-content-end">
-          <button type="button" class="btn btn-outline-secondary me-2" @click="handleCancel" v-if="showCancelButton">Cancel</button>
-          <button type="submit" class="btn btn-primary" :disabled="isSaving">
-            <span v-if="isSaving" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+          <button v-if="showCancelButton" class="btn btn-outline-secondary me-2" type="button"
+                  @click="handleCancel">Cancel
+          </button>
+          <button :disabled="isSaving" class="btn btn-primary" type="submit">
+            <span v-if="isSaving" aria-hidden="true" class="spinner-border spinner-border-sm me-1"
+                  role="status"></span>
             {{ isSaving ? savingText : submitText }}
           </button>
         </div>
@@ -53,7 +84,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, reactive } from 'vue';
+import {computed, ref, watch} from 'vue';
 
 /**
  * @file src/components/forms/ProjectForm.vue
@@ -70,7 +101,14 @@ const props = defineProps({
    */
   initialData: {
     type: Object,
-    default: () => ({ title: '', description: '', techStack: [], imageUrl: '', repoUrl: '', liveUrl: '' })
+    default: () => ({
+      title: '',
+      description: '',
+      techStack: [],
+      imageUrl: '',
+      repoUrl: '',
+      liveUrl: ''
+    })
   },
   /**
    * Indicates if the form is currently in a saving/submitting state.
@@ -145,7 +183,7 @@ watch(() => props.initialData, (newData) => {
   if (!Array.isArray(editableProjectData.value.techStack)) {
     editableProjectData.value.techStack = [];
   }
-}, { immediate: true, deep: true });
+}, {immediate: true, deep: true});
 
 
 /**
@@ -188,5 +226,6 @@ const handleCancel = () => {
 .form-label {
   font-weight: 500;
 }
+
 /* Add any form-specific styles if needed */
 </style>

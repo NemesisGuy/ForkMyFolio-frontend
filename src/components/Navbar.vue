@@ -1,8 +1,17 @@
 <template>
-  <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom shadow-sm sticky-top">
-    <div class="container-fluid"> <!-- Changed to container-fluid -->
+  <!-- KEY CHANGE: The class now uses `currentTheme` from our new service -->
+  <nav :class="[
+    'navbar',
+    'navbar-expand-lg',
+    'border-bottom',
+    'shadow-sm',
+    'sticky-top',
+    currentTheme === 'dark' ? 'navbar-dark bg-dark' : 'navbar-light bg-light'
+  ]">
+    <div class="container-fluid">
       <router-link class="navbar-brand" to="/">ForkMyFolio</router-link>
       <button
+        ref="navbarToggler"
         class="navbar-toggler"
         type="button"
         data-bs-toggle="collapse"
@@ -11,52 +20,107 @@
         aria-expanded="false"
         aria-label="Toggle navigation"
         @click="toggleNavbar"
-        ref="navbarToggler"
       >
         <span class="navbar-toggler-icon"></span>
       </button>
-      <div class="collapse navbar-collapse" id="navbarNav" ref="navbarNavCollapsible">
+      <div id="navbarNav" ref="navbarNavCollapsible" class="collapse navbar-collapse">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
           <li class="nav-item">
-            <router-link class="nav-link" active-class="active" to="/" @click="collapseNavbar">Home</router-link>
+            <router-link class="nav-link" active-class="active" to="/" @click="collapseNavbar">
+              Home
+            </router-link>
           </li>
           <li class="nav-item">
-            <router-link class="nav-link" active-class="active" to="/projects" @click="collapseNavbar">Projects</router-link>
+            <router-link class="nav-link" active-class="active" to="/projects" @click="collapseNavbar">
+              Projects
+            </router-link>
           </li>
           <li class="nav-item">
-            <router-link class="nav-link" active-class="active" to="/skills" @click="collapseNavbar">Skills</router-link>
+            <router-link class="nav-link" active-class="active" to="/skills" @click="collapseNavbar">
+              Skills
+            </router-link>
           </li>
           <li class="nav-item">
-            <router-link class="nav-link" active-class="active" to="/contact" @click="collapseNavbar">Contact</router-link>
+            <router-link class="nav-link" active-class="active" to="/experience" @click="collapseNavbar">
+              Experience
+            </router-link>
+          </li>
+          <li class="nav-item">
+            <router-link class="nav-link" active-class="active" to="/testimonials" @click="collapseNavbar">
+              Testimonials
+            </router-link>
+          </li>
+          <li class="nav-item">
+            <router-link class="nav-link" active-class="active" to="/qualifications" @click="collapseNavbar">
+              Qualifications
+            </router-link>
+          </li>
+          <li class="nav-item">
+            <router-link class="nav-link" active-class="active" to="/contact" @click="collapseNavbar">
+              Contact
+            </router-link>
+          </li>
+
+          <li class="nav-item d-flex align-items-center ms-lg-2">
+            <ThemeToggle/>
+          </li>
+
+          <li class="nav-item d-none d-lg-block mx-1">
+            <div class="vr"></div>
           </li>
 
           <template v-if="authService.isAuthenticated.value">
             <li v-if="isAdmin" class="nav-item">
-              <router-link class="nav-link" active-class="active" to="/admin" @click="collapseNavbar">Admin</router-link>
+              <router-link class="nav-link" active-class="active" to="/admin" @click="collapseNavbar">
+                Admin
+              </router-link>
             </li>
+            <!-- KEY CHANGE: User dropdown updated -->
             <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" id="navbarUserDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                {{ authService.user.value?.username || authService.user.value?.firstName || 'User' }}
+              <a id="navbarUserDropdown" class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button"
+                 data-bs-toggle="dropdown" aria-expanded="false">
+                <img v-if="authService.user.value?.profileImageUrl" :src="authService.user.value.profileImageUrl" alt="Avatar" class="navbar-avatar me-2">
+                <i v-else class="bi bi-person-circle navbar-avatar-placeholder me-2"></i>
+                {{ authService.user.value?.firstName || 'User' }}
               </a>
               <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarUserDropdown">
-                <li><router-link class="dropdown-item" to="/profile" @click="collapseNavbar">Profile</router-link></li>
-                <li><router-link class="dropdown-item" to="/my-projects" @click="collapseNavbar">My Projects</router-link></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="#" @click.prevent="requestLogoutConfirmation">Logout</a></li>
+                <li>
+                  <router-link class="dropdown-item" to="/account" @click="collapseNavbar">
+                    <i class="bi bi-person-fill me-2"></i>My Account
+                  </router-link>
+                </li>
+                <li>
+                  <router-link class="dropdown-item" to="/admin/portfolio-profile" @click="collapseNavbar">
+                    <i class="bi bi-layout-text-sidebar-reverse me-2"></i>Edit Public Profile
+                  </router-link>
+                </li>
+                <li>
+                  <hr class="dropdown-divider">
+                </li>
+                <li>
+                  <a class="dropdown-item" href="#" @click.prevent="requestLogoutConfirmation">
+                    <i class="bi bi-box-arrow-right me-2"></i>Logout
+                  </a>
+                </li>
               </ul>
             </li>
           </template>
           <template v-else>
             <li class="nav-item">
-              <router-link class="nav-link" active-class="active" to="/login" @click="collapseNavbar">Login</router-link>
+              <router-link class="nav-link" active-class="active" to="/login" @click="collapseNavbar">
+                Login
+              </router-link>
             </li>
-            <li class="nav-item">
-              <router-link class="btn btn-primary btn-sm ms-lg-2" to="/signup" @click="collapseNavbar">Sign Up</router-link>
-            </li>
+<!--            <li class="nav-item">
+              <router-link class="btn btn-primary btn-sm ms-lg-2" to="/signup" @click="collapseNavbar">
+                Sign Up
+              </router-link>
+            </li>-->
           </template>
         </ul>
       </div>
     </div>
+
     <ConfirmModal
       :visible="showLogoutConfirmModal"
       :title="logoutConfirmTitle"
@@ -71,140 +135,128 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { authService } from '../services/authService'; // Corrected path
-import { Collapse } from 'bootstrap'; // Import Bootstrap Collapse for manual toggling
+import {ref, computed, onMounted, onBeforeUnmount} from 'vue';
+import {useRouter} from 'vue-router';
+import {authService} from '../services/authService';
+// KEY CHANGE: Remove the old theme service
+// import {themeService} from '../services/themeService';
+// KEY CHANGE: Import the new useTheme composable
+import { useTheme } from '@/services/themeService.js';
 import ConfirmModal from './common/ConfirmModal.vue';
+import ThemeToggle from './common/ThemeToggle.vue';
 
-/**
- * @file src/components/Navbar.vue
- * @description Navigation bar component for the application.
- * Displays main navigation links. Uses Bootstrap for styling.
- * Adapts links based on user authentication status.
- */
+// KEY CHANGE: Get the reactive theme value from our new service
+const { currentTheme } = useTheme();
 
 const router = useRouter();
-
-/** @type {import('vue').Ref<HTMLElement|null>} */
 const navbarToggler = ref(null);
-/** @type {import('vue').Ref<HTMLElement|null>} */
 const navbarNavCollapsible = ref(null);
-let bsCollapse = null;
+const bsCollapse = ref(null);
 
-// Manage Bootstrap collapse instance for programmatic control
-import { onMounted, onBeforeUnmount } from 'vue';
 onMounted(() => {
-  if (navbarNavCollapsible.value) {
-    bsCollapse = new Collapse(navbarNavCollapsible.value, { toggle: false });
+  const navbarCollapseEl = document.getElementById('navbarNav');
+  if (navbarCollapseEl && window.bootstrap) {
+    bsCollapse.value = new window.bootstrap.Collapse(navbarCollapseEl, {
+      toggle: false,
+    });
   }
 });
+
 onBeforeUnmount(() => {
-  if (bsCollapse) {
-    bsCollapse.dispose();
+  if (bsCollapse.value) {
+    bsCollapse.value.dispose();
   }
 });
 
-/**
- * Programmatically toggles the Bootstrap collapse instance for the navbar.
- */
 const toggleNavbar = () => {
-  if (bsCollapse) {
-    bsCollapse.toggle();
+  if (bsCollapse.value) {
+    bsCollapse.value.toggle();
   }
 };
 
-/**
- * Programmatically hides the Bootstrap collapse instance for the navbar if it's currently shown.
- * Useful for closing the mobile menu after a navigation link is clicked.
- */
 const collapseNavbar = () => {
-  if (bsCollapse && navbarNavCollapsible.value && navbarNavCollapsible.value.classList.contains('show')) {
-    bsCollapse.hide();
+  if (
+    bsCollapse.value &&
+    navbarNavCollapsible.value &&
+    navbarNavCollapsible.value.classList.contains('show')
+  ) {
+    bsCollapse.value.hide();
   }
 };
 
-/**
- * Computed property to check if the current user is an admin.
- * @returns {boolean} True if the user is authenticated and has the 'ADMIN' role, false otherwise.
- */
 const isAdmin = computed(() => {
-  return authService.user.value && authService.user.value.roles && authService.user.value.roles.includes('ADMIN');
+  return (
+    authService.user.value &&
+    authService.user.value.roles &&
+    authService.user.value.roles.includes('ADMIN')
+  );
 });
 
-/**
- * Handles the user logout process.
- * Calls the authentication service to log out, then redirects to the login page.
- */
-const handleLogout = async () => {
-  collapseNavbar(); // Ensure navbar collapses on mobile after clicking logout
-  try {
-    await authService.logout();
-    router.push('/login'); // Navigate to login after logout
-  } catch (error) {
-    console.error('Error during logout:', error);
-    // Handle logout error if necessary, though authService clears state regardless
-    // For instance, display a toast message
-  }
-};
-
-// --- Logout Confirmation Modal State ---
-/** @type {import('vue').Ref<boolean>} Controls visibility of the logout confirmation modal. */
 const showLogoutConfirmModal = ref(false);
-/** @type {string} Title for the logout confirmation modal. */
-const logoutConfirmTitle = "Confirm Logout";
-/** @type {string} Message for the logout confirmation modal. */
-const logoutConfirmMessage = "Are you sure you want to logout?";
+const logoutConfirmTitle = 'Confirm Logout';
+const logoutConfirmMessage = 'Are you sure you want to logout?';
 
-/**
- * Initiates the logout confirmation process by displaying the ConfirmModal.
- */
 const requestLogoutConfirmation = () => {
-  collapseNavbar(); // Ensure navbar collapses on mobile before showing modal
+  collapseNavbar();
   showLogoutConfirmModal.value = true;
 };
 
-/**
- * Executes the actual logout process after user confirmation.
- * Calls the authentication service to log out, then redirects to the login page.
- */
 const executeLogout = async () => {
-  showLogoutConfirmModal.value = false; // Hide modal first
+  showLogoutConfirmModal.value = false;
   try {
     await authService.logout();
-    router.push('/login'); // Navigate to login after logout
+    router.push('/login');
   } catch (error) {
     console.error('Error during logout:', error);
-    // Optionally, show an error modal/toast if logout itself fails critically
-    // For now, authService clears state regardless, and redirection happens.
   }
 };
 
-/**
- * Cancels the logout process by hiding the ConfirmModal.
- */
 const cancelLogout = () => {
   showLogoutConfirmModal.value = false;
 };
-
 </script>
 
 <style scoped>
 .navbar-brand {
   font-weight: bold;
 }
+
 .nav-link.active {
   font-weight: 500;
 }
-.dropdown-menu {
-  /* Ensure dropdown appears correctly with Vite/Vue setup if any issues */
+
+/* ADDED: Styles for the user avatar in the navbar */
+.navbar-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
 }
-/* Add some padding for the Sign Up button on smaller screens if needed */
+
+.navbar-avatar-placeholder {
+  font-size: 1.75rem; /* ~28px */
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.dropdown-item i {
+  width: 1.25em; /* Aligns text for items with and without icons */
+}
+
 @media (max-width: 991.98px) {
   .navbar-nav .btn-primary {
     margin-top: 0.5rem;
     display: block;
     width: fit-content;
   }
+
+  .navbar-nav .nav-item:has(.theme-switch) {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+}
+
+.vr {
+  height: 25px;
 }
 </style>

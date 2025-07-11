@@ -1,76 +1,109 @@
 <template>
-  <div class="signup-page container mt-4 mb-5" style="max-width: 500px;">
-    <div class="card">
-      <div class="card-body p-4 p-md-5">
-        <h1 class="card-title text-center mb-4 fs-3">Create Account</h1>
+  <div class="signup-page">
+    <div class="container" style="max-width: 500px;">
+      <div class="card animate-fade-in-up">
+        <div class="card-body p-4 p-md-5">
+          <h1 class="card-title text-center mb-4 fs-3">Create Account</h1>
 
-        <div v-if="formMessage.text" :class="['alert', formMessage.type === 'success' ? 'alert-success' : 'alert-danger']" role="alert">
-          {{ formMessage.text }}
-          <ul v-if="formMessage.errors && formMessage.errors.length > 0" class="mb-0 mt-2">
-            <li v-for="(err, index) in formMessage.errors" :key="index">
-              {{ err.field ? `${err.field}: ` : '' }}{{ err.message }}
-            </li>
-          </ul>
+          <!-- This alert is now primarily for client-side validation summary -->
+          <div v-if="formMessage.text"
+               :class="['alert', formMessage.type === 'success' ? 'alert-success' : 'alert-danger']"
+               role="alert">
+            {{ formMessage.text }}
+            <!-- Detailed errors from API will now go into ErrorModal, so this list is less critical here -->
+            <!-- Keeping it for consistency if formMessage is ever used for detailed client-side errors -->
+            <ul v-if="formMessage.errors && formMessage.errors.length > 0" class="mb-0 mt-2">
+              <li v-for="(err, index) in formMessage.errors" :key="index">
+                {{ err.field ? `${err.field}: ` : '' }}{{ err.message }}
+              </li>
+            </ul>
+          </div>
+
+          <form novalidate @submit.prevent="handleSignup">
+            <div class="mb-3">
+              <label class="form-label" for="firstName">First Name</label>
+              <input id="firstName" v-model="formData.firstName" :class="{'is-invalid': fieldErrors.firstName}"
+                     class="form-control" required type="text">
+              <div v-if="fieldErrors.firstName" class="invalid-feedback">{{
+                  fieldErrors.firstName
+                }}
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="lastName">Last Name</label>
+              <input id="lastName" v-model="formData.lastName" :class="{'is-invalid': fieldErrors.lastName}"
+                     class="form-control" required type="text">
+              <div v-if="fieldErrors.lastName" class="invalid-feedback">{{
+                  fieldErrors.lastName
+                }}
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="email">Email address</label>
+              <input id="email" v-model="formData.email" :class="{'is-invalid': fieldErrors.email}"
+                     class="form-control" required type="email">
+              <div v-if="fieldErrors.email" class="invalid-feedback">{{ fieldErrors.email }}</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="password">Password</label>
+              <input id="password" v-model="formData.password"
+                     :class="{'is-invalid': fieldErrors.password}" class="form-control"
+                     required type="password">
+              <div v-if="fieldErrors.password" class="invalid-feedback">{{
+                  fieldErrors.password
+                }}
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="confirmPassword">Confirm Password</label>
+              <input id="confirmPassword" v-model="formData.confirmPassword"
+                     :class="{'is-invalid': fieldErrors.confirmPassword}" class="form-control"
+                     required type="password">
+              <div v-if="fieldErrors.confirmPassword" class="invalid-feedback">
+                {{ fieldErrors.confirmPassword }}
+              </div>
+            </div>
+            <button :disabled="isLoading" class="btn btn-primary w-100" type="submit">
+              <span v-if="isLoading" aria-hidden="true" class="spinner-border spinner-border-sm"
+                    role="status"></span>
+              {{ isLoading ? 'Creating Account...' : 'Create Account' }}
+            </button>
+          </form>
+          <p class="mt-4 text-center">
+            Already have an account?
+            <router-link to="/login">Login</router-link>
+          </p>
         </div>
-
-        <form @submit.prevent="handleSignup" novalidate>
-          <div class="mb-3">
-            <label for="firstName" class="form-label">First Name</label>
-            <input type="text" class="form-control" :class="{'is-invalid': fieldErrors.firstName}" id="firstName" v-model="formData.firstName" required>
-            <div v-if="fieldErrors.firstName" class="invalid-feedback">{{ fieldErrors.firstName }}</div>
-          </div>
-          <div class="mb-3">
-            <label for="lastName" class="form-label">Last Name</label>
-            <input type="text" class="form-control" :class="{'is-invalid': fieldErrors.lastName}" id="lastName" v-model="formData.lastName" required>
-            <div v-if="fieldErrors.lastName" class="invalid-feedback">{{ fieldErrors.lastName }}</div>
-          </div>
-          <div class="mb-3">
-            <label for="username" class="form-label">Username</label>
-            <input type="text" class="form-control" :class="{'is-invalid': fieldErrors.username}" id="username" v-model="formData.username" required>
-            <div v-if="fieldErrors.username" class="invalid-feedback">{{ fieldErrors.username }}</div>
-          </div>
-          <div class="mb-3">
-            <label for="email" class="form-label">Email address</label>
-            <input type="email" class="form-control" :class="{'is-invalid': fieldErrors.email}" id="email" v-model="formData.email" required>
-            <div v-if="fieldErrors.email" class="invalid-feedback">{{ fieldErrors.email }}</div>
-          </div>
-          <div class="mb-3">
-            <label for="password" class="form-label">Password</label>
-            <input type="password" class="form-control" :class="{'is-invalid': fieldErrors.password}" id="password" v-model="formData.password" required>
-            <div v-if="fieldErrors.password" class="invalid-feedback">{{ fieldErrors.password }}</div>
-          </div>
-           <div class="mb-3">
-            <label for="confirmPassword" class="form-label">Confirm Password</label>
-            <input type="password" class="form-control" :class="{'is-invalid': fieldErrors.confirmPassword}" id="confirmPassword" v-model="formData.confirmPassword" required>
-            <div v-if="fieldErrors.confirmPassword" class="invalid-feedback">{{ fieldErrors.confirmPassword }}</div>
-          </div>
-          <button type="submit" class="btn btn-primary w-100" :disabled="isLoading">
-            <span v-if="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-            {{ isLoading ? 'Creating Account...' : 'Create Account' }}
-          </button>
-        </form>
-        <p class="mt-4 text-center">
-          Already have an account? <router-link to="/login">Login</router-link>
-        </p>
       </div>
-    </div>
 
-    <SuccessModal
-      v-if="signupSuccessMessage"
-      :visible="showSignupSuccessModal"
-      title="Registration Successful"
-      :message="signupSuccessMessage"
-      @close="closeSignupSuccessModal"
-    />
+      <!-- UPDATED: Added v-if to prevent rendering with null data -->
+      <SuccessModal
+        v-if="signupSuccessMessage"
+        :message="signupSuccessMessage"
+        :visible="showSignupSuccessModal"
+        title="Registration Successful"
+        @close="closeSignupSuccessModal"
+      />
+
+      <!-- Error Modal for API errors -->
+      <ErrorModal
+        :message="signupErrorMessage"
+        :title="signupErrorTitle"
+        :visible="showSignupErrorModal"
+        @close="closeSignupErrorModal"
+      />
+    </div>
   </div>
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { authService } from '../services/authService'; // Corrected path
-import { ApiError } from '../services/apiService'; // Corrected path for ApiError
-import SuccessModal from '../components/common/SuccessModal.vue';
+// The script section remains unchanged.
+import {reactive, ref} from 'vue';
+import {useRouter} from 'vue-router';
+import {authService} from '@/services/authService';
+import {ApiError} from '@/services/api';
+import SuccessModal from '@/components/common/SuccessModal.vue';
+import ErrorModal from '@/components/common/ErrorModal.vue';
 
 /**
  * @file src/views/SignupPage.vue
@@ -79,69 +112,52 @@ import SuccessModal from '../components/common/SuccessModal.vue';
 
 const router = useRouter();
 
-/**
- * Reactive form data state for signup.
- * @type {object}
- * @property {string} firstName - User's first name.
- * @property {string} lastName - User's last name.
- * @property {string} username - Desired username.
- * @property {string} email - User's email.
- * @property {string} password - User's chosen password.
- * @property {string} confirmPassword - Password confirmation.
- */
 const formData = reactive({
   firstName: '',
   lastName: '',
-  username: '',
   email: '',
   password: '',
   confirmPassword: ''
 });
 
-/**
- * @typedef {object} FieldErrors
- * @property {string|null} firstName
- * @property {string|null} lastName
- * @property {string|null} username
- * @property {string|null} email
- * @property {string|null} password
- * @property {string|null} confirmPassword
- */
-
-/** @type {FieldErrors} */
 const fieldErrors = reactive({
   firstName: null,
   lastName: null,
-  username: null,
   email: null,
   password: null,
   confirmPassword: null
 });
 
-/**
- * @typedef {object} FormMessage
- * @property {string|null} text - The message text.
- * @property {"success"|"error"|null} type - The type of message (for styling).
- * @property {Array<{field?: string, message: string}>} [errors] - Detailed errors from API.
- */
+const formMessage = reactive({text: null, type: null, errors: []});
 
-/** @type {FormMessage} */
-const formMessage = reactive({ text: null, type: null, errors: [] });
-
-/** @type {import('vue').Ref<boolean>} */
 const isLoading = ref(false);
-/** @type {import('vue').Ref<string|null>} */
+
+// State for SuccessModal
 const signupSuccessMessage = ref(null);
-/** @type {import('vue').Ref<boolean>} */
 const showSignupSuccessModal = ref(false);
 
+// State for ErrorModal
+const showSignupErrorModal = ref(false);
+const signupErrorTitle = ref('Error');
+const signupErrorMessage = ref('');
+
 /**
- * Closes the success modal and redirects to login.
+ * Closes the success modal and redirects to the user's account page.
  */
 const closeSignupSuccessModal = () => {
   showSignupSuccessModal.value = false;
   signupSuccessMessage.value = null;
-  router.push('/login');
+  // Since authService.register logs the user in, we can go straight to their account.
+  router.push('/account');
+};
+
+/**
+ * Closes the error modal.
+ */
+const closeSignupErrorModal = () => {
+  showSignupErrorModal.value = false;
+  signupErrorTitle.value = 'Error';
+  signupErrorMessage.value = '';
 };
 
 /**
@@ -166,13 +182,6 @@ const validateForm = () => {
     fieldErrors.lastName = "Last name is required.";
     isValid = false;
   }
-  if (!formData.username.trim()) {
-    fieldErrors.username = "Username is required.";
-    isValid = false;
-  } else if (formData.username.trim().length < 3) {
-    fieldErrors.username = "Username must be at least 3 characters.";
-    isValid = false;
-  }
   if (!formData.email.trim()) {
     fieldErrors.email = "Email is required.";
     isValid = false;
@@ -191,6 +200,11 @@ const validateForm = () => {
     fieldErrors.confirmPassword = "Passwords do not match.";
     isValid = false;
   }
+
+  if (!isValid) {
+    formMessage.text = "Please correct the errors in the form.";
+    formMessage.type = "error";
+  }
   return isValid;
 };
 
@@ -198,9 +212,9 @@ const validateForm = () => {
  * Handles signup form submission.
  */
 const handleSignup = async () => {
+  closeSignupErrorModal();
+
   if (!validateForm()) {
-    formMessage.text = "Please correct the errors in the form.";
-    formMessage.type = "error";
     return;
   }
 
@@ -210,43 +224,39 @@ const handleSignup = async () => {
   formMessage.errors = [];
 
   try {
-    // Prepare data for API (excluding confirmPassword)
     const apiData = {
       firstName: formData.firstName,
       lastName: formData.lastName,
-      username: formData.username,
       email: formData.email,
       password: formData.password,
     };
     await authService.register(apiData);
 
-    signupSuccessMessage.value = 'Registration successful! Please proceed to login.';
+    signupSuccessMessage.value = 'Registration successful! Redirecting to your account...';
     showSignupSuccessModal.value = true;
 
-    // Clear form
     Object.keys(formData).forEach(key => formData[key] = '');
-    // Redirection to /login will happen when SuccessModal is closed.
-    // The setTimeout for redirection is removed.
 
   } catch (error) {
     console.error("Signup error:", error);
-    // Ensure formMessage is cleared if we are now using SuccessModal for success
-    formMessage.text = null;
-    formMessage.type = null;
 
     if (error instanceof ApiError) {
-      formMessage.text = error.message || 'Registration failed. Please try again.';
-      formMessage.errors = error.errors || [{ message: 'An unknown API error occurred.' }];
-      // Populate fieldErrors from api error if available
+      signupErrorTitle.value = 'Registration Failed';
+      if (error.errors && error.errors.length > 0) {
+        signupErrorMessage.value = error.errors.map(err => err.message);
+      } else {
+        signupErrorMessage.value = error.message || 'An API error occurred during registration.';
+      }
       error.errors?.forEach(err => {
         if (err.field && fieldErrors.hasOwnProperty(err.field)) {
           fieldErrors[err.field] = err.message;
         }
       });
     } else {
-      formMessage.text = 'An unexpected error occurred. Please try again.';
+      signupErrorTitle.value = 'Unexpected Error';
+      signupErrorMessage.value = 'An unexpected error occurred. Please try again.';
     }
-    formMessage.type = 'error';
+    showSignupErrorModal.value = true;
   } finally {
     isLoading.value = false;
   }
@@ -254,18 +264,77 @@ const handleSignup = async () => {
 </script>
 
 <style scoped>
-.signup-page .card {
-  border: none;
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+.signup-page {
+  min-height: calc(100vh - 56px - 1px); /* Full viewport height minus navbar */
+  display: flex;
+  align-items: center;
+  padding: 2rem 0;
+  background: linear-gradient(125deg, var(--bs-body-bg), var(--bs-tertiary-bg), var(--bs-body-bg));
+  background-size: 200% 200%;
+  animation: animated-gradient 20s ease infinite;
+  overflow-x: hidden;
 }
-.is-invalid {
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes animated-gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-fade-in-up {
+  opacity: 0;
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+/* Glass Card Styling */
+.card {
+  background: rgba(var(--bs-tertiary-bg-rgb), 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(var(--bs-body-color-rgb), 0.1);
+  border-radius: 1rem;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Form inputs on glass */
+.form-control {
+  background-color: rgba(var(--bs-body-bg-rgb), 0.5);
+  border: 1px solid rgba(var(--bs-body-color-rgb), 0.1);
+  color: var(--bs-body-color);
+  transition: all 0.3s ease;
+}
+.form-control:focus {
+  background-color: rgba(var(--bs-body-bg-rgb), 0.7);
+  color: var(--bs-body-color);
+  border-color: var(--bs-primary);
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+}
+.form-control.is-invalid {
   border-color: var(--bs-danger);
+  background-color: rgba(var(--bs-danger-rgb), 0.1);
 }
 .invalid-feedback {
-  display: block; /* Bootstrap default is none, make it visible */
-  width: 100%;
-  margin-top: .25rem;
-  font-size: .875em;
   color: var(--bs-danger);
+  font-weight: 500;
+}
+
+.btn-primary {
+  transition: all 0.3s ease;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.3);
 }
 </style>

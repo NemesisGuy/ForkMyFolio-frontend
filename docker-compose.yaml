@@ -1,0 +1,77 @@
+
+# This file defines the complete application stack: Frontend, Backend, and Database.
+# It's designed to be deployed as a single unit (e.g., a "Stack" in Portainer).
+version: '3.8'
+
+services:
+  # --- Service 1: The Spring Boot Backend ---
+  app:
+    # Pulls the pre-built backend image from Docker Hub.
+    image: nemesisguy/forkmyfolio-backend:latest
+    container_name: forkmyfolio-app
+    restart: unless-stopped
+    # This service will not start until the 'db' service is healthy.
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - forkmyfolio-net
+    # Note: No 'ports' are exposed. The reverse proxy will connect directly.
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      # Use the service name 'db' as the hostname. Docker's internal DNS handles this.
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/forkmyfolio_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - DEFAULT_ADMIN_PASSWORD=${DEFAULT_ADMIN_PASSWORD}
+      - APP_CORS_ALLOWED_ORIGINS=${APP_CORS_ALLOWED_ORIGINS}
+      - APP_COOKIE_SECURE=true
+
+  # --- Service 2: The Vue.js Frontend (with Nginx) ---
+  frontend:
+    # Pulls the pre-built frontend image from Docker Hub.
+    # This image contains the static Vue files served by Nginx.
+    image: nemesisguy/forkmyfolio-frontend:latest
+    container_name: forkmyfolio-frontend
+    restart: unless-stopped
+    networks:
+      - forkmyfolio-net
+    ports:
+      - "8089:80" # 👈 Expose container's Nginx port 80 to your host port 8080
+    # Note: No 'ports' are exposed. The reverse proxy connects directly to the
+    # Nginx server inside this container (on its default port 80).
+
+  # --- Service 3: The MySQL Database ---
+  db:
+    image: mysql:8.0
+    container_name: forkmyfolio-db
+    restart: unless-stopped
+    networks:
+      - forkmyfolio-net
+    # These environment variables configure the MySQL instance.
+    # They MUST match the credentials used by the Spring Boot app.
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=forkmyfolio_db # Creates the database on first run
+    # This persists database data on the host machine, so your data
+    # survives container restarts and updates.
+    volumes:
+      - mysql_data:/var/lib/mysql
+    # This healthcheck tells Docker how to determine if the database is
+    # ready for connections, which is used by 'depends_on' in the app service.
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# Define the private network for services to communicate securely.
+networks:
+  forkmyfolio-net:
+    driver: bridge
+
+# Define the named volume for persistent MySQL data.
+volumes:
+  mysql_data:
+    driver: local

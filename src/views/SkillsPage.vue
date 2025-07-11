@@ -1,41 +1,53 @@
 <template>
-  <div class="skills-page py-4">
+  <div class="skills-page py-5">
     <div class="container-fluid">
-      <h1 class="mb-4 display-5">Skills</h1>
-      <p class="lead mb-5">Explore the diverse skill set showcased on ForkMyFolio.</p>
-
-      <LoadingSpinner v-if="isLoading" />
-
-      <div v-else-if="error" class="alert alert-danger" role="alert">
-        <h4 class="alert-heading">Error Loading Skills</h4>
-        <p>{{ error.message || 'Could not fetch skills. Please try again later.' }}</p>
-        <hr v-if="error.errors && error.errors.length > 0">
-        <ul v-if="error.errors && error.errors.length > 0" class="mb-0">
-          <li v-for="(err, index) in error.errors" :key="index">
-            {{ err.field ? `(${err.field}) ` : '' }}{{ err.message }}
-          </li>
-        </ul>
+      <!-- Hero Section -->
+      <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold animate-fade-in-up">🛠️ Skills & Proficiencies</h1>
+        <p class="lead text-muted animate-fade-in-up" style="animation-delay: 0.1s;">
+          A curated list of my technical competencies and tools I love to use.
+        </p>
       </div>
 
-      <div v-else-if="skills && skills.length > 0" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
-        <div v-for="skill in skills" :key="skill.id" class="col">
-          <div class="card h-100 shadow-sm text-center">
-            <div class="card-body d-flex flex-column justify-content-center align-items-center">
-              <h5 class="card-title mb-2">{{ skill.name }}</h5>
-              <span :class="`badge bg-${getBadgeColorForLevel(skill.level)}`">{{ skill.level }}</span>
-              <!-- Uncomment to display dates
-              <small class="text-muted mt-2" v-if="skill.createdAt">
-                Added: {{ formatDate(skill.createdAt, { year: 'numeric', month: 'short' }) }}
-              </small>
-              -->
+      <LoadingSpinner v-if="isLoading"/>
+
+      <div v-else-if="error" class="alert alert-danger shadow-sm" role="alert">
+        <h4 class="alert-heading">🚫 Error Loading Skills</h4>
+        <p>{{ error.message || 'Could not fetch skills. Please try again later.' }}</p>
+      </div>
+
+      <div v-else-if="groupedSkills.length > 0">
+        <div v-for="(group, groupIndex) in groupedSkills" :key="group.level" class="mb-5">
+          <!-- KEY CHANGE: Updated header style -->
+          <h2 class="display-6 mb-4 fw-light text-center animate-fade-in-up"
+              :style="{ 'animation-delay': (groupIndex * 0.2) + 's' }">
+            {{ group.level }}
+          </h2>
+          <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+            <div v-for="(skill, skillIndex) in group.skills" :key="skill.id"
+                 class="col animate-fade-in-up"
+                 :style="{ 'animation-delay': (groupIndex * 0.2 + skillIndex * 0.05) + 0.2 + 's' }">
+              <!-- KEY CHANGE: Added dynamic class for hover glow -->
+              <div class="card glass-card h-100 text-center shadow-sm" :class="`glow-on-hover-${skill.level.toLowerCase()}`">
+                <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                  <div class="skill-icon mb-3">
+                    <i :class="iconForLevel(skill.level)"/>
+                  </div>
+                  <h5 class="card-title">{{ skill.name }}</h5>
+                  <div class="proficiency-indicator" :data-level="skill.level.toLowerCase()"
+                       :title="skill.level.charAt(0).toUpperCase() + skill.level.slice(1).toLowerCase()">
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       <div v-else class="text-center py-5">
+        <i class="bi bi-tags-fill display-1 text-muted mb-3"></i>
         <h2 class="display-6">No Skills Yet</h2>
-        <p class="lead text-muted">No skills have been added yet. Check back later!</p>
+        <p class="lead text-muted">Come back soon — my toolbox grows weekly.</p>
       </div>
     </div>
   </div>
@@ -44,88 +56,178 @@
 <script setup>
 /**
  * @file src/views/SkillsPage.vue
- * @description Page to display a list of all skills.
- * Fetches and shows skills from the backend with loading and error states.
+ * @description A sexy, polished, and animated version of the skills listing page.
  */
-import { ref, onMounted } from 'vue';
-import { getSkills } from '../services/apiService';
-import { ApiError } from '../services/apiService';
-import LoadingSpinner from '../components/common/LoadingSpinner.vue';
-import { formatDate } from '../utils'; // Assuming this path is correct and utils/index.js exports it
+import {onMounted, ref, computed} from 'vue';
+import {getPublicSkills, ApiError} from '@/services/api';
+import LoadingSpinner from '@/components/common/LoadingSpinner.vue';
 
-/** @type {import('vue').Ref<Array<object>>} SkillDto list */
 const skills = ref([]);
-/** @type {import('vue').Ref<boolean>} */
 const isLoading = ref(true);
-/** @type {import('vue').Ref<ApiError|Error|null>} */
 const error = ref(null);
 
-/**
- * Fetches skills from the API.
- */
+const iconForLevel = (level) => {
+  switch (level) {
+    case 'EXPERT':
+      return 'bi bi-stars text-success';
+    case 'INTERMEDIATE':
+      return 'bi bi-lightning-charge-fill text-primary';
+    case 'BEGINNER':
+      return 'bi bi-lightbulb-fill text-warning';
+    default:
+      return 'bi bi-gear-wide-connected text-muted';
+  }
+};
+
+const groupedSkills = computed(() => {
+  const groups = {EXPERT: [], INTERMEDIATE: [], BEGINNER: []};
+
+  // Only proceed if skills.value is a valid array
+  const sortedSkills = Array.isArray(skills.value)
+    ? [...skills.value].sort((a, b) => a.name.localeCompare(b.name))
+    : [];
+
+  sortedSkills.forEach(skill => {
+    if (groups[skill.level]) {
+      groups[skill.level].push(skill);
+    }
+  });
+
+  return [
+    { level: 'Expert', skills: groups.EXPERT },
+    { level: 'Intermediate', skills: groups.INTERMEDIATE },
+    { level: 'Beginner', skills: groups.BEGINNER },
+  ].filter(group => group.skills.length > 0);
+});
+
+
+
 const fetchSkills = async () => {
   isLoading.value = true;
   error.value = null;
   try {
-    // getSkills from apiService is expected to return the unwrapped List<SkillDto>
-    const data = await getSkills();
-    skills.value = data || []; // Ensure skills is an array even if data is null/undefined
+    skills.value = await getPublicSkills() || [];
   } catch (err) {
     console.error('Failed to fetch skills:', err);
-    if (err instanceof ApiError) {
-      error.value = err;
-    } else {
-      error.value = { message: err.message || 'An unexpected error occurred while fetching skills.' };
-    }
-    skills.value = []; // Clear skills on error
+    error.value = err instanceof ApiError ? err : {message: 'An unexpected error occurred.'};
   } finally {
     isLoading.value = false;
   }
 };
 
-// Fetch skills when the component is mounted
 onMounted(fetchSkills);
-
-/**
- * Determines the Bootstrap badge background color based on skill level.
- * @param {string} level - The skill level ('BEGINNER', 'INTERMEDIATE', 'EXPERT').
- * @returns {string} The Bootstrap background color class (e.g., 'success', 'primary', 'warning').
- */
-const getBadgeColorForLevel = (level) => {
-  switch (level?.toUpperCase()) {
-    case 'EXPERT':
-      return 'danger'; // Or 'success' if expert is considered positive
-    case 'INTERMEDIATE':
-      return 'primary'; // Or 'warning'
-    case 'BEGINNER':
-      return 'secondary'; // Or 'info'
-    default:
-      return 'light'; // Fallback for unknown levels
-  }
-};
 </script>
 
 <style scoped>
-.skills-page h1, .skills-page .display-5 {
-  font-weight: 300;
+/* --- Page Styling --- */
+.skills-page {
+  /* NEW: Animated Aurora Background */
+  background: linear-gradient(125deg, var(--bs-body-bg), var(--bs-tertiary-bg), var(--bs-body-bg));
+  background-size: 200% 200%;
+  animation: animated-gradient 20s ease infinite;
+  overflow-x: hidden;
 }
 
-.card {
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+.display-6 {
+  border-bottom: 1px solid var(--bs-border-color);
+  padding-bottom: 1rem;
+  margin-bottom: 2rem !important;
+  color: var(--bs-emphasis-color);
 }
 
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15) !important;
+/* --- Glass Card --- */
+.glass-card {
+  background: rgba(var(--bs-tertiary-bg-rgb), 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(var(--bs-body-color-rgb), 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 1rem;
 }
 
+/* --- NEW: Dynamic Hover Glow --- */
+.glass-card:hover {
+  transform: translateY(-8px);
+}
+.glow-on-hover-expert:hover {
+  box-shadow: 0 8px 32px 0 rgba(var(--bs-success-rgb), 0.3);
+}
+.glow-on-hover-intermediate:hover {
+  box-shadow: 0 8px 32px 0 rgba(var(--bs-primary-rgb), 0.3);
+}
+.glow-on-hover-beginner:hover {
+  box-shadow: 0 8px 32px 0 rgba(var(--bs-warning-rgb), 0.3);
+}
+
+/* --- Skill Icon --- */
+.skill-icon {
+  font-size: 2.75rem;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.glass-card:hover .skill-icon {
+  transform: scale(1.2);
+}
+
+/* --- Card Title --- */
 .card-title {
   font-size: 1.1rem;
   font-weight: 500;
+  color: var(--bs-emphasis-color);
 }
 
-.badge {
-  font-size: 0.85rem;
-  padding: 0.4em 0.7em;
+/* --- Proficiency Bar --- */
+.proficiency-indicator {
+  width: 80%;
+  height: 8px;
+  margin-top: 0.75rem;
+  border-radius: 4px;
+  background-color: rgba(var(--bs-body-color-rgb), 0.1);
+  overflow: hidden;
+  position: relative;
+}
+.proficiency-indicator::after {
+  content: '';
+  position: absolute;
+  height: 100%;
+  border-radius: 4px;
+  /* NEW: Animate the bar filling up */
+  width: 0;
+  animation: fill-bar 1s ease-out 0.5s forwards;
+}
+
+.proficiency-indicator[data-level="expert"]::after {
+  --target-width: 100%;
+  background: linear-gradient(90deg, var(--bs-success), #28a745);
+}
+.proficiency-indicator[data-level="intermediate"]::after {
+  --target-width: 66%;
+  background: linear-gradient(90deg, var(--bs-primary), #0d6efd);
+}
+.proficiency-indicator[data-level="beginner"]::after {
+  --target-width: 33%;
+  background: linear-gradient(90deg, var(--bs-warning), #ffc107);
+}
+
+/* --- Animations --- */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+  opacity: 0;
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+@keyframes animated-gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* NEW: Keyframe for proficiency bar fill */
+@keyframes fill-bar {
+  to {
+    width: var(--target-width);
+  }
 }
 </style>

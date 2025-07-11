@@ -11,16 +11,17 @@
 
       <div class="rickroll-container my-4">
         <img
-          src="https://media.giphy.com/media/Ju7l5y9osyymQ/giphy.gif"
+          v-if="!imageError"
           alt="Never Gonna Give You Up - Rick Astley GIF"
           class="img-fluid rounded shadow"
+          src="https://media.giphy.com/media/Ju7l5y9osyymQ/giphy.gif"
           @error="imageError = true"
-          v-if="!imageError"
         >
-        <p v-if="imageError" class="text-muted">(Well, it seems the GIF decided to give us up. Imagine a witty animation here.)</p>
+        <p v-if="imageError" class="text-muted">(Well, it seems the GIF decided to give us up.
+          Imagine a witty animation here.)</p>
       </div>
 
-      <router-link to="/" class="btn btn-primary btn-lg">
+      <router-link class="btn btn-primary btn-lg" to="/">
         Go Back to Home
       </router-link>
     </div>
@@ -28,7 +29,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import {ref} from 'vue';
 
 /**
  * @file src/views/NotFoundPage.vue
