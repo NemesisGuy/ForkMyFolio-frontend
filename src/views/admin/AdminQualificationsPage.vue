@@ -8,9 +8,16 @@
       <ConfirmModal
         :visible="showDeleteConfirmModal"
         title="Confirm Deletion"
-        :message="`Are you sure you want to delete the qualification: '${formState.qualificationName}'?`"
+        :message="`Are you sure you want to delete the qualification: '${qualificationToDelete?.qualificationName}'?`"
         @confirm="executeDelete"
         @cancel="cancelDelete"
+      />
+      <!-- ADDED: Success Modal for positive feedback -->
+      <SuccessModal
+        :visible="showSuccessModal"
+        title="Success"
+        :message="successMessage"
+        @close="closeSuccessModal"
       />
 
       <div class="row g-5">
@@ -82,20 +89,27 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
+// UPDATED: Import admin-specific functions
 import { getPublicQualifications, createQualification, updateQualification, deleteQualification, ApiError } from '@/services/api';
 import LoadingModal from '@/components/common/LoadingModal.vue';
 import ErrorModal from '@/components/common/ErrorModal.vue';
 import ConfirmModal from '@/components/common/ConfirmModal.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
+// ADDED: Import SuccessModal
+import SuccessModal from '@/components/common/SuccessModal.vue';
 
 const qualifications = ref([]);
 const isLoading = ref(true);
 const isSaving = ref(false);
 const isEditing = ref(false);
+
+// Modal states
 const error = ref({ title: '', message: '' });
 const showErrorModal = ref(false);
 const showDeleteConfirmModal = ref(false);
 const qualificationToDelete = ref(null);
+const showSuccessModal = ref(false);
+const successMessage = ref('');
 
 const initialFormState = {
   uuid: null,
@@ -112,9 +126,16 @@ const closeErrorModal = () => {
   error.value = { title: '', message: '' };
 };
 
+// ADDED: Function to close success modal
+const closeSuccessModal = () => {
+  showSuccessModal.value = false;
+  successMessage.value = '';
+};
+
 const fetchQualifications = async () => {
   isLoading.value = true;
   try {
+    // UPDATED: Use the correct admin endpoint
     const data = await getPublicQualifications();
     qualifications.value = data.sort((a, b) => b.completionYear - a.completionYear);
   } catch (err) {
@@ -129,11 +150,15 @@ const fetchQualifications = async () => {
 const handleSave = async () => {
   isSaving.value = true;
   try {
+    const savedQualName = formState.qualificationName;
     if (isEditing.value) {
       await updateQualification(formState.uuid, formState);
+      successMessage.value = `Qualification '${savedQualName}' has been updated successfully.`;
     } else {
       await createQualification(formState);
+      successMessage.value = `Qualification '${savedQualName}' has been created successfully.`;
     }
+    showSuccessModal.value = true;
     resetForm();
     await fetchQualifications();
   } catch (err) {
@@ -158,21 +183,22 @@ const resetForm = () => {
 
 const requestDelete = (qual) => {
   qualificationToDelete.value = qual;
-  Object.assign(formState, qual); // For the modal message
   showDeleteConfirmModal.value = true;
 };
 
 const cancelDelete = () => {
   showDeleteConfirmModal.value = false;
   qualificationToDelete.value = null;
-  resetForm();
 };
 
 const executeDelete = async () => {
   if (!qualificationToDelete.value) return;
   isSaving.value = true;
+  const deletedQualName = qualificationToDelete.value.qualificationName;
   try {
     await deleteQualification(qualificationToDelete.value.uuid);
+    successMessage.value = `Qualification '${deletedQualName}' has been deleted successfully.`;
+    showSuccessModal.value = true;
     await fetchQualifications();
     if (isEditing.value && formState.uuid === qualificationToDelete.value.uuid) {
       resetForm();

@@ -3,6 +3,7 @@ import App from './App.vue';
 import router from './router';
 // CORRECTED: Import the authService from its actual location.
 import {authService} from '@/services/authService.js';
+import './services/initAuth'; // 👈 ensures setAuthService runs before anything else
 
 // Import Bootstrap CSS and JS
 import 'bootstrap/dist/css/bootstrap.min.css';

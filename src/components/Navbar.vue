@@ -1,11 +1,12 @@
 <template>
+  <!-- KEY CHANGE: The class now uses `currentTheme` from our new service -->
   <nav :class="[
     'navbar',
     'navbar-expand-lg',
     'border-bottom',
     'shadow-sm',
     'sticky-top',
-    themeService.theme.current === 'dark' ? 'navbar-dark bg-dark' : 'navbar-light bg-light'
+    currentTheme === 'dark' ? 'navbar-dark bg-dark' : 'navbar-light bg-light'
   ]">
     <div class="container-fluid">
       <router-link class="navbar-brand" to="/">ForkMyFolio</router-link>
@@ -74,25 +75,32 @@
                 Admin
               </router-link>
             </li>
+            <!-- KEY CHANGE: User dropdown updated -->
             <li class="nav-item dropdown">
-              <a id="navbarUserDropdown" class="nav-link dropdown-toggle" href="#" role="button"
+              <a id="navbarUserDropdown" class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button"
                  data-bs-toggle="dropdown" aria-expanded="false">
+                <img v-if="authService.user.value?.profileImageUrl" :src="authService.user.value.profileImageUrl" alt="Avatar" class="navbar-avatar me-2">
+                <i v-else class="bi bi-person-circle navbar-avatar-placeholder me-2"></i>
                 {{ authService.user.value?.firstName || 'User' }}
               </a>
               <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarUserDropdown">
                 <li>
-                  <router-link class="dropdown-item" to="/" @click="collapseNavbar">View Public Page</router-link>
+                  <router-link class="dropdown-item" to="/account" @click="collapseNavbar">
+                    <i class="bi bi-person-fill me-2"></i>My Account
+                  </router-link>
                 </li>
                 <li>
-                  <!-- KEY CHANGE: Link updated to the new, correct admin route and text is clearer -->
                   <router-link class="dropdown-item" to="/admin/portfolio-profile" @click="collapseNavbar">
-                    Edit Portfolio
+                    <i class="bi bi-layout-text-sidebar-reverse me-2"></i>Edit Public Profile
                   </router-link>
                 </li>
                 <li>
                   <hr class="dropdown-divider">
                 </li>
-                <li><a class="dropdown-item" href="#" @click.prevent="requestLogoutConfirmation">Logout</a>
+                <li>
+                  <a class="dropdown-item" href="#" @click.prevent="requestLogoutConfirmation">
+                    <i class="bi bi-box-arrow-right me-2"></i>Logout
+                  </a>
                 </li>
               </ul>
             </li>
@@ -103,11 +111,11 @@
                 Login
               </router-link>
             </li>
-            <li class="nav-item">
+<!--            <li class="nav-item">
               <router-link class="btn btn-primary btn-sm ms-lg-2" to="/signup" @click="collapseNavbar">
                 Sign Up
               </router-link>
-            </li>
+            </li>-->
           </template>
         </ul>
       </div>
@@ -130,9 +138,15 @@
 import {ref, computed, onMounted, onBeforeUnmount} from 'vue';
 import {useRouter} from 'vue-router';
 import {authService} from '../services/authService';
-import {themeService} from '../services/themeService';
+// KEY CHANGE: Remove the old theme service
+// import {themeService} from '../services/themeService';
+// KEY CHANGE: Import the new useTheme composable
+import { useTheme } from '@/services/themeService.js';
 import ConfirmModal from './common/ConfirmModal.vue';
 import ThemeToggle from './common/ThemeToggle.vue';
+
+// KEY CHANGE: Get the reactive theme value from our new service
+const { currentTheme } = useTheme();
 
 const router = useRouter();
 const navbarToggler = ref(null);
@@ -209,6 +223,24 @@ const cancelLogout = () => {
 
 .nav-link.active {
   font-weight: 500;
+}
+
+/* ADDED: Styles for the user avatar in the navbar */
+.navbar-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.navbar-avatar-placeholder {
+  font-size: 1.75rem; /* ~28px */
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.dropdown-item i {
+  width: 1.25em; /* Aligns text for items with and without icons */
 }
 
 @media (max-width: 991.98px) {

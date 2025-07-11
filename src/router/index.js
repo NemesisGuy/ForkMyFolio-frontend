@@ -5,6 +5,8 @@ import {authService} from '@/services/authService';
 // Public Pages
 const HomePage = () => import('@/views/HomePage.vue');
 const ProjectsPage = () => import('@/views/ProjectsPage.vue');
+// ADDED: Import for the new details page
+const ProjectDetailsPage = () => import('@/views/ProjectDetailsPage.vue');
 const SkillsPage = () => import('@/views/SkillsPage.vue');
 const ExperiencePage = () => import('@/views/ExperiencePage.vue');
 const TestimonialsPage = () => import('@/views/TestimonialsPage.vue');
@@ -12,6 +14,8 @@ const QualificationsPage = () => import('@/views/QualificationsPage.vue');
 const ContactPage = () => import('@/views/ContactPage.vue');
 const LoginPage = () => import('@/views/LoginPage.vue');
 const SignupPage = () => import('@/views/SignupPage.vue');
+const UserAccountPage = () => import('@/views/UserAccount.vue');
+
 
 // Admin Pages
 const AdminDashboardPage = () => import('@/views/admin/AdminDashboardPage.vue');
@@ -31,6 +35,13 @@ const routes = [
   // --- Public Routes ---
   {path: '/', name: 'home', component: HomePage},
   {path: '/projects', name: 'projects', component: ProjectsPage},
+  // ADDED: A dynamic route for individual project details
+  {
+    path: '/projects/:uuid',
+    name: 'project-details',
+    component: ProjectDetailsPage,
+    props: true // This allows the :uuid param to be passed as a prop to the component
+  },
   {path: '/skills', name: 'skills', component: SkillsPage},
   {path: '/experience', name: 'experience', component: ExperiencePage},
   {path: '/testimonials', name: 'testimonials', component: TestimonialsPage},
@@ -38,6 +49,14 @@ const routes = [
   {path: '/contact', name: 'contact', component: ContactPage},
   {path: '/login', name: 'login', component: LoginPage},
   {path: '/signup', name: 'signup', component: SignupPage},
+
+  // Authenticated user route
+  {
+    path: '/account',
+    name: 'user-account',
+    component: UserAccountPage,
+    meta: {requiresAuth: true}
+  },
 
   // --- Admin Routes (all protected by the navigation guard) ---
   {

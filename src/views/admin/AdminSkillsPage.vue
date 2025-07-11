@@ -13,6 +13,13 @@
         @cancel="cancelDelete"
         @confirm="executeDelete"
       />
+      <!-- ADDED: Success Modal for positive feedback -->
+      <SuccessModal
+        :visible="showSuccessModal"
+        title="Success"
+        :message="successMessage"
+        @close="closeSuccessModal"
+      />
 
       <div class="row g-5">
         <!-- Add New Skill Form -->
@@ -53,7 +60,6 @@
               Existing Skills
             </div>
             <ul class="list-group list-group-flush">
-              <!-- KEY CHANGE: Use skill.uuid for the key -->
               <li v-for="skill in skills" :key="skill.uuid"
                   class="list-group-item d-flex justify-content-between align-items-center">
                 <span>
@@ -88,6 +94,8 @@ import LoadingModal from '@/components/common/LoadingModal.vue';
 import ErrorModal from '@/components/common/ErrorModal.vue';
 import ConfirmModal from '@/components/common/ConfirmModal.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
+// ADDED: Import SuccessModal
+import SuccessModal from '@/components/common/SuccessModal.vue';
 import {getSkillBadgeClass} from '@/utils/skillUtils';
 
 const skills = ref([]);
@@ -96,15 +104,28 @@ const skillLevels = ['BEGINNER', 'INTERMEDIATE', 'EXPERT'];
 
 const isLoading = ref(true);
 const isSaving = ref(false);
+
+// Error state
 const error = ref({title: '', message: ''});
 const showErrorModal = ref(false);
 
+// Delete confirmation state
 const showDeleteConfirmModal = ref(false);
 const skillToDelete = ref(null);
+
+// ADDED: Success state
+const showSuccessModal = ref(false);
+const successMessage = ref('');
 
 const closeErrorModal = () => {
   showErrorModal.value = false;
   error.value = {title: '', message: ''};
+};
+
+// ADDED: Function to close success modal
+const closeSuccessModal = () => {
+  showSuccessModal.value = false;
+  successMessage.value = '';
 };
 
 const fetchSkills = async () => {
@@ -128,7 +149,10 @@ const handleCreateSkill = async () => {
   if (!newSkill.name.trim()) return;
   isSaving.value = true;
   try {
+    const createdSkillName = newSkill.name;
     await createSkill({name: newSkill.name, level: newSkill.level});
+    successMessage.value = `Skill '${createdSkillName}' has been added successfully.`;
+    showSuccessModal.value = true;
     newSkill.name = '';
     newSkill.level = 'INTERMEDIATE';
     await fetchSkills();
@@ -157,9 +181,11 @@ const cancelDelete = () => {
 const executeDelete = async () => {
   if (!skillToDelete.value) return;
   isSaving.value = true;
+  const deletedSkillName = skillToDelete.value.name;
   try {
-    // KEY CHANGE: Pass skillToDelete.value.uuid to the delete function
     await deleteSkill(skillToDelete.value.uuid);
+    successMessage.value = `Skill '${deletedSkillName}' has been deleted successfully.`;
+    showSuccessModal.value = true;
     await fetchSkills();
   } catch (err) {
     console.error("Failed to delete skill:", err);

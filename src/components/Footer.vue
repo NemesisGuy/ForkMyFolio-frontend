@@ -31,11 +31,11 @@
           Powered by
           <a
             class="text-body-secondary fw-semibold"
-            href="https://nemesis.co.za"
+            href="https://nemesisnet.co.za"
             rel="noopener noreferrer"
             target="_blank"
           >
-            Nemesis.co.za
+            Nemesisnet.co.za
           </a>
         </span>
       </div>

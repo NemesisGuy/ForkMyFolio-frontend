@@ -8,9 +8,15 @@
       <ConfirmModal
         :visible="showDeleteConfirmModal"
         title="Confirm Deletion"
-        :message="`Are you sure you want to delete the project: '${formState.name}'?`"
+        :message="`Are you sure you want to delete the project: '${projectToDelete?.title}'?`"
         @confirm="executeDelete"
         @cancel="cancelDelete"
+      />
+      <SuccessModal
+        :visible="showSuccessModal"
+        title="Success"
+        :message="successMessage"
+        @close="closeSuccessModal"
       />
 
       <div class="row g-5">
@@ -22,8 +28,8 @@
               <form @submit.prevent="handleSave">
                 <div class="row g-3">
                   <div class="col-12">
-                    <label for="projectName" class="form-label">Project Name</label>
-                    <input type="text" class="form-control" id="projectName" v-model="formState.name" required>
+                    <label for="projectTitle" class="form-label">Project Title</label>
+                    <input type="text" class="form-control" id="projectTitle" v-model="formState.title" required>
                   </div>
                   <div class="col-12">
                     <label for="description" class="form-label">Description</label>
@@ -63,12 +69,11 @@
         <!-- Existing Projects List -->
         <div class="col-lg-7">
           <div v-if="!isLoading && projects.length > 0">
-            <!-- KEY CHANGE: Use project.uuid for the key -->
             <div v-for="project in projects" :key="project.uuid" class="card shadow-sm mb-3">
               <div class="card-body">
                 <div class="d-flex justify-content-between">
                   <div>
-                    <h5 class="card-title mb-1">{{ project.name }}</h5>
+                    <h5 class="card-title mb-1">{{ project.title }}</h5>
                     <span class="badge" :class="project.published ? 'bg-success' : 'bg-secondary'">
                       {{ project.published ? 'Published' : 'Draft' }}
                     </span>
@@ -95,26 +100,29 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
-// Import from the API barrel file, which now includes the admin functions
 import { getPublicProjects, createProject, updateProject, deleteProject, ApiError } from '@/services/api';
 import LoadingModal from '@/components/common/LoadingModal.vue';
 import ErrorModal from '@/components/common/ErrorModal.vue';
 import ConfirmModal from '@/components/common/ConfirmModal.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
+import SuccessModal from '@/components/common/SuccessModal.vue';
 
 const projects = ref([]);
 const isLoading = ref(true);
 const isSaving = ref(false);
 const isEditing = ref(false);
+
+// Modal states
 const error = ref({ title: '', message: '' });
 const showErrorModal = ref(false);
 const showDeleteConfirmModal = ref(false);
 const projectToDelete = ref(null);
+const showSuccessModal = ref(false);
+const successMessage = ref('');
 
 const initialFormState = {
-  // KEY CHANGE: Use uuid instead of id
   uuid: null,
-  name: '',
+  title: '',
   description: '',
   imageUrl: '',
   repoUrl: '',
@@ -129,11 +137,16 @@ const closeErrorModal = () => {
   error.value = { title: '', message: '' };
 };
 
+const closeSuccessModal = () => {
+  showSuccessModal.value = false;
+  successMessage.value = '';
+};
+
 const fetchProjects = async () => {
   isLoading.value = true;
   try {
     const data = await getPublicProjects();
-    projects.value = data.sort((a, b) => a.name.localeCompare(b.name));
+    projects.value = data.sort((a, b) => a.title.localeCompare(b.title));
   } catch (err) {
     console.error("Failed to fetch projects:", err);
     error.value = { title: 'Failed to Load Data', message: err.message || 'An unexpected error occurred.' };
@@ -146,12 +159,20 @@ const fetchProjects = async () => {
 const handleSave = async () => {
   isSaving.value = true;
   try {
+    const savedProjectTitle = formState.title;
     if (isEditing.value) {
-      // KEY CHANGE: Pass formState.uuid to the update function
+      // --- FIX: Add a guard clause to prevent updating with a null UUID ---
+      if (!formState.uuid) {
+        throw new Error("Cannot update project: The record is missing a unique identifier (UUID). This may be a data issue from the server.");
+      }
+      // --- END FIX ---
       await updateProject(formState.uuid, formState);
+      successMessage.value = `Project '${savedProjectTitle}' has been updated successfully.`;
     } else {
       await createProject(formState);
+      successMessage.value = `Project '${savedProjectTitle}' has been created successfully.`;
     }
+    showSuccessModal.value = true;
     resetForm();
     await fetchProjects();
   } catch (err) {
@@ -175,25 +196,28 @@ const resetForm = () => {
 };
 
 const requestDelete = (project) => {
-  // Store the full project object for the confirmation message and deletion.
   projectToDelete.value = project;
-  // Also populate formState so the name appears in the modal correctly.
-  Object.assign(formState, project);
   showDeleteConfirmModal.value = true;
 };
 
 const cancelDelete = () => {
   showDeleteConfirmModal.value = false;
   projectToDelete.value = null;
-  resetForm();
 };
 
 const executeDelete = async () => {
   if (!projectToDelete.value) return;
   isSaving.value = true;
+  const deletedProjectTitle = projectToDelete.value.title;
   try {
-    // KEY CHANGE: Pass the project's uuid to the delete function
+    // --- FIX: Add a guard clause for deletion as well ---
+    if (!projectToDelete.value.uuid) {
+      throw new Error("Cannot delete project: The record is missing a unique identifier (UUID).");
+    }
+    // --- END FIX ---
     await deleteProject(projectToDelete.value.uuid);
+    successMessage.value = `Project '${deletedProjectTitle}' has been deleted successfully.`;
+    showSuccessModal.value = true;
     await fetchProjects();
     if (isEditing.value && formState.uuid === projectToDelete.value.uuid) {
       resetForm();

@@ -1,49 +1,59 @@
 <template>
   <div class="qualifications-page py-5">
     <div class="container">
-      <div class="row justify-content-center">
-        <div class="col-lg-8">
-          <h1 class="display-4 text-center mb-5" style="font-weight: 300;">Qualifications</h1>
+      <!-- KEY CHANGE: Centered and animated hero section -->
+      <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold animate-fade-in-up">🎓 Qualifications & Certifications</h1>
+        <p class="lead text-muted animate-fade-in-up" style="animation-delay: 0.1s;">
+          My academic achievements and professional certifications.
+        </p>
+      </div>
 
-          <LoadingSpinner v-if="isLoading" />
+      <LoadingSpinner v-if="isLoading"/>
 
-          <div v-else-if="error" class="alert alert-danger">
-            Could not load qualifications data. Please try again later.
-          </div>
+      <div v-else-if="error" class="alert alert-danger shadow-sm">
+        Could not load qualifications data. Please try again later.
+      </div>
 
-          <div v-else-if="qualifications.length > 0">
-            <div v-for="qual in qualifications" :key="qual.uuid" class="card shadow-sm mb-4">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                  <div>
-                    <h5 class="card-title mb-1">{{ qual.qualificationName }}</h5>
-                    <h6 class="card-subtitle text-muted">{{ qual.institutionName }}</h6>
-                  </div>
-                  <span class="badge bg-primary flex-shrink-0 ms-3">{{ qual.completionYear }}</span>
-                </div>
-                <p v-if="qual.grade" class="card-text mt-2 mb-0">
-                  <small><strong>Grade:</strong> {{ qual.grade }}</small>
+      <!-- KEY CHANGE: Using a responsive grid layout instead of a single column -->
+      <div v-else-if="qualifications.length > 0" class="row row-cols-1 row-cols-lg-2 g-4">
+        <div v-for="(qual, index) in qualifications" :key="qual.uuid"
+             class="col animate-fade-in-up"
+             :style="{ 'animation-delay': (index * 0.1) + 0.2 + 's' }">
+          <!-- KEY CHANGE: Using new glass-card style -->
+          <div class="card glass-card h-100 shadow-sm">
+            <div class="card-body d-flex align-items-center p-4">
+              <div class="qual-icon me-4">
+                <i class="bi bi-patch-check-fill"></i>
+              </div>
+              <div class="flex-grow-1">
+                <h5 class="card-title mb-1">{{ qual.qualificationName }}</h5>
+                <h6 class="card-subtitle text-muted">{{ qual.institutionName }}</h6>
+                <p v-if="qual.grade" class="card-text mt-2 mb-0 text-muted small">
+                  <strong>Grade:</strong> {{ qual.grade }}
                 </p>
+              </div>
+              <div class="year-badge ms-3">
+                {{ qual.completionYear }}
               </div>
             </div>
           </div>
-
-          <!-- Show an empty state if no qualifications exist -->
-          <EmptyState
-            v-else
-            title="Qualifications Coming Soon"
-            message="The owner is currently updating their degrees and certifications. Please check back later."
-            icon-class="bi-patch-check-fill"
-          />
         </div>
       </div>
+
+      <EmptyState
+        v-else
+        title="Qualifications Coming Soon"
+        message="The owner is currently updating their degrees and certifications. Please check back later."
+        icon-class="bi-patch-check-fill"
+      />
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { getPublicQualifications, ApiError } from '@/services/api';
+import {ref, onMounted} from 'vue';
+import {getPublicQualifications, ApiError} from '@/services/api';
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
 
@@ -69,7 +79,74 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.card-title {
+/* --- Page Styling --- */
+.qualifications-page {
+  background: linear-gradient(125deg, var(--bs-body-bg), var(--bs-tertiary-bg), var(--bs-body-bg));
+  background-size: 200% 200%;
+  animation: animated-gradient 20s ease infinite;
+  overflow-x: hidden;
+}
+
+/* --- Animations --- */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes animated-gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-fade-in-up {
+  opacity: 0;
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+/* --- Glass Card Styling --- */
+.glass-card {
+  background: rgba(var(--bs-tertiary-bg-rgb), 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(var(--bs-body-color-rgb), 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 1rem;
+}
+
+.glass-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 32px 0 rgba(var(--bs-primary-rgb), 0.3) !important;
+}
+
+/* --- Card Content Styling --- */
+.qual-icon {
+  font-size: 2.5rem;
   color: var(--bs-primary);
+  line-height: 1;
+}
+
+.card-title {
+  font-weight: 500;
+  color: var(--bs-emphasis-color);
+}
+
+.year-badge {
+  font-weight: bold;
+  font-size: 1.25rem;
+  color: var(--bs-primary);
+  opacity: 0.7;
 }
 </style>

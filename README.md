@@ -1,4 +1,4 @@
-# temp-vue-project
+# Vue-project
 
 This template should help get you started developing with Vue 3 in Vite.
 
@@ -13,6 +13,41 @@ TypeScript cannot handle type information for `.vue` imports by default, so we r
 ## Customize configuration
 
 See [Vite Configuration Reference](https://vite.dev/config/).
+# ForkMyFolio - Frontend
+
+This is the complete frontend for the **ForkMyFolio** project, a dynamic and data-driven portfolio application built with Vue 3, Vite, and Bootstrap 5. It provides a beautiful public-facing portfolio and a secure, comprehensive admin dashboard for content management.
+
+---
+
+## Key Features
+
+-   **Dynamic Public Portfolio**: Displays projects, skills, work experience, qualifications, and testimonials fetched from a backend API.
+-   **Secure Admin Dashboard**: A central hub for the site owner to manage all portfolio content via a clean user interface.
+-   **JWT Authentication**: Robust authentication flow using access and refresh tokens, designed to work with HttpOnly cookies for enhanced security.
+-   **Full CRUD Functionality**: Create, Read, Update, and Delete operations for all major portfolio sections:
+    -   Public Profile (Headline, Bio, Social Links)
+    -   Projects Showcase
+    -   Skills & Proficiencies
+    -   Work Experience History
+    -   Client & Colleague Testimonials
+    -   Degrees & Certifications
+-   **Responsive Design**: Built with Bootstrap 5 to ensure a seamless experience on desktops, tablets, and mobile devices.
+-   **Light & Dark Mode**: Includes a theme toggler for user preference.
+-   **Client-Side Aggregation**: The public homepage intelligently fetches data from multiple API sources and composes the view on the client, keeping backend endpoints decoupled and focused.
+
+## Tech Stack
+
+-   **Framework**: [Vue 3](https://vuejs.org/) (using Composition API with `<script setup>`)
+-   **Build Tool**: Vite
+-   **Routing**: Vue Router
+-   **Styling**: Bootstrap 5 & Bootstrap Icons
+-   **Linting**: ESLint
+-   **Unit Testing**: Vitest
+-   **E2E Testing**: Playwright
+
+## Project Structure
+
+A brief overview of the key directories in the project:
 
 ## Project Setup
 

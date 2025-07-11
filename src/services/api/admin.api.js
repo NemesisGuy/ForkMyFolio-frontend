@@ -24,6 +24,22 @@ export const updateAccount = (accountData) => fetchWithAuth('/admin/account', {
 });
 
 /**
+ * Gets the portfolio profile content for the authenticated admin.
+ * @returns {Promise<object>} PortfolioProfileDto
+ */
+export const getPortfolioProfile = () => fetchWithAuth('/admin/portfolio-profile', { method: 'GET' });
+
+/**
+ * Creates the portfolio profile for the authenticated admin for the first time.
+ * @param {object} profileData - The data for the new portfolio profile.
+ * @returns {Promise<object>} Created PortfolioProfileDto
+ */
+export const createPortfolioProfile = (profileData) => fetchWithAuth('/admin/portfolio-profile', {
+  method: 'POST',
+  body: profileData
+});
+
+/**
  * Updates the public-facing portfolio profile content.
  * @param {object} profileData - The data for the portfolio profile.
  * @returns {Promise<void>}

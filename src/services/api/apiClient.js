@@ -5,7 +5,17 @@
 
 // This will be injected by authService.js to avoid circular dependencies.
 let authServiceInstance;
-export const VUE_APP_API_BASE_URL = 'http://localhost:8080/api/v1';
+
+// --- KEY CHANGE: Read the Base URL from Environment Variables ---
+// We no longer hardcode the URL. Vite replaces `import.meta.env.VITE_API_BASE_URL`
+// with the actual value at build time.
+const API_BASE_URL = window.runtimeConfig.API_BASE_URL.startsWith('##')
+  ? 'http://localhost:8080/api/v1' // Fallback for local dev
+  : window.runtimeConfig.API_BASE_URL;
+// It's good practice to throw an error if the URL is not configured.
+if (!API_BASE_URL) {
+  throw new Error("API_BASE_URL is not configured.");
+}
 
 /**
  * Injects the authService instance.
@@ -19,6 +29,7 @@ export function setAuthService(service) {
  * Custom error class for API errors.
  */
 export class ApiError extends Error {
+  // ... (rest of the class is unchanged)
   constructor(message, httpStatus, apiStatus, errors = []) {
     super(message);
     this.name = 'ApiError';
@@ -30,13 +41,9 @@ export class ApiError extends Error {
 
 /**
  * The core fetch wrapper.
- * @param {string} endpoint - The API endpoint (e.g., '/users/me/profile').
- * @param {RequestInit} [options={}] - Standard fetch options.
- * @param {boolean} [requiresAuth=true] - Whether the request requires authentication.
- * @returns {Promise<any>} The response data.
- * @throws {ApiError}
  */
 export async function fetchWithAuth(endpoint, options = {}, requiresAuth = true) {
+  // ... (headers and auth logic is unchanged)
   const headers = {...options.headers};
 
   if (options.body && !headers['Content-Type'] && !(options.body instanceof FormData)) {
@@ -53,7 +60,7 @@ export async function fetchWithAuth(endpoint, options = {}, requiresAuth = true)
   const fetchOptions = {
     ...options,
     headers,
-    credentials: 'include' // Crucial for sending HttpOnly cookies
+    credentials: 'include'
   };
 
   if (fetchOptions.body && typeof fetchOptions.body !== 'string' && !(fetchOptions.body instanceof FormData)) {
@@ -61,8 +68,12 @@ export async function fetchWithAuth(endpoint, options = {}, requiresAuth = true)
   }
 
   try {
-    const response = await fetch(`${VUE_APP_API_BASE_URL}${endpoint}`, fetchOptions);
+    // --- KEY CHANGE: Use the new configurable base URL ---
+   // const response = await fetch(`${API_BASE_URL}${endpoint}`, fetchOptions);
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, fetchOptions);
 
+
+    // ... (the rest of the function remains exactly the same)
     if (response.status === 204) {
       return null;
     }
@@ -72,23 +83,18 @@ export async function fetchWithAuth(endpoint, options = {}, requiresAuth = true)
       return null;
     }
 
-    // --- ENHANCEMENT: Safely parse JSON ---
     let responseData;
     try {
       responseData = JSON.parse(responseText);
     } catch (parseError) {
-      // If parsing fails, throw a specific error.
       console.error('Failed to parse JSON response:', responseText);
       throw new ApiError('Invalid response format from server.', response.status, 'parse_error');
     }
-    // --- END ENHANCEMENT ---
 
     if (!response.ok) {
-      // Handle 401 Unauthorized with token refresh
       if (response.status === 401 && requiresAuth && authServiceInstance && endpoint !== '/auth/refresh-token') {
         const refreshSuccess = await authServiceInstance.refreshToken();
         if (refreshSuccess) {
-          // Retry the original request with the new token
           return fetchWithAuth(endpoint, options, requiresAuth);
         }
       }
@@ -100,16 +106,13 @@ export async function fetchWithAuth(endpoint, options = {}, requiresAuth = true)
       );
     }
 
-    // Handle successful responses that are not in the standard wrapper
     if (response.ok && responseData && typeof responseData.status === 'undefined') {
       return responseData;
     }
 
-    // Handle standard success wrapper
     if (responseData.status === 'success') {
       return responseData.data;
     } else {
-      // Handle cases where HTTP is 200 but API status is an error
       throw new ApiError(
         responseData.errors?.[0]?.message || 'API operation failed despite HTTP OK.',
         response.status,
@@ -119,9 +122,8 @@ export async function fetchWithAuth(endpoint, options = {}, requiresAuth = true)
     }
   } catch (error) {
     if (error instanceof ApiError) {
-      throw error; // Re-throw known API errors
+      throw error;
     }
-    // Wrap network or other unexpected errors
     console.error('A network or unexpected error occurred:', error);
     throw new ApiError('Network error. Please check your connection.', 0, 'network_error');
   }

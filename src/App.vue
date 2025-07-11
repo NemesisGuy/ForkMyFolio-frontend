@@ -2,14 +2,16 @@
 // Using <script setup> which is Vue 3 composition API standard.
 // No specific lang attribute means JavaScript by default.
 import {RouterView} from 'vue-router';
-import Navbar from './components/Navbar.vue';
-import Footer from './components/Footer.vue'; // <-- 1. IMPORT THE NEW COMPONENT
+import Navbar from '@/components/Navbar.vue';
+import Footer from '@/components/Footer.vue'; // <-- 1. IMPORT THE NEW COMPONENT
+import { useTheme } from '@/services/themeService.js'; // <-- ADD THIS IMPORT
 
 /**
  * @file src/App.vue
  * @description Main application component. Sets up the global layout including Navbar,
  *              the main content area for routes, and a footer.
  */
+useTheme();
 </script>
 
 <template>

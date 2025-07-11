@@ -8,9 +8,16 @@
       <ConfirmModal
         :visible="showDeleteConfirmModal"
         title="Confirm Deletion"
-        :message="`Are you sure you want to delete the testimonial from '${formState.authorName}'?`"
+        :message="`Are you sure you want to delete the testimonial from '${testimonialToDelete?.authorName}'?`"
         @confirm="executeDelete"
         @cancel="cancelDelete"
+      />
+      <!-- ADDED: Success Modal for positive feedback -->
+      <SuccessModal
+        :visible="showSuccessModal"
+        title="Success"
+        :message="successMessage"
+        @close="closeSuccessModal"
       />
 
       <div class="row g-5">
@@ -83,20 +90,27 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
+// UPDATED: Import admin-specific functions
 import { getPublicTestimonials, createTestimonial, updateTestimonial, deleteTestimonial, ApiError } from '@/services/api';
 import LoadingModal from '@/components/common/LoadingModal.vue';
 import ErrorModal from '@/components/common/ErrorModal.vue';
 import ConfirmModal from '@/components/common/ConfirmModal.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
+// ADDED: Import SuccessModal
+import SuccessModal from '@/components/common/SuccessModal.vue';
 
 const testimonials = ref([]);
 const isLoading = ref(true);
 const isSaving = ref(false);
 const isEditing = ref(false);
+
+// Modal states
 const error = ref({ title: '', message: '' });
 const showErrorModal = ref(false);
 const showDeleteConfirmModal = ref(false);
 const testimonialToDelete = ref(null);
+const showSuccessModal = ref(false);
+const successMessage = ref('');
 
 const initialFormState = {
   uuid: null,
@@ -112,10 +126,17 @@ const closeErrorModal = () => {
   error.value = { title: '', message: '' };
 };
 
+const closeSuccessModal = () => {
+  showSuccessModal.value = false;
+  successMessage.value = '';
+};
+
 const fetchTestimonials = async () => {
   isLoading.value = true;
   try {
-    testimonials.value = await getPublicTestimonials();
+    // UPDATED: Use the correct admin endpoint
+    const data = await getPublicTestimonials();
+    testimonials.value = data.sort((a, b) => a.authorName.localeCompare(b.authorName));
   } catch (err) {
     console.error("Failed to fetch testimonials:", err);
     error.value = { title: 'Failed to Load Data', message: err.message || 'An unexpected error occurred.' };
@@ -128,11 +149,15 @@ const fetchTestimonials = async () => {
 const handleSave = async () => {
   isSaving.value = true;
   try {
+    const savedAuthorName = formState.authorName;
     if (isEditing.value) {
       await updateTestimonial(formState.uuid, formState);
+      successMessage.value = `Testimonial from '${savedAuthorName}' has been updated successfully.`;
     } else {
       await createTestimonial(formState);
+      successMessage.value = `Testimonial from '${savedAuthorName}' has been created successfully.`;
     }
+    showSuccessModal.value = true;
     resetForm();
     await fetchTestimonials();
   } catch (err) {
@@ -157,21 +182,22 @@ const resetForm = () => {
 
 const requestDelete = (testimonial) => {
   testimonialToDelete.value = testimonial;
-  Object.assign(formState, testimonial); // For the modal message
   showDeleteConfirmModal.value = true;
 };
 
 const cancelDelete = () => {
   showDeleteConfirmModal.value = false;
   testimonialToDelete.value = null;
-  resetForm();
 };
 
 const executeDelete = async () => {
   if (!testimonialToDelete.value) return;
   isSaving.value = true;
+  const deletedAuthorName = testimonialToDelete.value.authorName;
   try {
     await deleteTestimonial(testimonialToDelete.value.uuid);
+    successMessage.value = `Testimonial from '${deletedAuthorName}' has been deleted successfully.`;
+    showSuccessModal.value = true;
     await fetchTestimonials();
     if (isEditing.value && formState.uuid === testimonialToDelete.value.uuid) {
       resetForm();

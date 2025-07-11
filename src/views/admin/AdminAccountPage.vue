@@ -8,6 +8,8 @@
           <LoadingModal :visible="isLoading" />
           <ErrorModal v-if="error.message" :visible="showErrorModal" :title="error.title" :message="error.message"
                       @close="closeErrorModal" />
+          <SuccessModal :visible="showSuccessModal" title="Update Successful" :message="successMessage"
+                        @close="closeSuccessModal" />
 
           <div v-if="!isLoading" class="card shadow-sm">
             <div class="card-body p-4">
@@ -27,6 +29,14 @@
                     <input type="email" class="form-control" id="email" v-model="formState.email" required>
                     <div class="form-text">This is the email you use to log in.</div>
                   </div>
+
+                  <div class="col-12">
+                    <label for="profileImageUrl" class="form-label">Profile Image URL</label>
+                    <input type="url" class="form-control" id="profileImageUrl" v-model="formState.profileImageUrl"
+                           placeholder="Link to a hosted image (e.g., from Imgur, Cloudinary)">
+                    <div class="form-text">This image is used on your public portfolio page.</div>
+                  </div>
+
                 </div>
 
                 <hr class="my-4">
@@ -55,16 +65,23 @@ import { getAccount, updateAccount, ApiError } from '@/services/api';
 import { authService } from '@/services/authService';
 import LoadingModal from '@/components/common/LoadingModal.vue';
 import ErrorModal from '@/components/common/ErrorModal.vue';
+import SuccessModal from '@/components/common/SuccessModal.vue';
 
 const isLoading = ref(true);
 const isSaving = ref(false);
+
 const error = ref({ title: '', message: '' });
 const showErrorModal = ref(false);
 
+const showSuccessModal = ref(false);
+const successMessage = ref('');
+
+// This formState will still hold the full user object for display purposes
 const formState = reactive({
   firstName: '',
   lastName: '',
-  email: ''
+  email: '',
+  profileImageUrl: ''
 });
 
 const closeErrorModal = () => {
@@ -72,11 +89,20 @@ const closeErrorModal = () => {
   error.value = { title: '', message: '' };
 };
 
+const closeSuccessModal = () => {
+  showSuccessModal.value = false;
+  successMessage.value = '';
+};
+
 onMounted(async () => {
   try {
     const accountData = await getAccount();
     if (accountData) {
-      Object.assign(formState, accountData);
+      // We only assign the fields that are actually part of the form
+      formState.firstName = accountData.firstName;
+      formState.lastName = accountData.lastName;
+      formState.email = accountData.email;
+      formState.profileImageUrl = accountData.profileImageUrl;
     }
   } catch (err) {
     console.error("Failed to fetch account data:", err);
@@ -90,19 +116,28 @@ onMounted(async () => {
 const handleSave = async () => {
   isSaving.value = true;
   try {
-    const updateData = {
+    // LOGIC 1: A clean payload is created with only the fields
+    // that the backend expects for an account update. This is robust.
+    const payload = {
       firstName: formState.firstName,
       lastName: formState.lastName,
-      email: formState.email
+      email: formState.email,
+      profileImageUrl: formState.profileImageUrl || null // Send null if empty
     };
-    const updatedUser = await updateAccount(updateData);
 
-    // --- KEY CHANGE: Update the authService's reactive user object correctly ---
-    // This will reflect the new name/email everywhere in the UI immediately.
+    // LOGIC 2: The clean payload is sent to the `updateAccount` API function,
+    // which correctly calls `PUT /admin/account`.
+    const updatedUser = await updateAccount(payload);
+
+    // LOGIC 3: The full, fresh User object returned from the backend
+    // is used to update the central authService. This ensures the
+    // entire application (like the Navbar) has the latest user data.
     authService.user.value = updatedUser;
-    // --- END KEY CHANGE ---
 
-    // Optionally, show a success toast/message here
+    // LOGIC 4: User gets clear feedback that the operation was successful.
+    successMessage.value = 'Your account details have been updated successfully.';
+    showSuccessModal.value = true;
+
   } catch (err) {
     console.error("Failed to update account:", err);
     error.value = { title: 'Save Failed', message: err.message || 'Could not save your account details.' };

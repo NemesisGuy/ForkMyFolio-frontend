@@ -1,68 +1,70 @@
 <template>
-  <div class="login-page container mt-5 mb-5" style="max-width: 400px;">
-    <div class="card">
-      <div class="card-body p-4 p-md-5">
-        <h1 class="card-title text-center mb-4 fs-3">Login</h1>
+  <div class="login-page">
+    <div class="container" style="max-width: 400px;">
+      <div class="card animate-fade-in-up">
+        <div class="card-body p-4 p-md-5">
+          <h1 class="card-title text-center mb-4 fs-3">Login</h1>
 
-        <!-- This alert is now primarily for client-side validation summary -->
-        <div v-if="formMessage.text"
-             :class="['alert', formMessage.type === 'success' ? 'alert-success' : 'alert-danger']"
-             role="alert">
-          {{ formMessage.text }}
-          <!-- Detailed errors from API will now go into ErrorModal, so this list is less critical here -->
-          <ul v-if="formMessage.errors && formMessage.errors.length > 0" class="mb-0 mt-2">
-            <li v-for="(err, index) in formMessage.errors" :key="index">
-              {{ err.field ? `${err.field}: ` : '' }}{{ err.message }}
-            </li>
-          </ul>
-        </div>
-
-        <form novalidate @submit.prevent="handleLogin">
-          <div class="mb-3">
-            <label class="form-label" for="email">Email address</label>
-            <input id="email" v-model="credentials.email" :class="{'is-invalid': fieldErrors.email}"
-                   class="form-control" required type="email">
-            <div v-if="fieldErrors.email" class="invalid-feedback">{{ fieldErrors.email }}</div>
+          <!-- This alert is now primarily for client-side validation summary -->
+          <div v-if="formMessage.text"
+               :class="['alert', formMessage.type === 'success' ? 'alert-success' : 'alert-danger']"
+               role="alert">
+            {{ formMessage.text }}
+            <!-- Detailed errors from API will now go into ErrorModal, so this list is less critical here -->
+            <ul v-if="formMessage.errors && formMessage.errors.length > 0" class="mb-0 mt-2">
+              <li v-for="(err, index) in formMessage.errors" :key="index">
+                {{ err.field ? `${err.field}: ` : '' }}{{ err.message }}
+              </li>
+            </ul>
           </div>
-          <div class="mb-3">
-            <label class="form-label" for="password">Password</label>
-            <input id="password" v-model="credentials.password"
-                   :class="{'is-invalid': fieldErrors.password}" class="form-control"
-                   required type="password">
-            <div v-if="fieldErrors.password" class="invalid-feedback">{{
-                fieldErrors.password
-              }}
+
+          <form novalidate @submit.prevent="handleLogin">
+            <div class="mb-3">
+              <label class="form-label" for="email">Email address</label>
+              <input id="email" v-model="credentials.email" :class="{'is-invalid': fieldErrors.email}"
+                     class="form-control" required type="email">
+              <div v-if="fieldErrors.email" class="invalid-feedback">{{ fieldErrors.email }}</div>
             </div>
-          </div>
-          <button :disabled="isLoading" class="btn btn-primary w-100" type="submit">
-            <span v-if="isLoading" aria-hidden="true" class="spinner-border spinner-border-sm"
-                  role="status"></span>
-            {{ isLoading ? 'Logging in...' : 'Login' }}
-          </button>
-        </form>
-        <p class="mt-4 text-center">
-          Don't have an account?
-          <router-link to="/signup">Sign Up</router-link>
-        </p>
+            <div class="mb-3">
+              <label class="form-label" for="password">Password</label>
+              <input id="password" v-model="credentials.password"
+                     :class="{'is-invalid': fieldErrors.password}" class="form-control"
+                     required type="password">
+              <div v-if="fieldErrors.password" class="invalid-feedback">{{
+                  fieldErrors.password
+                }}
+              </div>
+            </div>
+            <button :disabled="isLoading" class="btn btn-primary w-100" type="submit">
+              <span v-if="isLoading" aria-hidden="true" class="spinner-border spinner-border-sm"
+                    role="status"></span>
+              {{ isLoading ? 'Logging in...' : 'Login' }}
+            </button>
+          </form>
+          <p class="mt-4 text-center">
+            Don't have an account?
+            <router-link to="/signup">Sign Up</router-link>
+          </p>
+        </div>
       </div>
+
+      <!-- UPDATED: Added v-if to prevent rendering with null data -->
+      <SuccessModal
+        v-if="loginSuccessMessage"
+        :message="loginSuccessMessage"
+        :visible="showLoginSuccessModal"
+        title="Login Successful"
+        @close="closeLoginSuccessModal"
+      />
+
+      <!-- Error Modal for API errors -->
+      <ErrorModal
+        :message="loginErrorMessage"
+        :title="loginErrorTitle"
+        :visible="showLoginErrorModal"
+        @close="closeLoginErrorModal"
+      />
     </div>
-
-    <!-- UPDATED: Added v-if to prevent rendering with null data -->
-    <SuccessModal
-      v-if="loginSuccessMessage"
-      :message="loginSuccessMessage"
-      :visible="showLoginSuccessModal"
-      title="Login Successful"
-      @close="closeLoginSuccessModal"
-    />
-
-    <!-- Error Modal for API errors -->
-    <ErrorModal
-      :message="loginErrorMessage"
-      :title="loginErrorTitle"
-      :visible="showLoginErrorModal"
-      @close="closeLoginErrorModal"
-    />
   </div>
 </template>
 
@@ -104,7 +106,7 @@ const loginErrorTitle = ref('Error');
 const loginErrorMessage = ref('');
 
 // This variable will hold the path to redirect to after a successful login.
-let redirectPathOnSuccess = '/profile'; // Default to /profile
+let redirectPathOnSuccess = '/account'; // Default to /account
 
 onMounted(() => {
   if (authService.isAuthenticated.value) {
@@ -118,7 +120,7 @@ onMounted(() => {
 const closeLoginSuccessModal = () => {
   showLoginSuccessModal.value = false;
   loginSuccessMessage.value = null;
-  // Use the stored path. This respects the ?redirect query param or defaults to /profile.
+  // Use the stored path. This respects the ?redirect query param or defaults to /account.
   router.replace(redirectPathOnSuccess);
 };
 
@@ -180,8 +182,8 @@ const handleLogin = async () => {
   try {
     await authService.login(credentials);
 
-    // Determine the redirect path. Use the query param if it exists, otherwise default to /profile.
-    redirectPathOnSuccess = route.query.redirect || '/profile';
+    // Determine the redirect path. Use the query param if it exists, otherwise default to /account.
+    redirectPathOnSuccess = route.query.redirect || '/account';
 
 
     // Update the success message to be more accurate.
@@ -215,20 +217,78 @@ const handleLogin = async () => {
 </script>
 
 <style scoped>
-.login-page .card {
-  border: none;
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+.login-page {
+  min-height: calc(100vh - 56px - 1px); /* Full viewport height minus navbar */
+  display: flex;
+  align-items: center;
+  padding: 2rem 0;
+  background: linear-gradient(125deg, var(--bs-body-bg), var(--bs-tertiary-bg), var(--bs-body-bg));
+  background-size: 200% 200%;
+  animation: animated-gradient 20s ease infinite;
+  overflow-x: hidden;
 }
 
-.is-invalid {
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes animated-gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-fade-in-up {
+  opacity: 0;
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+/* Glass Card Styling */
+.card {
+  background: rgba(var(--bs-tertiary-bg-rgb), 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(var(--bs-body-color-rgb), 0.1);
+  border-radius: 1rem;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Form inputs on glass */
+.form-control {
+  background-color: rgba(var(--bs-body-bg-rgb), 0.5);
+  border: 1px solid rgba(var(--bs-body-color-rgb), 0.1);
+  color: var(--bs-body-color);
+  transition: all 0.3s ease;
+}
+.form-control:focus {
+  background-color: rgba(var(--bs-body-bg-rgb), 0.7);
+  color: var(--bs-body-color);
+  border-color: var(--bs-primary);
+  /* KEY CHANGE: Corrected the incomplete box-shadow property */
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+}
+.form-control.is-invalid {
   border-color: var(--bs-danger);
+  background-color: rgba(var(--bs-danger-rgb), 0.1);
+}
+.invalid-feedback {
+  color: var(--bs-danger);
+  font-weight: 500;
 }
 
-.invalid-feedback {
-  display: block;
-  width: 100%;
-  margin-top: .25rem;
-  font-size: .875em;
-  color: var(--bs-danger);
+.btn-primary {
+  transition: all 0.3s ease;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.3);
 }
 </style>

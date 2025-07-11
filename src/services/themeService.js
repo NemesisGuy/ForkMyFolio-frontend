@@ -1,56 +1,43 @@
-import {reactive} from 'vue';
+// C:/Users/Reign/IdeaProjects/ForkMyFolio-frontend-vue/src/services/theme.js
+
+import { ref, watch } from 'vue';
 
 /**
- * @file src/services/themeService.js
- * @description Manages the application's color theme (light/dark).
- * Handles theme persistence in localStorage and applies the theme to the document.
+ * A reactive service to manage and persist the application's theme.
  */
 
-const THEME_STORAGE_KEY = 'forkmyfolio_theme';
+// 1. Define a reactive reference for the current theme.
+//    Initialize it by reading from localStorage, defaulting to 'light' mode.
+const currentTheme = ref(localStorage.getItem('theme') || 'light');
 
-// Determine the default theme: check localStorage first, then system preference.
-const getInitialTheme = () => {
-  const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
-  if (storedTheme) {
-    return storedTheme;
-  }
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-};
+// 2. Create a watcher that reacts to changes in `currentTheme`.
+//    This is the core of the solution. Whenever `currentTheme.value` changes,
+//    this function will run.
+watch(currentTheme, (newTheme) => {
+  // Update the `data-bs-theme` attribute on the root <html> element.
+  // This is what makes Bootstrap's dark mode variables work globally.
+  document.documentElement.setAttribute('data-bs-theme', newTheme);
 
-const state = reactive({
-  /** @type {'light' | 'dark'} */
-  current: getInitialTheme(),
+  // Save the new theme choice to localStorage for persistence across sessions.
+  localStorage.setItem('theme', newTheme);
+}, {
+  // The `immediate: true` option is crucial. It forces the watcher to
+  // run immediately when the service is first used, ensuring the theme is
+  // applied on the very first load, before anything is displayed.
+  immediate: true
 });
 
-/**
- * Applies the given theme to the document and saves it to localStorage.
- * @param {'light' | 'dark'} theme - The theme to apply.
- */
-function applyTheme(theme) {
-  document.documentElement.setAttribute('data-bs-theme', theme);
-  localStorage.setItem(THEME_STORAGE_KEY, theme);
-  state.current = theme;
-}
+// 3. Export a composable function that components can use to interact with the theme.
+export function useTheme() {
+  /**
+   * Toggles the current theme between 'light' and 'dark'.
+   */
+  const toggleTheme = () => {
+    currentTheme.value = currentTheme.value === 'light' ? 'dark' : 'light';
+  };
 
-/**
- * Toggles the theme between 'light' and 'dark'.
- */
-function toggleTheme() {
-  const newTheme = state.current === 'light' ? 'dark' : 'light';
-  applyTheme(newTheme);
+  return {
+    currentTheme,
+    toggleTheme
+  };
 }
-
-/**
- * Loads the initial theme when the app starts.
- */
-function loadTheme() {
-  applyTheme(state.current);
-}
-
-export const themeService = {
-  // Reactive state
-  theme: state,
-  // Methods
-  toggleTheme,
-  loadTheme,
-};

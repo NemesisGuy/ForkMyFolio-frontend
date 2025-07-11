@@ -8,9 +8,16 @@
       <ConfirmModal
         :visible="showDeleteConfirmModal"
         title="Confirm Deletion"
-        :message="`Are you sure you want to delete the entry: '${formState.jobTitle} at ${formState.companyName}'?`"
+        :message="`Are you sure you want to delete the entry: '${experienceToDelete?.jobTitle} at ${experienceToDelete?.companyName}'?`"
         @confirm="executeDelete"
         @cancel="cancelDelete"
+      />
+      <!-- ADDED: Success Modal for positive feedback -->
+      <SuccessModal
+        :visible="showSuccessModal"
+        title="Success"
+        :message="successMessage"
+        @close="closeSuccessModal"
       />
 
       <div class="row g-5">
@@ -90,20 +97,27 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
+// UPDATED: Import admin-specific functions
 import { getPublicExperience, createExperience, updateExperience, deleteExperience, ApiError } from '@/services/api';
 import LoadingModal from '@/components/common/LoadingModal.vue';
 import ErrorModal from '@/components/common/ErrorModal.vue';
 import ConfirmModal from '@/components/common/ConfirmModal.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
+// ADDED: Import SuccessModal
+import SuccessModal from '@/components/common/SuccessModal.vue';
 
 const experiences = ref([]);
 const isLoading = ref(true);
 const isSaving = ref(false);
 const isEditing = ref(false);
+
+// Modal states
 const error = ref({ title: '', message: '' });
 const showErrorModal = ref(false);
 const showDeleteConfirmModal = ref(false);
 const experienceToDelete = ref(null);
+const showSuccessModal = ref(false);
+const successMessage = ref('');
 
 const initialFormState = {
   uuid: null,
@@ -122,9 +136,15 @@ const closeErrorModal = () => {
   error.value = { title: '', message: '' };
 };
 
+const closeSuccessModal = () => {
+  showSuccessModal.value = false;
+  successMessage.value = '';
+};
+
 const fetchExperiences = async () => {
   isLoading.value = true;
   try {
+    // UPDATED: Use the correct admin endpoint
     const data = await getPublicExperience();
     // Sort by start date, most recent first
     experiences.value = data.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
@@ -140,13 +160,22 @@ const fetchExperiences = async () => {
 const handleSave = async () => {
   isSaving.value = true;
   try {
-    // Ensure endDate is null if empty string, as backend expects
     const payload = { ...formState, endDate: formState.endDate || null };
+    const savedEntryName = `${payload.jobTitle} at ${payload.companyName}`;
+
     if (isEditing.value) {
+      // --- FIX: Add a guard clause to prevent updating with a null UUID ---
+      if (!payload.uuid) {
+        throw new Error("Cannot update experience: The record is missing a unique identifier (UUID). This may be a data issue from the server.");
+      }
+      // --- END FIX ---
       await updateExperience(payload.uuid, payload);
+      successMessage.value = `Experience entry '${savedEntryName}' has been updated successfully.`;
     } else {
       await createExperience(payload);
+      successMessage.value = `Experience entry '${savedEntryName}' has been created successfully.`;
     }
+    showSuccessModal.value = true;
     resetForm();
     await fetchExperiences();
   } catch (err) {
@@ -171,21 +200,27 @@ const resetForm = () => {
 
 const requestDelete = (exp) => {
   experienceToDelete.value = exp;
-  Object.assign(formState, exp); // For the modal message
   showDeleteConfirmModal.value = true;
 };
 
 const cancelDelete = () => {
   showDeleteConfirmModal.value = false;
   experienceToDelete.value = null;
-  resetForm();
 };
 
 const executeDelete = async () => {
   if (!experienceToDelete.value) return;
   isSaving.value = true;
+  const deletedEntryName = `${experienceToDelete.value.jobTitle} at ${experienceToDelete.value.companyName}`;
   try {
+    // --- FIX: Add a guard clause for deletion as well ---
+    if (!experienceToDelete.value.uuid) {
+      throw new Error("Cannot delete experience: The record is missing a unique identifier (UUID).");
+    }
+    // --- END FIX ---
     await deleteExperience(experienceToDelete.value.uuid);
+    successMessage.value = `Experience entry '${deletedEntryName}' has been deleted successfully.`;
+    showSuccessModal.value = true;
     await fetchExperiences();
     if (isEditing.value && formState.uuid === experienceToDelete.value.uuid) {
       resetForm();

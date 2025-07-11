@@ -4,7 +4,7 @@
       id="theme-switch-checkbox"
       :checked="isDarkMode"
       type="checkbox"
-      @change="themeService.toggleTheme"
+      @change="toggleTheme"
     />
     <div class="slider">
       <div class="slider-thumb">
@@ -16,15 +16,19 @@
 </template>
 
 <script setup>
-import {computed} from 'vue';
-import {themeService} from '@/services/themeService';
+import { computed } from 'vue';
+import { useTheme } from '@/services/themeService.js';
 
 /**
  * @file src/components/common/ThemeToggle.vue
  * @description A stylish toggle switch component for changing between light and dark themes.
  */
 
-const isDarkMode = computed(() => themeService.theme.current === 'dark');
+// Get the reactive theme state and the toggle function from our new service.
+const { currentTheme, toggleTheme } = useTheme();
+
+// This computed property correctly reacts to changes from the central service.
+const isDarkMode = computed(() => currentTheme.value === 'dark');
 </script>
 
 <style scoped>
@@ -77,16 +81,20 @@ const isDarkMode = computed(() => themeService.theme.current === 'dark');
   position: absolute;
 }
 
+/* --- KEY CHANGE: Swapped icon visibility --- */
+
+/* Default state (light mode) now shows the SUN */
 .sun-icon {
   color: #f39c12; /* A nice sunny yellow */
-  opacity: 0;
-  transform: translateY(100%);
-}
-
-.moon-icon {
-  color: #34495e; /* A dark, night-sky blue */
   opacity: 1;
   transform: translateY(0);
+}
+
+/* Moon is now hidden by default */
+.moon-icon {
+  color: #34495e; /* A dark, night-sky blue */
+  opacity: 0;
+  transform: translateY(100%);
 }
 
 input:checked + .slider {
@@ -97,14 +105,14 @@ input:checked + .slider .slider-thumb {
   transform: translateX(24px);
 }
 
-/* Icon visibility based on theme */
+/* Checked state (dark mode) now shows the MOON */
 input:checked + .slider .sun-icon {
-  opacity: 1;
-  transform: translateY(0);
+  opacity: 0;
+  transform: translateY(-100%);
 }
 
 input:checked + .slider .moon-icon {
-  opacity: 0;
-  transform: translateY(-100%);
+  opacity: 1;
+  transform: translateY(0);
 }
 </style>
