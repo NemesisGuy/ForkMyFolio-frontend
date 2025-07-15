@@ -97,3 +97,21 @@ export const updateQualification = (uuid, qualData) => fetchWithAuth(`/admin/qua
   body: qualData
 });
 export const deleteQualification = (uuid) => fetchWithAuth(`/admin/qualifications/${uuid}`, {method: 'DELETE'});
+
+
+////////////////
+
+// --- Contact Messages ---
+
+/**
+ * Fetches all received contact messages.
+ * @returns {Promise<Array<object>>} List of ContactMessageDto
+ */
+export const getContactMessages = () => fetchWithAuth('/admin/contact-messages', { method: 'GET' });
+
+/**
+ * Deletes a specific contact message by its UUID.
+ * @param {string} uuid - The UUID of the message.
+ * @returns {Promise<void>}
+ */
+export const deleteContactMessage = (uuid) => fetchWithAuth(`/admin/contact-messages/${uuid}`, { method: 'DELETE' });

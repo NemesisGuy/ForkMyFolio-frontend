@@ -26,6 +26,7 @@ const AdminExperiencePage = () => import('@/views/admin/AdminExperiencePage.vue'
 const AdminTestimonialsPage = () => import('@/views/admin/AdminTestimonialsPage.vue');
 const AdminQualificationsPage = () => import('@/views/admin/AdminQualificationsPage.vue');
 const AdminAccountPage = () => import('@/views/admin/AdminAccountPage.vue');
+const AdminMessages = () => import('@/views/admin/AdminMessages.vue')
 
 // Utility Pages
 const NotFoundPage = () => import('@/views/NotFoundPage.vue');
@@ -107,6 +108,18 @@ const routes = [
     component: AdminQualificationsPage,
     meta: {requiresAuth: true, requiresAdmin: true}
   },
+  {
+    path: '/admin/messages',
+    name: 'AdminMessages',
+    // Lazy load the component for better performance
+    component: AdminMessages,
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+      title: 'Contact Messages' // Optional: for breadcrumbs or page titles
+    }
+  }
+  ,
 
   // --- Error & Utility Routes ---
   {path: '/unauthorized', name: 'unauthorized', component: UnauthorizedPage},

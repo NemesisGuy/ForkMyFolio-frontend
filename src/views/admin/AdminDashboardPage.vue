@@ -120,6 +120,24 @@
           </div>
         </div>
 
+
+        <!-- Card for Contact Messages -->
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title"><i class="bi bi-envelope-paper-fill me-2"></i>Manage Messages</h5>
+              <p class="card-text small text-muted">
+                View and manage messages submitted through your public contact form.
+              </p>
+              <router-link class="btn btn-outline-primary mt-auto align-self-start"
+                           to="/admin/messages">
+                Go to Messages
+              </router-link>
+            </div>
+          </div>
+        </div>
+
+
       </div>
     </div>
   </div>
