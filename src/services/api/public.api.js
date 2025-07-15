@@ -49,7 +49,7 @@ export const getPublicQualifications = () => fetchWithAuth('/qualifications', {m
  * @param {object} messageData - Data for the contact message.
  * @returns {Promise<object>} Confirmation message
  */
-export const submitContactMessage = (messageData) => fetchWithAuth('/contact', {
+export const submitContactMessage = (messageData) => fetchWithAuth('/contact-messages', {
   method: 'POST',
   body: messageData
 }, false);
