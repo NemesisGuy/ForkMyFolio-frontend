@@ -1,55 +1,36 @@
-# ForkMyFolio Application Features
+# ForkMyFolio - Frontend Feature List
 
-This document outlines the key features of the ForkMyFolio application, separated into the public-facing portfolio and the administrative backend.
+This document outlines the key features and architectural highlights of the ForkMyFolio Vue.js frontend application.
 
----
+## Core Architecture
 
-## 1. Public-Facing Portfolio Features
+- **Vue 3 & Composition API**: The entire application is built using the modern Composition API, leading to better code organization, reusability, and maintainability.
+- **Vite Build Tool**: Provides a lightning-fast development server and optimized production builds.
+- **Service-as-Store Pattern**: Global state (like user authentication) is managed in reactive service files (e.g., `authService.js`), avoiding the need for a heavy-weight state management library like Vuex or Pinia.
+- **Centralized API Client**: A single `apiClient.js` handles all communication with the backend. It's responsible for:
+  - Attaching the JWT `Authorization` header to all necessary requests.
+  - Intercepting `401 Unauthorized` responses to trigger an automatic and seamless token refresh.
+  - Preventing token refresh race-conditions when multiple API calls fail at once.
 
-These are the features available to any visitor of the website.
+## Admin Panel
 
--   **Dynamic Home Page**:
-    -   Displays the owner's profile picture, full name, professional headline, and a detailed summary/bio.
-    -   Provides quick access to social and professional links (LinkedIn, GitHub, Website, Email).
-    -   Direct links to view or download a resume and a pre-formatted cover letter.
+- **Secure Routing**: The `router/index.js` file uses navigation guards (`beforeEnter`) to protect all `/admin` routes, ensuring only authenticated and authorized users can access them.
+- **Comprehensive CRUD Interfaces**: Every manageable content type (Profile, Projects, Skills, etc.) has a dedicated set of Vue components for creating, reading, updating, and deleting data.
+- **Statistics Dashboard (`AdminStats.vue`)**:
+  - Visualizes all analytics data from the `/api/v1/admin/stats` endpoint.
+  - Uses a reusable `StatCard.vue` component for a clean and consistent UI.
+  - Intelligently maps project UUIDs (from stats) to project names (from the projects list) for a user-friendly display.
+- **Interactive Forms**: All forms include client-side validation and provide clear feedback to the user on success or failure.
 
--   **Dedicated Content Pages**: The portfolio is organized into clear, separate sections, each with its own page:
-    -   **Projects**: A gallery of professional projects.
-    -   **Skills**: A categorized list of technical skills and their proficiency levels.
-    -   **Experience**: A timeline of professional work history.
-    -   **Testimonials**: A collection of quotes and endorsements.
-    -   **Qualifications**: A list of degrees, certifications, and other qualifications.
+## Public Portfolio
 
--   **Interactive Contact Form**: Allows visitors to send messages directly to the portfolio owner.
+- **Fully Dynamic Rendering**: All content is fetched from the backend API, meaning no hardcoded portfolio data exists in the frontend code.
+- **Component-Based Structure**: The public page is built from modular components (`HeroSection.vue`, `ProjectsSection.vue`, etc.) that are dynamically shown or hidden based on the settings fetched from the backend.
+- **PDF Generation**: Integrates a library (like jsPDF) to create a downloadable PDF resume from the dynamic portfolio data.
 
--   **Responsive Design**: The entire public site is built with Bootstrap 5, ensuring it is fully functional and looks great on desktops, tablets, and mobile devices.
+## Authentication Flow
 
--   **User-Selectable Theme**: A persistent Light/Dark mode toggle allows visitors to choose their preferred viewing experience.
-
-## 2. Admin Management Features
-
-These features are available to the authenticated site owner through a secure admin dashboard.
-
--   **Secure Authentication**:
-    -   User registration and login system protected by JWT (JSON Web Tokens).
-    -   Uses `HttpOnly` cookies for refresh tokens to enhance security against XSS attacks.
-    -   Session management includes login, secure logout, and automatic token refresh.
-
--   **Central Admin Dashboard**: A single-page hub providing quick access to all management sections of the portfolio.
-
--   **Comprehensive Content Management (Full CRUD)**:
-    -   **Account Management**: Update private user details like first name, last name, login email, and the public-facing profile image URL.
-    -   **Portfolio Profile**: Manage all content on the public home page, including the headline, summary, location, and all social/contact links.
-    -   **Projects**: Add, edit, and delete projects. Each project can have a title, description, image, repository link, live demo link, and a "Published/Draft" status toggle.
-    -   **Skills**: Add new skills and assign a proficiency level (`Beginner`, `Intermediate`, `Expert`). Existing skills can be deleted.
-    -   **Experience**: Full control over work history entries, including job title, company, dates, and description.
-    -   **Testimonials**: Add, edit, and delete quotes, including the author's name and title.
-    -   **Qualifications**: Manage educational degrees and professional certifications.
-
--   **Intuitive User Experience**:
-    -   All management pages feature a consistent two-column layout with a sticky form for easy editing and a live list of existing items.
-    -   Interactive modals are used for critical actions:
-        -   `ConfirmModal` for safe deletion.
-        -   `SuccessModal` to provide positive feedback after creating or updating content.
-        -   `ErrorModal` to clearly display any issues from the server.
-        -   `LoadingModal` to prevent interaction during API calls, improving perceived performance.
+- **Login/Register/Logout**: Provides clear and simple forms for all standard authentication actions.
+- **Session Initialization (`initAuth`)**: On application startup, the `authService` automatically attempts to refresh the user's session.
+- **Live Profile Updates**: After a successful session refresh, it fetches the latest user profile from the server, ensuring that any changes made (e.g., name update) are immediately reflected in the UI without needing to log out and back in.
+- **Reactive State**: The user's authentication status (`isAuthenticated`) and profile data (`user`) are reactive Vue `ref`s, meaning any component using them will automatically update when they change.

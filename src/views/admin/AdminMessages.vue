@@ -59,7 +59,9 @@
           </div>
           <div class="modal-body" v-if="selectedMessage">
             <p><strong>Email:</strong> {{ selectedMessage.email }}</p>
+<!--
             <p><strong>Subject:</strong> {{ selectedMessage.subject }}</p>
+-->
             <hr>
             <p style="white-space: pre-wrap;">{{ selectedMessage.message }}</p>
           </div>

@@ -53,3 +53,36 @@ export const submitContactMessage = (messageData) => fetchWithAuth('/contact-mes
   method: 'POST',
   body: messageData
 }, false);
+
+/**
+ * Gets the map of public settings.
+ * @returns {Promise<Object<string, boolean>>} A map of feature names to their enabled state.
+ */
+export const getPublicSettings = () => fetchWithAuth('/settings', { method: 'GET' }, false);
+
+
+
+/**
+ * Requests a PDF version of the portfolio from the backend.
+ * @returns {Promise<Blob>} A promise that resolves with the PDF file as a Blob.
+ */
+export const downloadPortfolioAsPdf = () => {
+  // The endpoint is public, so requiresAuth is false.
+  return fetchWithAuth('/pdf/download', { method: 'GET' }, false, false, 'blob');
+};
+/**
+ * Records a total visit count. This is a fire-and-forget call.
+ * @returns {Promise<void>}
+ */
+export const recordTotalVisit = () => {
+  return fetchWithAuth('/stats/increment/total-visit', { method: 'POST' }, false);
+};
+
+/**
+ * Records a view for a specific project. This is a fire-and-forget call.
+ * @param {string} projectId The UUID of the project.
+ * @returns {Promise<void>}
+ */
+export const recordProjectView = (projectId) => {
+  return fetchWithAuth(`/stats/increment/project-view/${projectId}`, { method: 'POST' }, false);
+};

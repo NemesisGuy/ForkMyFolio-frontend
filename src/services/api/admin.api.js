@@ -51,6 +51,12 @@ export const updatePortfolioProfile = (profileData) => fetchWithAuth('/admin/por
 
 
 // --- Projects ---
+
+/**
+ * Fetches all projects for the admin view.
+ * @returns {Promise<Array<object>>} A list of ProjectDto objects.
+ */
+export const getAdminProjects = () => fetchWithAuth('/admin/projects', { method: 'GET' });
 export const createProject = (projectData) => fetchWithAuth('/admin/projects', {
   method: 'POST',
   body: projectData
@@ -115,3 +121,30 @@ export const getContactMessages = () => fetchWithAuth('/admin/contact-messages',
  * @returns {Promise<void>}
  */
 export const deleteContactMessage = (uuid) => fetchWithAuth(`/admin/contact-messages/${uuid}`, { method: 'DELETE' });
+
+
+// --- Application Settings ---
+
+/**
+ * Fetches all application feature settings.
+ * @returns {Promise<Array<{uuid: string, name: string, enabled: boolean, description: string}>>} The full list of setting objects.
+ */
+export const getAdminSettings = () => fetchWithAuth('/admin/settings', { method: 'GET' });
+
+/**
+ * Updates multiple application settings at once.
+ * @param {Array<{uuid: string, name: string, enabled: boolean}>} settings - An array of settings to update.
+ * @returns {Promise<Array<{uuid: string, name: string, enabled: boolean, description: string}>>} The full, updated list of all settings.
+ */
+export const updateAdminSettings = (settings) => fetchWithAuth('/admin/settings', {
+  method: 'PUT',
+  body: settings
+});
+
+// --- Statistics ---
+
+/**
+ * Fetches the consolidated visitor and authentication statistics.
+ * @returns {Promise<object>} A promise that resolves to the stats object.
+ */
+export const getAdminStats = () => fetchWithAuth('/admin/stats', { method: 'GET' });

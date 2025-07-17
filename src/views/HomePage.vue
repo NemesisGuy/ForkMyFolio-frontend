@@ -78,12 +78,30 @@
       </div>
     </div>
     <div v-if="showCoverLetterModal" class="modal-backdrop fade show"></div>
+
+    <!-- PDF Download Error Alert -->
+    <div v-if="pdfDownloadError" class="pdf-error-toast alert alert-danger show" role="alert">
+      <strong>Download Failed:</strong> {{ pdfDownloadError }}
+      <button type="button" class="btn-close" @click="pdfDownloadError = null"></button>
+    </div>
+
+    <!-- Floating Action Button for PDF Download -->
+    <button
+      v-if="profile"
+      class="btn btn-primary btn-lg rounded-circle shadow-lg pdf-download-button"
+      title="Download Portfolio as PDF"
+      :disabled="isDownloadingPdf"
+      @click="handleDownloadPdf"
+    >
+      <span v-if="isDownloadingPdf" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+      <i v-else class="bi bi-download"></i>
+    </button>
   </div>
 </template>
 
 <script setup>
 import { onMounted, ref, computed } from 'vue';
-import { getPublicProfile, ApiError } from '@/services/api';
+import { getPublicProfile, downloadPortfolioAsPdf, ApiError } from '@/services/api';
 import { authService } from '@/services/authService';
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue';
 
@@ -91,6 +109,8 @@ const profile = ref(null);
 const isLoading = ref(true);
 const error = ref(null);
 const showCoverLetterModal = ref(false);
+const isDownloadingPdf = ref(false);
+const pdfDownloadError = ref(null);
 
 const fullName = computed(() => {
   if (!profile.value) return '';
@@ -98,6 +118,42 @@ const fullName = computed(() => {
 });
 
 const isAdmin = computed(() => authService.isAuthenticated.value && authService.user.value?.roles?.includes('ADMIN'));
+
+const handleDownloadPdf = async () => {
+  isDownloadingPdf.value = true;
+  pdfDownloadError.value = null;
+  try {
+    const pdfBlob = await downloadPortfolioAsPdf();
+
+    // Create a temporary URL for the blob to trigger the download
+    const url = window.URL.createObjectURL(pdfBlob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+
+    // Use the fetched profile data for a personalized filename
+    const userName = fullName.value ? fullName.value.replace(/\s/g, '') : 'Portfolio';
+    const today = new Date().toISOString().slice(0, 10);
+    a.download = `${userName}-Resume-${today}.pdf`;
+
+    document.body.appendChild(a);
+    a.click();
+
+    // Clean up on the next browser paint cycle. This is more reliable
+    // than a fixed timeout, ensuring the download has time to start.
+    window.requestAnimationFrame(() => {
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    });
+  } catch (err) {
+    console.error("Failed to download portfolio PDF:", err);
+    pdfDownloadError.value = err.message || 'An unknown error occurred. Please try again.';
+    // Auto-hide the error message after 5 seconds
+    setTimeout(() => { pdfDownloadError.value = null; }, 5000);
+  } finally {
+    isDownloadingPdf.value = false;
+  }
+};
 
 onMounted(async () => {
   isLoading.value = true;
@@ -215,7 +271,33 @@ onMounted(async () => {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.3);
 }
+.pdf-download-button {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 1030; /* Ensure it's above most content */
+  width: 60px;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+  transition: transform 0.2s ease-in-out;
+}
+.pdf-download-button:hover {
+  transform: scale(1.1);
+}
 
+.pdf-error-toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1051; /* Above the download button */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 .cover-letter-text {
   white-space: pre-wrap;
   font-family: var(--bs-font-sans-serif);

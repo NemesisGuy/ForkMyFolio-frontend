@@ -26,7 +26,9 @@ const AdminExperiencePage = () => import('@/views/admin/AdminExperiencePage.vue'
 const AdminTestimonialsPage = () => import('@/views/admin/AdminTestimonialsPage.vue');
 const AdminQualificationsPage = () => import('@/views/admin/AdminQualificationsPage.vue');
 const AdminAccountPage = () => import('@/views/admin/AdminAccountPage.vue');
-const AdminMessages = () => import('@/views/admin/AdminMessages.vue')
+const AdminMessages = () => import('@/views/admin/AdminMessages.vue');
+const AdminSettingsPage = () => import('@/views/admin/AdminSettings.vue');
+const AdminStatsPage = () => import('@/views/admin/AdminStats.vue');
 
 // Utility Pages
 const NotFoundPage = () => import('@/views/NotFoundPage.vue');
@@ -118,8 +120,27 @@ const routes = [
       requiresAdmin: true,
       title: 'Contact Messages' // Optional: for breadcrumbs or page titles
     }
-  }
-  ,
+  },
+  {
+    path: '/admin/settings',
+    name: 'admin-settings',
+    component: AdminSettingsPage,
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+      title: 'Application Settings'
+    }
+  },
+  {
+    path: '/admin/stats',
+    name: 'AdminStats',
+    component: AdminStatsPage,
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+      title: 'Statistics'
+    }
+  },
 
   // --- Error & Utility Routes ---
   {path: '/unauthorized', name: 'unauthorized', component: UnauthorizedPage},
@@ -152,12 +173,11 @@ const router = createRouter({
 // Global navigation guard for security
 router.beforeEach((to, from, next) => {
   const isAuthenticated = authService.isAuthenticated.value;
-  const user = authService.getUser();
+  const user = authService.user.value; // Use the reactive ref's value directly
 
   if (to.meta.requiresAuth && !isAuthenticated) {
     next({name: 'login', query: {redirect: to.fullPath}});
-  }
-  else if (to.meta.requiresAdmin && (!user || !user.roles?.includes('ADMIN'))) {
+  } else if (to.meta.requiresAdmin && (!user || !user.roles?.includes('ADMIN'))) {
     console.warn(`Unauthorized access attempt to admin route: ${to.path} by user:`, user);
     next({name: 'unauthorized'});
   }

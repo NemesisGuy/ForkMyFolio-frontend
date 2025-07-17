@@ -1,99 +1,72 @@
-# Vue-project
+# ForkMyFolio - Vue.js Frontend 🎨
 
-This template should help get you started developing with Vue 3 in Vite.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Vue.js](https://img.shields.io/badge/vue-3.x-brightgreen.svg)](https://vuejs.org/)
+[![Vite](https://img.shields.io/badge/vite-%3E4.x-purple.svg)](https://vitejs.dev/)
+[![Docker Hub](https://img.shields.io/docker/pulls/nemesisguy/forkmyfolio-frontend?style=flat-square)](https://hub.docker.com/r/nemesisguy/forkmyfolio-frontend)
 
-## Recommended IDE Setup
+This is the sleek and responsive frontend for **ForkMyFolio**. Built with Vue 3, it provides both a beautiful public-facing portfolio and a powerful, secure administrative dashboard for content management.
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-## Type Support for `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-# ForkMyFolio - Frontend
-
-This is the complete frontend for the **ForkMyFolio** project, a dynamic and data-driven portfolio application built with Vue 3, Vite, and Bootstrap 5. It provides a beautiful public-facing portfolio and a secure, comprehensive admin dashboard for content management.
+**Backend Repository**: [NemesisGuy/ForkMyFolio-backend](https://github.com/NemesisGuy/ForkMyFolio-backend)
 
 ---
 
-## Key Features
+## ✨ Key Features
 
--   **Dynamic Public Portfolio**: Displays projects, skills, work experience, qualifications, and testimonials fetched from a backend API.
--   **Secure Admin Dashboard**: A central hub for the site owner to manage all portfolio content via a clean user interface.
--   **JWT Authentication**: Robust authentication flow using access and refresh tokens, designed to work with HttpOnly cookies for enhanced security.
--   **Full CRUD Functionality**: Create, Read, Update, and Delete operations for all major portfolio sections:
-    -   Public Profile (Headline, Bio, Social Links)
-    -   Projects Showcase
-    -   Skills & Proficiencies
-    -   Work Experience History
-    -   Client & Colleague Testimonials
-    -   Degrees & Certifications
--   **Responsive Design**: Built with Bootstrap 5 to ensure a seamless experience on desktops, tablets, and mobile devices.
--   **Light & Dark Mode**: Includes a theme toggler for user preference.
--   **Client-Side Aggregation**: The public homepage intelligently fetches data from multiple API sources and composes the view on the client, keeping backend endpoints decoupled and focused.
+*   **🖼️ Dynamic Public Portfolio**: A fully responsive and customizable portfolio page where all content is dynamically loaded from the backend API.
+*   **👑 Full-Featured Admin Dashboard**: A secure, behind-login area to manage every aspect of the portfolio content, view contact messages, and see site statistics.
+*   **📄 On-the-Fly PDF Generation**: Visitors can download a PDF version of the portfolio, generated instantly from the current live data.
+*   **🚀 Modern & Fast**: Built as a Single-Page Application (SPA) using Vue 3 and Vite for a lightning-fast user experience.
+*   **🐳 Dockerized**: Ready for production with a multi-stage Dockerfile and a one-command `docker-compose` setup for easy deployment of the entire stack.
 
-## Tech Stack
+---
 
--   **Framework**: [Vue 3](https://vuejs.org/) (using Composition API with `<script setup>`)
--   **Build Tool**: Vite
--   **Routing**: Vue Router
--   **Styling**: Bootstrap 5 & Bootstrap Icons
--   **Linting**: ESLint
--   **Unit Testing**: Vitest
--   **E2E Testing**: Playwright
+## 🛠️ Tech Stack
 
-## Project Structure
+| Area              | Technology                                       |
+| Category          | Technology                                                       |
+| :---------------- | :--------------------------------------------------------------- |
+| **Framework**     | Vue.js 3 (Composition API)                                       |
+| **Build Tool**    | Vite                                                             |
+| **Routing**       | Vue Router                                                       |
+| **Styling**       | Bootstrap 5 & Bootswatch                                         |
+| **API Client**    | Fetch API with a robust interceptor for JWT token refresh        |
+| **Deployment**    | Docker & Nginx                                                   |
 
-A brief overview of the key directories in the project:
+---
 
-## Project Setup
+## 🚀 Quick Start
 
-```sh
-npm install
-```
+The fastest way to get the entire ForkMyFolio application running is with Docker Compose.
 
-### Compile and Hot-Reload for Development
+1.  **Clone this repository** (which contains the `docker-compose.yaml`):
+    ```bash
+    git clone https://github.com/NemesisGuy/ForkMyFolio-frontend.git
+    cd ForkMyFolio-frontend
+    ```
+2.  **Follow the Full Stack Deployment Guide** to create your `.env` file and launch the application.
 
-```sh
-npm run dev
-```
+The frontend will be available at `http://localhost:8089`.
 
-### Type-Check, Compile and Minify for Production
+---
 
-```sh
-npm run build
-```
+## 📚 Documentation
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+For more detailed information, please refer to the documentation in the `/docs` directory:
 
-```sh
-npm run test:unit
-```
+*   **Local Development Guide**: For setting up and running the frontend locally without Docker.
+*   **Standalone Docker Guide**: For building and running the frontend as a standalone Docker container.
+*   **Features & Architecture**: A deep dive into the technical implementation and features.
+*   **Full Stack Deployment Guide**: The complete guide for running the full application stack with Docker Compose.
 
-### Run End-to-End Tests with [Playwright](https://playwright.dev)
+---
 
-```sh
-# Install browsers for the first run
-npx playwright install
+## 🤝 Contributing
 
-# When testing on CI, must build the project first
-npm run build
+Contributions are welcome! Please feel free to open an issue or submit a pull request.
 
-# Runs the end-to-end tests
-npm run test:e2e
-# Runs the tests only on Chromium
-npm run test:e2e -- --project=chromium
-# Runs the tests of a specific file
-npm run test:e2e -- tests/example.spec.ts
-# Runs the tests in debug mode
-npm run test:e2e -- --debug
-```
+---
 
-### Lint with [ESLint](https://eslint.org/)
+## 📄 License
 
-```sh
-npm run lint
-```
+Distributed under the MIT License. See the `LICENSE` file for more information.

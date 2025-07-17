@@ -42,7 +42,7 @@ export class ApiError extends Error {
 /**
  * The core fetch wrapper.
  */
-export async function fetchWithAuth(endpoint, options = {}, requiresAuth = true) {
+export async function fetchWithAuth(endpoint, options = {}, requiresAuth = true, isRetry = false, responseType = 'json') {
   // ... (headers and auth logic is unchanged)
   const headers = {...options.headers};
 
@@ -50,7 +50,13 @@ export async function fetchWithAuth(endpoint, options = {}, requiresAuth = true)
     headers['Content-Type'] = 'application/json';
   }
 
-  if (requiresAuth && authServiceInstance) {
+  // --- KEY CHANGE ---
+  // Always attach the token if the user is logged in (i.e., a token exists).
+  // This allows the backend to identify the user even on public endpoints,
+  // which is crucial for not incrementing view counters for the admin.
+  // The `requiresAuth` flag is now primarily used to trigger the token
+  // refresh logic on a 401 response for protected routes.
+  if (authServiceInstance) {
     const token = authServiceInstance.getAccessToken();
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
@@ -68,58 +74,64 @@ export async function fetchWithAuth(endpoint, options = {}, requiresAuth = true)
   }
 
   try {
-    // --- KEY CHANGE: Use the new configurable base URL ---
-   // const response = await fetch(`${API_BASE_URL}${endpoint}`, fetchOptions);
+    // const response = await fetch(`${API_BASE_URL}${endpoint}`, fetchOptions);
     const response = await fetch(`${API_BASE_URL}${endpoint}`, fetchOptions);
 
-
-    // ... (the rest of the function remains exactly the same)
-    if (response.status === 204) {
-      return null;
+    // --- RESTRUCTURED LOGIC ---
+    // 1. Immediately handle 401 Unauthorized to attempt a token refresh.
+    if (response.status === 401 && requiresAuth && !isRetry) {
+      console.log('[ApiClient] Received 401. Attempting to refresh token...');
+      try {
+        await authServiceInstance.refreshToken();
+        console.log('[ApiClient] Token refresh successful. Retrying original request...');
+        // After a successful refresh, call this function again, marking it as a retry.
+        return await fetchWithAuth(endpoint, options, requiresAuth, true, responseType);
+      } catch (refreshError) {
+        console.error('[ApiClient] Token refresh process failed, logging out.', refreshError);
+        // If the refresh itself fails, the session is unrecoverable.
+        authServiceInstance.logout();
+        throw new ApiError(401, 'Your session has expired and could not be renewed. Please log in again.');
+      }
     }
 
-    const responseText = await response.text();
-    if (!responseText && response.ok) {
-      return null;
-    }
-
-    let responseData;
-    try {
-      responseData = JSON.parse(responseText);
-    } catch (parseError) {
-      console.error('Failed to parse JSON response:', responseText);
-      throw new ApiError('Invalid response format from server.', response.status, 'parse_error');
-    }
-
+    // 2. Handle all other non-successful responses.
     if (!response.ok) {
-      if (response.status === 401 && requiresAuth && authServiceInstance && endpoint !== '/auth/refresh-token') {
-        const refreshSuccess = await authServiceInstance.refreshToken();
-        if (refreshSuccess) {
-          return fetchWithAuth(endpoint, options, requiresAuth);
-        }
+      let errorData = {};
+      try {
+        // Try to parse the error response, but don't fail if it's empty.
+        const errorText = await response.text();
+        if (errorText) errorData = JSON.parse(errorText);
+      } catch(e) {
+        console.error("Could not parse error response body", e);
       }
       throw new ApiError(
-        responseData.errors?.[0]?.message || `API request failed with HTTP status ${response.status}`,
+        errorData.message || errorData.errors?.[0]?.message || `API request failed with HTTP status ${response.status}`,
         response.status,
-        responseData.status || 'error',
-        responseData.errors || []
+        errorData.status || 'error',
+        errorData.errors || []
       );
     }
 
-    if (response.ok && responseData && typeof responseData.status === 'undefined') {
+    // 3. Handle file downloads (blob response) BEFORE trying to parse JSON.
+    if (responseType === 'blob') {
+      return response.blob();
+    }
+
+    // 4. Handle the success path for JSON.
+    if (response.status === 204) return null; // No Content
+
+    const responseText = await response.text();
+    if (!responseText) return null; // Handle empty 200 OK
+
+    const responseData = JSON.parse(responseText);
+
+    // If the response is not in a structured format (e.g., JSend), return it directly.
+    if (typeof responseData.status === 'undefined') {
       return responseData;
     }
 
-    if (responseData.status === 'success') {
-      return responseData.data;
-    } else {
-      throw new ApiError(
-        responseData.errors?.[0]?.message || 'API operation failed despite HTTP OK.',
-        response.status,
-        responseData.status || 'api_logic_error',
-        responseData.errors || []
-      );
-    }
+    return responseData.data; // Assuming JSend-like { status: 'success', data: ... }
+
   } catch (error) {
     if (error instanceof ApiError) {
       throw error;

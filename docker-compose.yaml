@@ -16,7 +16,9 @@ services:
         condition: service_healthy
     networks:
       - forkmyfolio-net
-    # Note: No 'ports' are exposed. The reverse proxy will connect directly.
+    # Expose the backend API on port 8080 of the host machine
+    ports:
+      - "8080:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       # Use the service name 'db' as the hostname. Docker's internal DNS handles this.
@@ -34,13 +36,17 @@ services:
     # This image contains the static Vue files served by Nginx.
     image: nemesisguy/forkmyfolio-frontend:latest
     container_name: forkmyfolio-frontend
+    depends_on:
+      - app
     restart: unless-stopped
     networks:
       - forkmyfolio-net
     ports:
-      - "8089:80" # 👈 Expose container's Nginx port 80 to your host port 8080
-    # Note: No 'ports' are exposed. The reverse proxy connects directly to the
-    # Nginx server inside this container (on its default port 80).
+      - "8089:80" # 👈 Expose container's Nginx port 80 to your host port 8089
+    environment:
+      # This URL is injected into the Nginx container at runtime.
+      # It tells the frontend's browser-side code where to find the API.
+      - API_BASE_URL=${API_BASE_URL}
 
   # --- Service 3: The MySQL Database ---
   db:

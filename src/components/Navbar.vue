@@ -30,32 +30,32 @@
               Home
             </router-link>
           </li>
-          <li class="nav-item">
+          <li v-if="settingsService.isEnabled.value('SHOW_PROJECTS')" class="nav-item">
             <router-link class="nav-link" active-class="active" to="/projects" @click="collapseNavbar">
               Projects
             </router-link>
           </li>
-          <li class="nav-item">
+          <li v-if="settingsService.isEnabled.value('SHOW_SKILLS')" class="nav-item">
             <router-link class="nav-link" active-class="active" to="/skills" @click="collapseNavbar">
               Skills
             </router-link>
           </li>
-          <li class="nav-item">
+          <li v-if="settingsService.isEnabled.value('SHOW_EXPERIENCE')" class="nav-item">
             <router-link class="nav-link" active-class="active" to="/experience" @click="collapseNavbar">
               Experience
             </router-link>
           </li>
-          <li class="nav-item">
+          <li v-if="settingsService.isEnabled.value('SHOW_TESTIMONIALS')" class="nav-item">
             <router-link class="nav-link" active-class="active" to="/testimonials" @click="collapseNavbar">
               Testimonials
             </router-link>
           </li>
-          <li class="nav-item">
+          <li v-if="settingsService.isEnabled.value('SHOW_QUALIFICATIONS')" class="nav-item">
             <router-link class="nav-link" active-class="active" to="/qualifications" @click="collapseNavbar">
               Qualifications
             </router-link>
           </li>
-          <li class="nav-item">
+          <li v-if="settingsService.isEnabled.value('SHOW_CONTACT_FORM')" class="nav-item">
             <router-link class="nav-link" active-class="active" to="/contact" @click="collapseNavbar">
               Contact
             </router-link>
@@ -142,6 +142,7 @@ import {authService} from '../services/authService';
 // import {themeService} from '../services/themeService';
 // KEY CHANGE: Import the new useTheme composable
 import { useTheme } from '@/services/themeService.js';
+import { settingsService } from '../services/settingsService';
 import ConfirmModal from './common/ConfirmModal.vue';
 import ThemeToggle from './common/ThemeToggle.vue';
 
