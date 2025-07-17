@@ -35,7 +35,7 @@ This is the sleek and responsive frontend for **ForkMyFolio**. Built with Vue 3,
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Getting Started
 
 The fastest way to get the entire ForkMyFolio application running is with Docker Compose.
 
@@ -54,10 +54,10 @@ The frontend will be available at `http://localhost:8089`.
 
 For more detailed information, please refer to the documentation in the `/docs` directory:
 
-*   **Local Development Guide**: For setting up and running the frontend locally without Docker.
-*   **Standalone Docker Guide**: For building and running the frontend as a standalone Docker container.
-*   **Features & Architecture**: A deep dive into the technical implementation and features.
-*   **Full Stack Deployment Guide**: The complete guide for running the full application stack with Docker Compose.
+*   **[Local Development Guide](./docs/DEVELOPMENT.md)**: For setting up and running the frontend locally without Docker.
+*   **[Standalone Docker Guide](./docs/DOCKER.md)**: For building and running the frontend as a standalone Docker container.
+*   **[Features & Architecture](./docs/FEATURES_AND_ARCHITECTURE.md)**: A deep dive into the technical implementation and features.
+*   **[Full Stack Deployment Guide](./docs/DEPLOYMENT_DOCKER_COMPOSE.md)**: The complete guide for running the full application stack with Docker Compose.
 
 ---
 
