@@ -9,7 +9,10 @@
     currentTheme === 'dark' ? 'navbar-dark bg-dark' : 'navbar-light bg-light'
   ]">
     <div class="container-fluid">
-      <router-link class="navbar-brand" to="/">ForkMyFolio</router-link>
+      <router-link class="navbar-brand d-flex align-items-center" to="/">
+        <img src="@/assets/forkmyfolio_logo_icon.png" alt="ForkMyFolio Logo" width="45" height="45" class="d-inline-block align-text-top me-2 rounded-circle">
+        ForkMyFolio
+      </router-link>
       <button
         ref="navbarToggler"
         class="navbar-toggler"
