@@ -117,9 +117,6 @@ onMounted(async () => {
 
 <style scoped>
 .project-details-page {
-  background: var(--animated-gradient);
-  background-size: var(--animated-gradient-size);
-  animation: var(--animated-gradient-animation);
   overflow-x: hidden;
   padding-bottom: 5rem;
 }
@@ -144,15 +141,6 @@ onMounted(async () => {
   margin-top: -15vh; /* Pull the content card up over the hero image */
   position: relative;
   z-index: 2;
-}
-
-.glass-card {
-  background: var(--glass-card-background);
-  backdrop-filter: var(--glass-card-backdrop-filter);
-  -webkit-backdrop-filter: var(--glass-card-backdrop-filter);
-  border: var(--glass-card-border);
-  border-radius: var(--glass-card-border-radius);
-  box-shadow: var(--glass-card-box-shadow);
 }
 
 .project-description {

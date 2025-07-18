@@ -222,9 +222,6 @@ const handleLogin = async () => {
   display: flex;
   align-items: center;
   padding: 2rem 0;
-  background: var(--animated-gradient);
-  background-size: var(--animated-gradient-size);
-  animation: var(--animated-gradient-animation);
   overflow-x: hidden;
 }
 
@@ -249,16 +246,6 @@ const handleLogin = async () => {
 .animate-fade-in-up {
   opacity: 0;
   animation: fadeInUp 0.8s ease-out forwards;
-}
-
-/* Glass Card Styling */
-.card {
-  background: var(--glass-card-background);
-  backdrop-filter: var(--glass-card-backdrop-filter);
-  -webkit-backdrop-filter: var(--glass-card-backdrop-filter);
-  border: var(--glass-card-border);
-  border-radius: var(--glass-card-border-radius);
-  box-shadow: var(--glass-card-box-shadow);
 }
 
 /* Form inputs on glass */

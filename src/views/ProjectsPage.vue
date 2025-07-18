@@ -104,9 +104,6 @@ onMounted(fetchProjects);
 /* --- Page Styling --- */
 .projects-page {
   /* NEW: Animated Aurora Background */
-  background: var(--animated-gradient);
-  background-size: var(--animated-gradient-size);
-  animation: var(--animated-gradient-animation);
   overflow-x: hidden;
 }
 
@@ -150,16 +147,6 @@ onMounted(fetchProjects);
 }
 
 /* --- Enhanced Card Styling --- */
-.card {
-  /* Glassmorphism effect */
-  background: var(--glass-card-background);
-  backdrop-filter: var(--glass-card-backdrop-filter);
-  -webkit-backdrop-filter: var(--glass-card-backdrop-filter);
-  border: var(--glass-card-border);
-  transition: var(--glass-card-transition);
-  border-radius: var(--glass-card-border-radius);
-}
-
 .project-card-link:hover .card {
   transform: var(--glass-card-hover-transform);
   /* NEW: Primary color glow on hover */

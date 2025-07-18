@@ -84,9 +84,6 @@ onMounted(async () => {
 /* --- Page Styling --- */
 .user-account-page {
   min-height: calc(100vh - 56px - 1px);
-  background: var(--animated-gradient);
-  background-size: var(--animated-gradient-size);
-  animation: var(--animated-gradient-animation);
   overflow-x: hidden;
   /* KEY CHANGE: Removed flex properties that caused vertical centering */
 }
@@ -116,16 +113,6 @@ onMounted(async () => {
 .animate-fade-in-up {
   opacity: 0;
   animation: fadeInUp 0.8s ease-out forwards;
-}
-
-/* --- Glass Card Styling --- */
-.glass-card {
-  background: var(--glass-card-background);
-  backdrop-filter: var(--glass-card-backdrop-filter);
-  -webkit-backdrop-filter: var(--glass-card-backdrop-filter);
-  border: var(--glass-card-border);
-  border-radius: var(--glass-card-border-radius);
-  box-shadow: var(--glass-card-box-shadow);
 }
 
 /* --- Profile Image --- */

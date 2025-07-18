@@ -1,6 +1,7 @@
 :root {
-  --glass-card-background: rgba(var(--bs-tertiary-bg-rgb), 0.4);
-  --glass-card-backdrop-filter: blur(12px);
+  --glass-card-background: linear-gradient(125deg, var(--bs-tertiary-bg), var(--bs-body-bg), var(--bs-tertiary-bg));
+  --glass-card-background-size: 200% 200%;
+  --glass-card-animation: animated-gradient 15s ease infinite;
   --glass-card-border: 1px solid rgba(var(--bs-body-color-rgb), 0.1);
   --glass-card-border-radius: 1rem;
   --glass-card-box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
@@ -8,8 +9,19 @@
 
   --glass-card-hover-transform: translateY(-8px);
   --glass-card-hover-box-shadow: 0 8px 32px 0 rgba(var(--bs-primary-rgb), 0.3) !important;
+}
 
-  --animated-gradient: linear-gradient(125deg, var(--bs-body-bg), var(--bs-tertiary-bg), var(--bs-body-bg));
-  --animated-gradient-size: 200% 200%;
-  --animated-gradient-animation: animated-gradient 20s ease infinite;
+.glass-card {
+  background: var(--glass-card-background);
+  background-size: var(--glass-card-background-size);
+  animation: var(--glass-card-animation);
+  border: var(--glass-card-border);
+  border-radius: var(--glass-card-border-radius);
+  box-shadow: var(--glass-card-box-shadow);
+  transition: var(--glass-card-transition);
+}
+
+.glass-card:hover {
+  transform: var(--glass-card-hover-transform);
+  box-shadow: var(--glass-card-hover-box-shadow);
 }

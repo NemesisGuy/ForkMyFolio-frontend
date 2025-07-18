@@ -78,9 +78,6 @@ onMounted(async () => {
 <style scoped>
 /* Your styles are excellent and require no changes. */
 .testimonials-page {
-  background: var(--animated-gradient);
-  background-size: var(--animated-gradient-size);
-  animation: var(--animated-gradient-animation);
   overflow-x: hidden;
 }
 
@@ -111,22 +108,6 @@ onMounted(async () => {
 .animate-fade-in-up {
   opacity: 0;
   animation: fadeInUp 0.8s ease-out forwards;
-}
-
-/* Glass Card */
-.glass-card {
-  background: var(--glass-card-background);
-  backdrop-filter: var(--glass-card-backdrop-filter);
-  -webkit-backdrop-filter: var(--glass-card-backdrop-filter);
-  border: var(--glass-card-border);
-  border-radius: var(--glass-card-border-radius);
-  position: relative;
-  overflow: hidden;
-  transition: var(--glass-card-transition);
-}
-.glass-card:hover {
-  transform: var(--glass-card-hover-transform);
-  box-shadow: var(--glass-card-hover-box-shadow);
 }
 
 /* Watermark Quote Icon */

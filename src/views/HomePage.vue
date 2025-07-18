@@ -186,26 +186,7 @@ onMounted(async () => {
 }
 
 .hero-section {
-  background: var(--animated-gradient);
-  background-size: var(--animated-gradient-size);
-  animation: var(--animated-gradient-animation);
   padding: 2rem 0;
-}
-
-/* --- Glass Card Styling --- */
-.glass-card {
-  background: var(--glass-card-background);
-  backdrop-filter: var(--glass-card-backdrop-filter);
-  -webkit-backdrop-filter: var(--glass-card-backdrop-filter);
-  border: var(--glass-card-border);
-  border-radius: var(--glass-card-border-radius);
-  box-shadow: var(--glass-card-box-shadow);
-  transition: var(--glass-card-transition);
-}
-
-.glass-card:hover {
-  transform: var(--glass-card-hover-transform);
-  box-shadow: var(--glass-card-hover-box-shadow);
 }
 
 @keyframes fadeInUp {

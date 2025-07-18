@@ -153,10 +153,6 @@ const handleSubmit = async () => {
 <style scoped>
 .contact-page {
   min-height: calc(100vh - 56px - 1px);
-  /* KEY CHANGE: Removed flex properties that caused vertical centering */
-  background: var(--animated-gradient);
-  background-size: var(--animated-gradient-size);
-  animation: var(--animated-gradient-animation);
   overflow-x: hidden;
 }
 
@@ -181,16 +177,6 @@ const handleSubmit = async () => {
 .animate-fade-in-up {
   opacity: 0;
   animation: fadeInUp 0.8s ease-out forwards;
-}
-
-/* Glass Card Styling */
-.card {
-  background: var(--glass-card-background);
-  backdrop-filter: var(--glass-card-backdrop-filter);
-  -webkit-backdrop-filter: var(--glass-card-backdrop-filter);
-  border: var(--glass-card-border);
-  border-radius: var(--glass-card-border-radius);
-  box-shadow: var(--glass-card-box-shadow);
 }
 
 /* Form inputs on glass */

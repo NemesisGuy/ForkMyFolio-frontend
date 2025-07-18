@@ -79,9 +79,6 @@ onMounted(async () => {
 <style scoped>
 /* --- Page Styling --- */
 .experience-page {
-  background: var(--animated-gradient);
-  background-size: var(--animated-gradient-size);
-  animation: var(--animated-gradient-animation);
   overflow-x: hidden;
 }
 
@@ -168,17 +165,6 @@ onMounted(async () => {
 /* --- Glass Card Content --- */
 .timeline-content {
   position: relative;
-  background: var(--glass-card-background);
-  backdrop-filter: var(--glass-card-backdrop-filter);
-  -webkit-backdrop-filter: var(--glass-card-backdrop-filter);
-  border: var(--glass-card-border);
-  transition: var(--glass-card-transition);
-  border-radius: var(--glass-card-border-radius);
-}
-
-.timeline-content:hover {
-  transform: var(--glass-card-hover-transform);
-  box-shadow: var(--glass-card-hover-box-shadow);
 }
 
 /* Arrow pointing to the timeline */

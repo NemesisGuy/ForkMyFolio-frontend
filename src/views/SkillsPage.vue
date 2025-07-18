@@ -122,9 +122,6 @@ onMounted(fetchSkills);
 /* --- Page Styling --- */
 .skills-page {
   /* NEW: Animated Aurora Background */
-  background: var(--animated-gradient);
-  background-size: var(--animated-gradient-size);
-  animation: var(--animated-gradient-animation);
   overflow-x: hidden;
 }
 
@@ -133,16 +130,6 @@ onMounted(fetchSkills);
   padding-bottom: 1rem;
   margin-bottom: 2rem !important;
   color: var(--bs-emphasis-color);
-}
-
-/* --- Glass Card --- */
-.glass-card {
-  background: var(--glass-card-background);
-  backdrop-filter: var(--glass-card-backdrop-filter);
-  -webkit-backdrop-filter: var(--glass-card-backdrop-filter);
-  border: var(--glass-card-border);
-  transition: var(--glass-card-transition);
-  border-radius: var(--glass-card-border-radius);
 }
 
 /* --- NEW: Dynamic Hover Glow --- */
