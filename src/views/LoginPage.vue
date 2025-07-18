@@ -222,9 +222,9 @@ const handleLogin = async () => {
   display: flex;
   align-items: center;
   padding: 2rem 0;
-  background: linear-gradient(125deg, var(--bs-body-bg), var(--bs-tertiary-bg), var(--bs-body-bg));
-  background-size: 200% 200%;
-  animation: animated-gradient 20s ease infinite;
+  background: var(--animated-gradient);
+  background-size: var(--animated-gradient-size);
+  animation: var(--animated-gradient-animation);
   overflow-x: hidden;
 }
 
@@ -253,12 +253,12 @@ const handleLogin = async () => {
 
 /* Glass Card Styling */
 .card {
-  background: rgba(var(--bs-tertiary-bg-rgb), 0.4);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(var(--bs-body-color-rgb), 0.1);
-  border-radius: 1rem;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+  background: var(--glass-card-background);
+  backdrop-filter: var(--glass-card-backdrop-filter);
+  -webkit-backdrop-filter: var(--glass-card-backdrop-filter);
+  border: var(--glass-card-border);
+  border-radius: var(--glass-card-border-radius);
+  box-shadow: var(--glass-card-box-shadow);
 }
 
 /* Form inputs on glass */
@@ -288,7 +288,7 @@ const handleLogin = async () => {
   transition: all 0.3s ease;
 }
 .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.3);
+  transform: var(--glass-card-hover-transform);
+  box-shadow: var(--glass-card-hover-box-shadow);
 }
 </style>

@@ -78,9 +78,9 @@ onMounted(async () => {
 <style scoped>
 /* Your styles are excellent and require no changes. */
 .testimonials-page {
-  background: linear-gradient(125deg, var(--bs-body-bg), var(--bs-tertiary-bg), var(--bs-body-bg));
-  background-size: 200% 200%;
-  animation: animated-gradient 20s ease infinite;
+  background: var(--animated-gradient);
+  background-size: var(--animated-gradient-size);
+  animation: var(--animated-gradient-animation);
   overflow-x: hidden;
 }
 
@@ -115,18 +115,18 @@ onMounted(async () => {
 
 /* Glass Card */
 .glass-card {
-  background: rgba(var(--bs-tertiary-bg-rgb), 0.4);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(var(--bs-body-color-rgb), 0.1);
-  border-radius: 1rem;
+  background: var(--glass-card-background);
+  backdrop-filter: var(--glass-card-backdrop-filter);
+  -webkit-backdrop-filter: var(--glass-card-backdrop-filter);
+  border: var(--glass-card-border);
+  border-radius: var(--glass-card-border-radius);
   position: relative;
   overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: var(--glass-card-transition);
 }
 .glass-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 8px 32px 0 rgba(var(--bs-primary-rgb), 0.3) !important;
+  transform: var(--glass-card-hover-transform);
+  box-shadow: var(--glass-card-hover-box-shadow);
 }
 
 /* Watermark Quote Icon */

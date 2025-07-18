@@ -104,9 +104,9 @@ onMounted(fetchProjects);
 /* --- Page Styling --- */
 .projects-page {
   /* NEW: Animated Aurora Background */
-  background: linear-gradient(125deg, var(--bs-body-bg), var(--bs-tertiary-bg), var(--bs-body-bg));
-  background-size: 200% 200%;
-  animation: animated-gradient 20s ease infinite;
+  background: var(--animated-gradient);
+  background-size: var(--animated-gradient-size);
+  animation: var(--animated-gradient-animation);
   overflow-x: hidden;
 }
 
@@ -152,18 +152,18 @@ onMounted(fetchProjects);
 /* --- Enhanced Card Styling --- */
 .card {
   /* Glassmorphism effect */
-  background: rgba(var(--bs-tertiary-bg-rgb), 0.4);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(var(--bs-body-color-rgb), 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border-radius: 1rem;
+  background: var(--glass-card-background);
+  backdrop-filter: var(--glass-card-backdrop-filter);
+  -webkit-backdrop-filter: var(--glass-card-backdrop-filter);
+  border: var(--glass-card-border);
+  transition: var(--glass-card-transition);
+  border-radius: var(--glass-card-border-radius);
 }
 
 .project-card-link:hover .card {
-  transform: translateY(-8px);
+  transform: var(--glass-card-hover-transform);
   /* NEW: Primary color glow on hover */
-  box-shadow: 0 8px 32px 0 rgba(var(--bs-primary-rgb), 0.3) !important;
+  box-shadow: var(--glass-card-hover-box-shadow);
 }
 
 .card-img-container {

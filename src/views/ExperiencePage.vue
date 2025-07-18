@@ -79,9 +79,9 @@ onMounted(async () => {
 <style scoped>
 /* --- Page Styling --- */
 .experience-page {
-  background: linear-gradient(125deg, var(--bs-body-bg), var(--bs-tertiary-bg), var(--bs-body-bg));
-  background-size: 200% 200%;
-  animation: animated-gradient 20s ease infinite;
+  background: var(--animated-gradient);
+  background-size: var(--animated-gradient-size);
+  animation: var(--animated-gradient-animation);
   overflow-x: hidden;
 }
 
@@ -168,17 +168,17 @@ onMounted(async () => {
 /* --- Glass Card Content --- */
 .timeline-content {
   position: relative;
-  background: rgba(var(--bs-tertiary-bg-rgb), 0.4);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(var(--bs-body-color-rgb), 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border-radius: var(--bs-card-border-radius);
+  background: var(--glass-card-background);
+  backdrop-filter: var(--glass-card-backdrop-filter);
+  -webkit-backdrop-filter: var(--glass-card-backdrop-filter);
+  border: var(--glass-card-border);
+  transition: var(--glass-card-transition);
+  border-radius: var(--glass-card-border-radius);
 }
 
 .timeline-content:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 8px 32px 0 rgba(var(--bs-primary-rgb), 0.3) !important;
+  transform: var(--glass-card-hover-transform);
+  box-shadow: var(--glass-card-hover-box-shadow);
 }
 
 /* Arrow pointing to the timeline */
@@ -189,8 +189,8 @@ onMounted(async () => {
   width: 15px;
   height: 15px;
   background: inherit; /* Inherits the glass effect */
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: var(--glass-card-backdrop-filter);
+  -webkit-backdrop-filter: var(--glass-card-backdrop-filter);
   transform: translateY(-50%) rotate(45deg);
   z-index: -1;
 }

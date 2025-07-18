@@ -10,6 +10,9 @@ import 'bootstrap';
 // Import Bootstrap Icons
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
+// Import shared CSS
+import './assets/shared.css';
+
 // The async logic is now handled by the top-level await in `initAuth.js`.
 // We can now create and mount the app directly.
 const app = createApp(App);

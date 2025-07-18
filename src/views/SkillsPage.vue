@@ -122,9 +122,9 @@ onMounted(fetchSkills);
 /* --- Page Styling --- */
 .skills-page {
   /* NEW: Animated Aurora Background */
-  background: linear-gradient(125deg, var(--bs-body-bg), var(--bs-tertiary-bg), var(--bs-body-bg));
-  background-size: 200% 200%;
-  animation: animated-gradient 20s ease infinite;
+  background: var(--animated-gradient);
+  background-size: var(--animated-gradient-size);
+  animation: var(--animated-gradient-animation);
   overflow-x: hidden;
 }
 
@@ -137,23 +137,23 @@ onMounted(fetchSkills);
 
 /* --- Glass Card --- */
 .glass-card {
-  background: rgba(var(--bs-tertiary-bg-rgb), 0.4);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(var(--bs-body-color-rgb), 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border-radius: 1rem;
+  background: var(--glass-card-background);
+  backdrop-filter: var(--glass-card-backdrop-filter);
+  -webkit-backdrop-filter: var(--glass-card-backdrop-filter);
+  border: var(--glass-card-border);
+  transition: var(--glass-card-transition);
+  border-radius: var(--glass-card-border-radius);
 }
 
 /* --- NEW: Dynamic Hover Glow --- */
 .glass-card:hover {
-  transform: translateY(-8px);
+  transform: var(--glass-card-hover-transform);
 }
 .glow-on-hover-expert:hover {
   box-shadow: 0 8px 32px 0 rgba(var(--bs-success-rgb), 0.3);
 }
 .glow-on-hover-intermediate:hover {
-  box-shadow: 0 8px 32px 0 rgba(var(--bs-primary-rgb), 0.3);
+  box-shadow: var(--glass-card-hover-box-shadow);
 }
 .glow-on-hover-beginner:hover {
   box-shadow: 0 8px 32px 0 rgba(var(--bs-warning-rgb), 0.3);

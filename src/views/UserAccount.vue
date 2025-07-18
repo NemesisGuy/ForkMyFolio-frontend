@@ -84,9 +84,9 @@ onMounted(async () => {
 /* --- Page Styling --- */
 .user-account-page {
   min-height: calc(100vh - 56px - 1px);
-  background: linear-gradient(125deg, var(--bs-body-bg), var(--bs-tertiary-bg), var(--bs-body-bg));
-  background-size: 200% 200%;
-  animation: animated-gradient 20s ease infinite;
+  background: var(--animated-gradient);
+  background-size: var(--animated-gradient-size);
+  animation: var(--animated-gradient-animation);
   overflow-x: hidden;
   /* KEY CHANGE: Removed flex properties that caused vertical centering */
 }
@@ -120,12 +120,12 @@ onMounted(async () => {
 
 /* --- Glass Card Styling --- */
 .glass-card {
-  background: rgba(var(--bs-tertiary-bg-rgb), 0.4);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(var(--bs-body-color-rgb), 0.1);
-  border-radius: 1rem;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+  background: var(--glass-card-background);
+  backdrop-filter: var(--glass-card-backdrop-filter);
+  -webkit-backdrop-filter: var(--glass-card-backdrop-filter);
+  border: var(--glass-card-border);
+  border-radius: var(--glass-card-border-radius);
+  box-shadow: var(--glass-card-box-shadow);
 }
 
 /* --- Profile Image --- */
@@ -187,11 +187,11 @@ onMounted(async () => {
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.3);
+  transform: var(--glass-card-hover-transform);
+  box-shadow: var(--glass-card-hover-box-shadow);
 }
 
 .btn-outline-secondary:hover {
-  transform: translateY(-2px);
+  transform: var(--glass-card-hover-transform);
 }
 </style>
