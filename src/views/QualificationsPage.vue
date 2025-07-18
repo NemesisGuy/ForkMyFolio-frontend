@@ -122,8 +122,9 @@ onMounted(async () => {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(var(--bs-body-color-rgb), 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
   border-radius: 1rem;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .glass-card:hover {
