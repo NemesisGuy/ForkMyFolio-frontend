@@ -117,6 +117,9 @@ onMounted(async () => {
 
 <style scoped>
 .project-details-page {
+  background: linear-gradient(125deg, var(--bs-body-bg), var(--bs-tertiary-bg), var(--bs-body-bg));
+  background-size: 200% 200%;
+  animation: animated-gradient 20s ease infinite;
   overflow-x: hidden;
   padding-bottom: 5rem;
 }
@@ -143,6 +146,15 @@ onMounted(async () => {
   z-index: 2;
 }
 
+.glass-card {
+  background: rgba(var(--bs-tertiary-bg-rgb), 0.6);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(var(--bs-body-color-rgb), 0.1);
+  border-radius: 1rem;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+}
+
 .project-description {
   font-size: 1.1rem;
   line-height: 1.8;
@@ -163,12 +175,12 @@ onMounted(async () => {
 }
 
 .btn-primary:hover {
-  transform: var(--glass-card-hover-transform);
-  box-shadow: var(--glass-card-hover-box-shadow);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.3);
 }
 
 .btn-outline-secondary:hover {
-  transform: var(--glass-card-hover-transform);
+  transform: translateY(-2px);
 }
 
 /* Animations */

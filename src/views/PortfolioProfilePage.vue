@@ -7,8 +7,8 @@
           <ErrorModal v-if="error" :visible="true" title="Error Loading Profile" :message="error" @close="error = null" />
 
           <!-- This entire block is only rendered after the API call is successful -->
-          <div v-if="!isLoading && user" class="animate-fade-in-up">
-            <div class="card profile-card glass-card shadow-sm p-4">
+          <div v-if="!isLoading && user">
+            <div class="card profile-card shadow-sm p-4">
 
               <!-- The user's profile image is displayed from the fetched data -->
               <div class="text-center mb-4">
@@ -84,32 +84,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.profile-page {
-  overflow-x: hidden;
-}
-
-@keyframes animated-gradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in-up {
-  opacity: 0;
-  animation: fadeInUp 0.8s ease-out forwards;
-}
-
 .profile-image {
   width: 150px;
   height: 150px;

@@ -18,9 +18,10 @@
       <!-- KEY CHANGE: Using a responsive grid layout instead of a single column -->
       <div v-else-if="qualifications.length > 0" class="row row-cols-1 row-cols-lg-2 g-4">
         <div v-for="(qual, index) in qualifications" :key="qual.uuid"
-             class="col">
+             class="col animate-fade-in-up"
+             :style="{ 'animation-delay': (index * 0.1) + 0.2 + 's' }">
           <!-- KEY CHANGE: Using new glass-card style -->
-          <div class="card glass-card h-100 shadow-sm animate-fade-in-up" :style="{ 'animation-delay': (index * 0.1) + 0.2 + 's' }">
+          <div class="card glass-card h-100 shadow-sm">
             <div class="card-body d-flex align-items-center p-4">
               <div class="qual-icon me-4">
                 <i class="bi bi-patch-check-fill"></i>
@@ -80,6 +81,9 @@ onMounted(async () => {
 <style scoped>
 /* --- Page Styling --- */
 .qualifications-page {
+  background: linear-gradient(125deg, var(--bs-tertiary-bg), var(--bs-body-bg), var(--bs-tertiary-bg));
+  background-size: 200% 200%;
+  animation: animated-gradient 15s ease infinite;
   overflow-x: hidden;
 }
 
@@ -110,6 +114,21 @@ onMounted(async () => {
 .animate-fade-in-up {
   opacity: 0;
   animation: fadeInUp 0.8s ease-out forwards;
+}
+
+/* --- Glass Card Styling --- */
+.glass-card {
+  background: rgba(var(--bs-body-bg-rgb), 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(var(--bs-body-color-rgb), 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 1rem;
+}
+
+.glass-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 32px 0 rgba(var(--bs-primary-rgb), 0.3) !important;
 }
 
 /* --- Card Content Styling --- */

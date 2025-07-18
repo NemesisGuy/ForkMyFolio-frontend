@@ -10,8 +10,7 @@
     </div>
 
     <!-- Profile Display State -->
-    <div v-else-if="profile" class="hero-section glass-card"
-      :style="{ 'animation-delay': '0.1s' }">
+    <div v-else-if="profile" class="hero-section">
       <div class="container py-5">
         <div class="row align-items-center">
           <div class="col-md-4 text-center mb-4 mb-md-0">
@@ -186,6 +185,9 @@ onMounted(async () => {
 }
 
 .hero-section {
+  background: linear-gradient(125deg, var(--bs-body-bg), var(--bs-tertiary-bg), var(--bs-body-bg));
+  background-size: 200% 200%;
+  animation: animated-gradient 15s ease infinite;
   padding: 2rem 0;
 }
 

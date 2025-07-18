@@ -79,6 +79,9 @@ onMounted(async () => {
 <style scoped>
 /* --- Page Styling --- */
 .experience-page {
+  background: linear-gradient(125deg, var(--bs-body-bg), var(--bs-tertiary-bg), var(--bs-body-bg));
+  background-size: 200% 200%;
+  animation: animated-gradient 20s ease infinite;
   overflow-x: hidden;
 }
 
@@ -165,6 +168,17 @@ onMounted(async () => {
 /* --- Glass Card Content --- */
 .timeline-content {
   position: relative;
+  background: rgba(var(--bs-tertiary-bg-rgb), 0.4);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(var(--bs-body-color-rgb), 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: var(--bs-card-border-radius);
+}
+
+.timeline-content:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 32px 0 rgba(var(--bs-primary-rgb), 0.3) !important;
 }
 
 /* Arrow pointing to the timeline */
@@ -175,8 +189,8 @@ onMounted(async () => {
   width: 15px;
   height: 15px;
   background: inherit; /* Inherits the glass effect */
-  backdrop-filter: var(--glass-card-backdrop-filter);
-  -webkit-backdrop-filter: var(--glass-card-backdrop-filter);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   transform: translateY(-50%) rotate(45deg);
   z-index: -1;
 }

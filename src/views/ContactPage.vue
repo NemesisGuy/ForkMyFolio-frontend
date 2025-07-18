@@ -153,6 +153,10 @@ const handleSubmit = async () => {
 <style scoped>
 .contact-page {
   min-height: calc(100vh - 56px - 1px);
+  /* KEY CHANGE: Removed flex properties that caused vertical centering */
+  background: linear-gradient(125deg, var(--bs-tertiary-bg), var(--bs-body-bg), var(--bs-tertiary-bg));
+  background-size: 200% 200%;
+  animation: animated-gradient 15s ease infinite;
   overflow-x: hidden;
 }
 
@@ -177,6 +181,16 @@ const handleSubmit = async () => {
 .animate-fade-in-up {
   opacity: 0;
   animation: fadeInUp 0.8s ease-out forwards;
+}
+
+/* Glass Card Styling */
+.card {
+  background: rgba(var(--bs-body-bg-rgb), 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(var(--bs-body-color-rgb), 0.1);
+  border-radius: 1rem;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
 }
 
 /* Form inputs on glass */
@@ -205,7 +219,7 @@ const handleSubmit = async () => {
   transition: all 0.3s ease;
 }
 .btn-primary:hover {
-  transform: var(--glass-card-hover-transform);
-  box-shadow: var(--glass-card-hover-box-shadow);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.3);
 }
 </style>
