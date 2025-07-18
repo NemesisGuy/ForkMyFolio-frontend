@@ -46,7 +46,7 @@ services:
     environment:
       # This URL is injected into the Nginx container at runtime.
       # It tells the frontend's browser-side code where to find the API.
-      - API_BASE_URL=${API_BASE_URL}
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL}
 
   # --- Service 3: The MySQL Database ---
   db:
