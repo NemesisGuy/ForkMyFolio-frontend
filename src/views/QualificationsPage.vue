@@ -18,10 +18,10 @@
       <!-- KEY CHANGE: Using a responsive grid layout instead of a single column -->
       <div v-else-if="qualifications.length > 0" class="row row-cols-1 row-cols-lg-2 g-4">
         <div v-for="(qual, index) in qualifications" :key="qual.uuid"
-             class="col animate-fade-in-up"
+             class="col"
              :style="{ 'animation-delay': (index * 0.1) + 0.2 + 's' }">
           <!-- KEY CHANGE: Using new glass-card style -->
-          <div class="card glass-card h-100 shadow-sm">
+          <div class="card glass-card h-100 shadow-sm animate-fade-in-up">
             <div class="card-body d-flex align-items-center p-4">
               <div class="qual-icon me-4">
                 <i class="bi bi-patch-check-fill"></i>
