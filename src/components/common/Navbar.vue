@@ -10,7 +10,7 @@
   ]">
     <div class="container-fluid">
       <router-link class="navbar-brand d-flex align-items-center" to="/">
-        <img src="@/assets/forkmyfolio_logo_icon.png" alt="ForkMyFolio Logo" width="45" height="45" class="d-inline-block align-text-top me-2 rounded-circle">
+        <img src="../../assets/forkmyfolio_logo_icon.png" alt="ForkMyFolio Logo" width="45" height="45" class="d-inline-block align-text-top me-2 rounded-circle">
         ForkMyFolio
       </router-link>
       <button
@@ -140,14 +140,14 @@
 <script setup>
 import {ref, computed, onMounted, onBeforeUnmount} from 'vue';
 import {useRouter} from 'vue-router';
-import {authService} from '../services/authService';
+import {authService} from '../../services/authService.js';
 // KEY CHANGE: Remove the old theme service
 // import {themeService} from '../services/themeService';
 // KEY CHANGE: Import the new useTheme composable
 import { useTheme } from '@/services/themeService.js';
-import { settingsService } from '../services/settingsService';
-import ConfirmModal from './common/ConfirmModal.vue';
-import ThemeToggle from './common/ThemeToggle.vue';
+import { settingsService } from '../../services/settingsService.js';
+import ConfirmModal from './ConfirmModal.vue';
+import ThemeToggle from './ThemeToggle.vue';
 
 // KEY CHANGE: Get the reactive theme value from our new service
 const { currentTheme } = useTheme();

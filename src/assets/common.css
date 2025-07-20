@@ -1,0 +1,160 @@
+/* ==========================================================================
+   Shared Animations & Effects
+   ========================================================================== */
+
+/* --- Keyframes --- */
+/* This is the core animation for all shimmering gradient effects. */
+@keyframes animated-gradient-animation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Keyframes for the orbiting orb effect */
+@keyframes orbit {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* --- Animated Page Background --- */
+/* Apply this to the root element of a page for the aurora background. */
+.animated-gradient-background {
+  background: linear-gradient(125deg, var(--bs-body-bg), var(--bs-tertiary-bg), var(--bs-body-bg));
+  background-size: 200% 200%;
+  animation: animated-gradient-animation 20s ease infinite;
+}
+
+
+/* --- Interactive Hover Effects --- */
+/* Add a base transition to all buttons and cards for smoothness. */
+.btn,
+.card {
+  /* The border-color transition is kept for the skills page highlight */
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+/* A subtle lift effect for buttons. */
+.interactive-lift:hover {
+  transform: translateY(-2px);
+}
+
+/* A more pronounced lift for larger cards. */
+.interactive-card-lift:hover {
+  transform: translateY(-8px);
+}
+
+.interactive-shadow-primary:hover {
+  box-shadow: 0 0 15px rgba(var(--bs-primary-rgb), 0.4) !important;
+}
+
+.interactive-card-shadow-primary:hover {
+  box-shadow:
+    /* A primary-colored inner glow */
+    0 0 45px rgba(var(--bs-primary-rgb), 0.35),
+      /* A secondary, wider, info-colored outer glow */
+    0 0 70px -10px rgba(var(--bs-info-rgb), 0.25) !important;
+
+  /* We keep the border highlight as it's a nice, separate effect */
+  border-color: rgba(var(--bs-primary-rgb), 0.4);
+}
+
+
+/* ==========================================================================
+   Shared Component Styles
+   ========================================================================== */
+
+/* --- Glass Card Base Style --- */
+/* A reusable style for the semi-transparent "glass" cards. */
+.glass-card {
+  position: relative;
+  overflow: hidden;
+
+  background: rgba(var(--bs-tertiary-bg-rgb), 0.3);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(var(--bs-body-color-rgb), 0.1);
+  border-radius: 1rem;
+
+  /*
+    KEY CHANGE: Reverted to a simple drop shadow to maintain a clean
+    glassmorphic look, removing the inner "halo" effect.
+  */
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* The main, ambient background orb effect */
+.glass-card::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  width: 150%;
+  height: 150%;
+  top: -25%;
+  left: -25%;
+  background-image:
+    radial-gradient(circle at 20% 25%, rgba(var(--bs-primary-rgb), 0.15), transparent 40%),
+    radial-gradient(circle at 80% 15%, rgba(var(--bs-info-rgb), 0.1), transparent 35%),
+    radial-gradient(circle at 60% 80%, rgba(var(--bs-primary-rgb), 0.12), transparent 45%);
+
+  /* Start with a subtle, static opacity and blur */
+  opacity: 0.6;
+  filter: blur(25px);
+
+  /* The animation is defined but paused by default */
+  animation: orbit 30s linear infinite;
+  animation-play-state: paused;
+
+  /* Smoothly transition the properties on hover */
+  transition: opacity 0.5s ease-in-out, filter 0.5s ease-in-out;
+}
+
+/* The "extra blob" that moves around the card on hover. */
+.glass-card::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  width: 200px;
+  height: 200px;
+  top: -50px;
+  left: -50px;
+  background-image: radial-gradient(circle, rgba(var(--bs-info-rgb), 0.25), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.7s ease-in-out;
+  animation: none; /* No animation by default */
+  filter: blur(40px);
+}
+
+/* On hover, the main orbs become fully opaque, blurrier, and start moving. */
+.glass-card:hover::before {
+  opacity: 1;
+  filter: blur(30px);
+  animation-play-state: running;
+}
+
+/* On hover, the extra blob also becomes visible and starts its own animation. */
+.glass-card:hover::after {
+  opacity: 1;
+  animation: orbit 8s linear infinite;
+}
+
+
+/* --- Shimmering Glass Card (Modifier) --- */
+/* Add this class alongside .glass-card to enable the animated gradient effect. */
+.glass-card.shimmering {
+  /* Override the static background with a gradient */
+  background: linear-gradient(125deg, rgba(var(--bs-tertiary-bg-rgb), 0.4), rgba(var(--bs-body-bg-rgb), 0.5), rgba(var(--bs-tertiary-bg-rgb), 0.4));
+  background-size: 200% 200%;
+  /* Apply the animation with a slightly faster duration for cards */
+  animation: animated-gradient-animation 15s ease infinite;
+}

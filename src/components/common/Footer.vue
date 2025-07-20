@@ -44,7 +44,7 @@
 </template>
 
 <script setup>
-import {formatDate} from '@/utils'; // <-- Import the utility
+import {formatDate} from '@/utils/index.js'; // <-- Import the utility
 
 /**
  * @file src/components/Footer.vue

@@ -1,7 +1,7 @@
 <template>
-  <div class="experience-page py-5">
+  <div class="experience-page py-5 animated-gradient-background">
     <div class="container">
-      <!-- KEY CHANGE: Centered and animated hero section -->
+      <!-- Centered and animated hero section -->
       <div class="text-center mb-5">
         <h1 class="display-4 fw-bold animate-fade-in-up">💼 Work Experience</h1>
         <p class="lead text-muted animate-fade-in-up" style="animation-delay: 0.1s;">
@@ -16,11 +16,11 @@
       </div>
 
       <div v-else-if="experiences.length > 0" class="timeline">
-        <!-- KEY CHANGE: Added animation class and dynamic style for staggered effect -->
         <div v-for="(exp, index) in experiences" :key="exp.id"
              class="timeline-item animate-fade-in-up"
              :style="{ 'animation-delay': (index * 0.15) + 0.2 + 's' }">
-          <div class="timeline-content card shadow-sm">
+          <!-- The timeline card now has the consistent interactive classes -->
+          <div class="timeline-content card shadow-sm glass-card shimmering interactive-card-lift interactive-card-shadow-primary">
             <div class="card-body">
               <h5 class="card-title">{{ exp.jobTitle }}</h5>
               <h6 class="card-subtitle mb-2 text-primary">{{ exp.companyName }}</h6>
@@ -49,7 +49,7 @@
 
 <script setup>
 import {onMounted, ref} from 'vue';
-import {getPublicExperience} from '@/services/api';
+import {getPublicExperience} from '@/services/api/index.js';
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue';
 
 const experiences = ref([]);
@@ -79,14 +79,20 @@ onMounted(async () => {
 <style scoped>
 /* --- Page Styling --- */
 .experience-page {
-  background: linear-gradient(125deg, var(--bs-body-bg), var(--bs-tertiary-bg), var(--bs-body-bg));
-  background-size: 200% 200%;
-  animation: animated-gradient 20s ease infinite;
   overflow-x: hidden;
 }
 
 .experience-page h1, .experience-page .display-5, .experience-page .display-6 {
   font-weight: 300;
+}
+
+/*
+  KEY FIX: This ensures the card's content is clickable by lifting it
+  above the decorative ::before pseudo-element.
+*/
+.card-body {
+  position: relative;
+  z-index: 1;
 }
 
 /* --- Animations --- */
@@ -99,12 +105,6 @@ onMounted(async () => {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-@keyframes animated-gradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
 }
 
 .animate-fade-in-up {
@@ -165,43 +165,40 @@ onMounted(async () => {
   left: -12.5px;
 }
 
-/* --- Glass Card Content --- */
+/* --- Card Content --- */
 .timeline-content {
   position: relative;
-  background: rgba(var(--bs-tertiary-bg-rgb), 0.4);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(var(--bs-body-color-rgb), 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
   border-radius: var(--bs-card-border-radius);
 }
 
-.timeline-content:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 8px 32px 0 rgba(var(--bs-primary-rgb), 0.3) !important;
-}
-
-/* Arrow pointing to the timeline */
-.timeline-content::before {
+/*
+  KEY CHANGE: The arrow is now on the timeline-item's ::before pseudo-element,
+  which frees up the card's ::before for the orb effect from common.css.
+*/
+.timeline-item::before {
   content: '';
   position: absolute;
   top: 28px;
   width: 15px;
   height: 15px;
-  background: inherit; /* Inherits the glass effect */
+  /* Replicating the glass effect as we can no longer inherit from the card */
+  background: rgba(var(--bs-tertiary-bg-rgb), 0.4);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   transform: translateY(-50%) rotate(45deg);
-  z-index: -1;
+  z-index: 0; /* Sits behind the card */
 }
 
-.timeline-item:nth-child(odd) .timeline-content::before {
-  right: -7.5px;
+.timeline-item:nth-child(odd)::before {
+  /* Position it on the right side of the item, just inside the padding boundary */
+  right: 32.5px; /* 40px padding - 7.5px half-width */
 }
 
-.timeline-item:nth-child(even) .timeline-content::before {
-  left: -7.5px;
+.timeline-item:nth-child(even)::before {
+  /* Position it on the left side of the item */
+  left: 32.5px; /* 40px padding - 7.5px half-width */
 }
+
 
 /* --- Responsive Adjustments --- */
 @media (max-width: 767.98px) {
@@ -224,8 +221,9 @@ onMounted(async () => {
     left: 2.5px;
   }
 
-  .timeline-item .timeline-content::before {
-    left: -7.5px;
+  /* Adjust arrow position for mobile view */
+  .timeline-item::before {
+    left: 62.5px; /* 70px padding - 7.5px half-width */
     right: auto;
   }
 }

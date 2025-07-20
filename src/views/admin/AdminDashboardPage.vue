@@ -14,8 +14,7 @@
               <p class="card-text small text-muted">
                 View detailed statistics on site engagement and authentication events.
               </p>
-              <router-link class="btn btn-outline-primary mt-auto align-self-start"
-                           to="/admin/stats">
+              <router-link :to="{ name: 'AdminStats' }" class="btn btn-outline-primary mt-auto align-self-start">
                 Go to Statistics
               </router-link>
             </div>
@@ -30,8 +29,7 @@
               <p class="card-text small text-muted">
                 Edit the public content of your home page, including headline, summary, and social links.
               </p>
-              <router-link class="btn btn-outline-primary mt-auto align-self-start"
-                           to="/admin/portfolio-profile">
+              <router-link :to="{ name: 'admin-portfolio-profile' }" class="btn btn-outline-primary mt-auto align-self-start">
                 Go to Profile Editor
               </router-link>
             </div>
@@ -46,9 +44,7 @@
               <p class="card-text small text-muted">
                 Update your private account details like your name and email.
               </p>
-              <!-- KEY CHANGE: This link is now enabled and styled as a primary action -->
-              <router-link class="btn btn-outline-primary mt-auto align-self-start"
-                           to="/admin/account">
+              <router-link :to="{ name: 'admin-account' }" class="btn btn-outline-primary mt-auto align-self-start">
                 Go to Account Settings
               </router-link>
             </div>
@@ -63,8 +59,7 @@
               <p class="card-text small text-muted">
                 Add, edit, or delete the projects showcased in your portfolio.
               </p>
-              <router-link class="btn btn-outline-primary mt-auto align-self-start"
-                           to="/admin/projects">
+              <router-link :to="{ name: 'admin-projects' }" class="btn btn-outline-primary mt-auto align-self-start">
                 Go to Project Management
               </router-link>
             </div>
@@ -79,8 +74,7 @@
               <p class="card-text small text-muted">
                 Add or remove the skills listed in your portfolio.
               </p>
-              <router-link class="btn btn-outline-primary mt-auto align-self-start"
-                           to="/admin/skills">
+              <router-link :to="{ name: 'admin-skills' }" class="btn btn-outline-primary mt-auto align-self-start">
                 Go to Skill Management
               </router-link>
             </div>
@@ -95,8 +89,7 @@
               <p class="card-text small text-muted">
                 Add and edit your work history and professional experience.
               </p>
-              <router-link class="btn btn-outline-primary mt-auto align-self-start"
-                           to="/admin/experience">
+              <router-link :to="{ name: 'admin-experience' }" class="btn btn-outline-primary mt-auto align-self-start">
                 Go to Experience
               </router-link>
             </div>
@@ -112,8 +105,7 @@
               <p class="card-text small text-muted">
                 Curate quotes and recommendations from colleagues and clients.
               </p>
-              <router-link class="btn btn-outline-primary mt-auto align-self-start"
-                           to="/admin/testimonials">
+              <router-link :to="{ name: 'admin-testimonials' }" class="btn btn-outline-primary mt-auto align-self-start">
                 Go to Testimonials
               </router-link>
             </div>
@@ -128,8 +120,7 @@
               <p class="card-text small text-muted">
                 List your degrees, certifications, and other qualifications.
               </p>
-              <router-link class="btn btn-outline-primary mt-auto align-self-start"
-                           to="/admin/qualifications">
+              <router-link :to="{ name: 'admin-qualifications' }" class="btn btn-outline-primary mt-auto align-self-start">
                 Go to Qualifications
               </router-link>
             </div>
@@ -145,9 +136,23 @@
               <p class="card-text small text-muted">
                 View and manage messages submitted through your public contact form.
               </p>
-              <router-link class="btn btn-outline-primary mt-auto align-self-start"
-                           to="/admin/messages">
+              <router-link :to="{ name: 'AdminMessages' }" class="btn btn-outline-primary mt-auto align-self-start">
                 Go to Messages
+              </router-link>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card for Backup & Restore -->
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title"><i class="bi bi-database-down me-2"></i>Backup & Restore</h5>
+              <p class="card-text small text-muted">
+                Download a full backup of your portfolio data or restore it from a file.
+              </p>
+              <router-link :to="{ name: 'admin-backup-restore' }" class="btn btn-outline-primary mt-auto align-self-start">
+                Go to Backup & Restore
               </router-link>
             </div>
           </div>
@@ -161,8 +166,7 @@
               <p class="card-text small text-muted">
                 Control application-wide settings, such as enabling or disabling public portfolio sections.
               </p>
-              <router-link class="btn btn-outline-primary mt-auto align-self-start"
-                           to="/admin/settings">
+              <router-link :to="{ name: 'admin-settings' }" class="btn btn-outline-primary mt-auto align-self-start">
                 Configure Settings
               </router-link>
             </div>

@@ -1,5 +1,5 @@
 <template>
-  <div class="skills-page py-5">
+  <div class="skills-page py-5 animated-gradient-background">
     <div class="container-fluid">
       <!-- Hero Section -->
       <div class="text-center mb-5">
@@ -18,7 +18,6 @@
 
       <div v-else-if="groupedSkills.length > 0">
         <div v-for="(group, groupIndex) in groupedSkills" :key="group.level" class="mb-5">
-          <!-- KEY CHANGE: Updated header style -->
           <h2 class="display-6 mb-4 fw-light text-center animate-fade-in-up"
               :style="{ 'animation-delay': (groupIndex * 0.2) + 's' }">
             {{ group.level }}
@@ -27,8 +26,8 @@
             <div v-for="(skill, skillIndex) in group.skills" :key="skill.id"
                  class="col animate-fade-in-up"
                  :style="{ 'animation-delay': (groupIndex * 0.2 + skillIndex * 0.05) + 0.2 + 's' }">
-              <!-- KEY CHANGE: Added dynamic class for hover glow -->
-              <div class="card glass-card h-100 text-center shadow-sm" :class="`glow-on-hover-${skill.level.toLowerCase()}`">
+              <!-- KEY CHANGE: The card now uses the standard interactive classes for a consistent look -->
+              <div class="card glass-card shimmering h-100 text-center shadow-sm interactive-card-lift interactive-card-shadow-primary">
                 <div class="card-body d-flex flex-column justify-content-center align-items-center">
                   <div class="skill-icon mb-3">
                     <i :class="iconForLevel(skill.level)"/>
@@ -59,7 +58,7 @@
  * @description A sexy, polished, and animated version of the skills listing page.
  */
 import {onMounted, ref, computed} from 'vue';
-import {getPublicSkills, ApiError} from '@/services/api';
+import {getPublicSkills, ApiError} from '@/services/api/index.js';
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue';
 
 const skills = ref([]);
@@ -82,7 +81,6 @@ const iconForLevel = (level) => {
 const groupedSkills = computed(() => {
   const groups = {EXPERT: [], INTERMEDIATE: [], BEGINNER: []};
 
-  // Only proceed if skills.value is a valid array
   const sortedSkills = Array.isArray(skills.value)
     ? [...skills.value].sort((a, b) => a.name.localeCompare(b.name))
     : [];
@@ -121,10 +119,7 @@ onMounted(fetchSkills);
 <style scoped>
 /* --- Page Styling --- */
 .skills-page {
-  /* NEW: Animated Aurora Background */
-  background: linear-gradient(125deg, var(--bs-body-bg), var(--bs-tertiary-bg), var(--bs-body-bg));
-  background-size: 200% 200%;
-  animation: animated-gradient 20s ease infinite;
+  /* REMOVED: background, background-size, animation. Handled by .animated-gradient-background */
   overflow-x: hidden;
 }
 
@@ -135,36 +130,16 @@ onMounted(fetchSkills);
   color: var(--bs-emphasis-color);
 }
 
-/* --- Glass Card --- */
-.glass-card {
-  background: rgba(var(--bs-tertiary-bg-rgb), 0.4);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(var(--bs-body-color-rgb), 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border-radius: 1rem;
-}
+/* --- Dynamic Hover Glow --- */
+/* REMOVED: All .glow-on-hover-* classes. This is now handled by the global .interactive-card-shadow-primary class. */
 
-/* --- NEW: Dynamic Hover Glow --- */
-.glass-card:hover {
-  transform: translateY(-8px);
-}
-.glow-on-hover-expert:hover {
-  box-shadow: 0 8px 32px 0 rgba(var(--bs-success-rgb), 0.3);
-}
-.glow-on-hover-intermediate:hover {
-  box-shadow: 0 8px 32px 0 rgba(var(--bs-primary-rgb), 0.3);
-}
-.glow-on-hover-beginner:hover {
-  box-shadow: 0 8px 32px 0 rgba(var(--bs-warning-rgb), 0.3);
-}
 
 /* --- Skill Icon --- */
 .skill-icon {
   font-size: 2.75rem;
   transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-.glass-card:hover .skill-icon {
+.card:hover .skill-icon {
   transform: scale(1.2);
 }
 
@@ -190,7 +165,6 @@ onMounted(fetchSkills);
   position: absolute;
   height: 100%;
   border-radius: 4px;
-  /* NEW: Animate the bar filling up */
   width: 0;
   animation: fill-bar 1s ease-out 0.5s forwards;
 }
@@ -218,13 +192,6 @@ onMounted(fetchSkills);
   animation: fadeInUp 0.8s ease-out forwards;
 }
 
-@keyframes animated-gradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-/* NEW: Keyframe for proficiency bar fill */
 @keyframes fill-bar {
   to {
     width: var(--target-width);

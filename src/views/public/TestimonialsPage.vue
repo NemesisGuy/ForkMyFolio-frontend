@@ -1,5 +1,5 @@
 <template>
-  <div class="testimonials-page py-5">
+  <div class="testimonials-page py-5 animated-gradient-background">
     <div class="container">
       <div class="text-center mb-5">
         <h1 class="display-4 fw-bold animate-fade-in-up"><i class="bi bi-chat-left-quote" aria-hidden="true"></i> Testimonials</h1>
@@ -20,7 +20,7 @@
              :key="testimonial.id"
              class="col animate-fade-in-up"
              :style="{ 'animation-delay': (index * 0.1 + 0.2) + 's' }">
-          <div class="card glass-card h-100 shadow-sm">
+          <div class="card glass-card h-100 shadow-sm shimmering interactive-card-lift interactive-card-shadow-primary">
             <div class="card-body d-flex flex-column">
               <i class="bi bi-quote card-quote-icon" aria-hidden="true"></i>
               <!--
@@ -56,7 +56,7 @@
  * @description Sexy animated glassy testimonials page.
  */
 import { onMounted, ref } from 'vue';
-import { getPublicTestimonials, ApiError } from '@/services/api';
+import { getPublicTestimonials, ApiError } from '@/services/api/index.js';
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue';
 
 const testimonials = ref([]);
@@ -76,11 +76,8 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* Your styles are excellent and require no changes. */
 .testimonials-page {
-  background: linear-gradient(125deg, var(--bs-body-bg), var(--bs-tertiary-bg), var(--bs-body-bg));
-  background-size: 200% 200%;
-  animation: animated-gradient 20s ease infinite;
+  /* REMOVED: background, background-size, animation. Handled by .animated-gradient-background */
   overflow-x: hidden;
 }
 
@@ -96,38 +93,14 @@ onMounted(async () => {
   }
 }
 
-@keyframes animated-gradient {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
+/* REMOVED: @keyframes animated-gradient. Handled by common.css */
 
 .animate-fade-in-up {
   opacity: 0;
   animation: fadeInUp 0.8s ease-out forwards;
 }
 
-/* Glass Card */
-.glass-card {
-  background: rgba(var(--bs-tertiary-bg-rgb), 0.4);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(var(--bs-body-color-rgb), 0.1);
-  border-radius: 1rem;
-  position: relative;
-  overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-.glass-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 8px 32px 0 rgba(var(--bs-primary-rgb), 0.3) !important;
-}
+/* REMOVED: .glass-card and .glass-card:hover rules. Handled by global utility classes. */
 
 /* Watermark Quote Icon */
 .card-quote-icon {

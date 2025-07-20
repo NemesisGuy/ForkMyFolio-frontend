@@ -1,5 +1,5 @@
 <template>
-  <div class="profile-page py-4">
+  <div class="profile-page py-4 animated-gradient-background">
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-md-8">
@@ -8,7 +8,7 @@
 
           <!-- This entire block is only rendered after the API call is successful -->
           <div v-if="!isLoading && user">
-            <div class="card profile-card shadow-sm p-4">
+            <div class="card glass-card shimmering shadow-sm p-4">
 
               <!-- The user's profile image is displayed from the fetched data -->
               <div class="text-center mb-4">
@@ -37,10 +37,10 @@
               </div>
 
               <div class="d-flex flex-wrap justify-content-center justify-content-sm-start mt-3">
-                <router-link class="btn btn-primary me-2 mb-2" to="/admin/account">
+                <router-link class="btn btn-primary me-2 mb-2 interactive-lift interactive-shadow-primary" to="/admin/account">
                   <i class="bi bi-person-gear me-1"></i> Edit Account
                 </router-link>
-                <router-link class="btn btn-outline-secondary mb-2" to="/admin/portfolio-profile">
+                <router-link class="btn btn-outline-secondary mb-2 interactive-lift" to="/admin/portfolio-profile">
                   <i class="bi bi-layout-text-sidebar-reverse me-1"></i> Edit Public Profile
                 </router-link>
               </div>
@@ -59,7 +59,7 @@
  */
 import { ref, onMounted } from 'vue';
 // 1. Import the function to get account data from the API.
-import { getAccount } from '@/services/api';
+import { getAccount } from '@/services/api/index.js';
 import LoadingModal from '@/components/common/LoadingModal.vue';
 import ErrorModal from '@/components/common/ErrorModal.vue';
 
@@ -103,7 +103,5 @@ onMounted(async () => {
   color: #adb5bd;
 }
 
-.profile-card {
-  /* Optional: Add a bit more padding if needed */
-}
+/* REMOVED: .profile-card styling. Handled by global utility classes. */
 </style>

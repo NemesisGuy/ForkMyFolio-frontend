@@ -1,21 +1,20 @@
 import {createRouter, createWebHistory} from 'vue-router';
 import {authService} from '@/services/authService';
 
-// --- Page Imports ---
-// Public Pages
-const HomePage = () => import('@/views/HomePage.vue');
-const ProjectsPage = () => import('@/views/ProjectsPage.vue');
-// ADDED: Import for the new details page
-const ProjectDetailsPage = () => import('@/views/ProjectDetailsPage.vue');
-const SkillsPage = () => import('@/views/SkillsPage.vue');
-const ExperiencePage = () => import('@/views/ExperiencePage.vue');
-const TestimonialsPage = () => import('@/views/TestimonialsPage.vue');
-const QualificationsPage = () => import('@/views/QualificationsPage.vue');
-const ContactPage = () => import('@/views/ContactPage.vue');
-const LoginPage = () => import('@/views/LoginPage.vue');
-const SignupPage = () => import('@/views/SignupPage.vue');
-const UserAccountPage = () => import('@/views/UserAccount.vue');
+// --- Page Imports (using lazy loading for better performance) ---
 
+// Public Pages
+const HomePage = () => import('@/views/public/HomePage.vue');
+const ProjectsPage = () => import('@/views/public/ProjectsPage.vue');
+const ProjectDetailsPage = () => import('@/views/public/ProjectDetailsPage.vue');
+const SkillsPage = () => import('@/views/public/SkillsPage.vue');
+const ExperiencePage = () => import('@/views/public/ExperiencePage.vue');
+const TestimonialsPage = () => import('@/views/public/TestimonialsPage.vue');
+const QualificationsPage = () => import('@/views/public/QualificationsPage.vue');
+const ContactPage = () => import('@/views/public/ContactPage.vue');
+const LoginPage = () => import('@/views/public/LoginPage.vue');
+const SignupPage = () => import('@/views/public/SignupPage.vue');
+const UserAccountPage = () => import('@/views/admin/UserAccount.vue');
 
 // Admin Pages
 const AdminDashboardPage = () => import('@/views/admin/AdminDashboardPage.vue');
@@ -29,16 +28,18 @@ const AdminAccountPage = () => import('@/views/admin/AdminAccountPage.vue');
 const AdminMessages = () => import('@/views/admin/AdminMessages.vue');
 const AdminSettingsPage = () => import('@/views/admin/AdminSettings.vue');
 const AdminStatsPage = () => import('@/views/admin/AdminStats.vue');
+// --- KEY CHANGE: Import the new backup/restore page ---
+const AdminBackupRestorePage = () => import('@/views/admin/AdminBackupRestorePage.vue');
+
 
 // Utility Pages
-const NotFoundPage = () => import('@/views/NotFoundPage.vue');
-const UnauthorizedPage = () => import('@/views/UnauthorizedPage.vue');
+const NotFoundPage = () => import('@/views/public/NotFoundPage.vue');
+const UnauthorizedPage = () => import('@/views/public/UnauthorizedPage.vue');
 
 const routes = [
   // --- Public Routes ---
   {path: '/', name: 'home', component: HomePage},
   {path: '/projects', name: 'projects', component: ProjectsPage},
-  // ADDED: A dynamic route for individual project details
   {
     path: '/projects/:uuid',
     name: 'project-details',
@@ -53,7 +54,7 @@ const routes = [
   {path: '/login', name: 'login', component: LoginPage},
   {path: '/signup', name: 'signup', component: SignupPage},
 
-  // Authenticated user route
+  // Authenticated user route (for any logged-in user)
   {
     path: '/account',
     name: 'user-account',
@@ -113,12 +114,11 @@ const routes = [
   {
     path: '/admin/messages',
     name: 'AdminMessages',
-    // Lazy load the component for better performance
     component: AdminMessages,
     meta: {
       requiresAuth: true,
       requiresAdmin: true,
-      title: 'Contact Messages' // Optional: for breadcrumbs or page titles
+      title: 'Contact Messages'
     }
   },
   {
@@ -139,6 +139,17 @@ const routes = [
       requiresAuth: true,
       requiresAdmin: true,
       title: 'Statistics'
+    }
+  },
+  // --- KEY CHANGE: Add the new route for the backup/restore page ---
+  {
+    path: '/admin/backup',
+    name: 'admin-backup-restore',
+    component: AdminBackupRestorePage,
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+      title: 'Backup & Restore'
     }
   },
 
@@ -173,14 +184,18 @@ const router = createRouter({
 // Global navigation guard for security
 router.beforeEach((to, from, next) => {
   const isAuthenticated = authService.isAuthenticated.value;
-  const user = authService.user.value; // Use the reactive ref's value directly
+  const user = authService.user.value;
 
+  // If the route requires authentication and the user is not logged in, redirect to login.
   if (to.meta.requiresAuth && !isAuthenticated) {
     next({name: 'login', query: {redirect: to.fullPath}});
-  } else if (to.meta.requiresAdmin && (!user || !user.roles?.includes('ADMIN'))) {
+  }
+  // If the route requires admin privileges and the user is not an admin, redirect to unauthorized.
+  else if (to.meta.requiresAdmin && (!user || !user.roles?.includes('ADMIN'))) {
     console.warn(`Unauthorized access attempt to admin route: ${to.path} by user:`, user);
     next({name: 'unauthorized'});
   }
+  // Otherwise, allow navigation.
   else {
     next();
   }

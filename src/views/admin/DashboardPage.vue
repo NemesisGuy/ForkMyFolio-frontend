@@ -69,7 +69,7 @@
 
 <script setup>
 import {computed} from 'vue';
-import {authService} from '../services/authService';
+import {authService} from '../../services/authService.js';
 // import { useRouter } from 'vue-router'; // For programmatic navigation if needed
 
 /**
@@ -100,6 +100,9 @@ const user = computed(() => authService.user.value);
 
 .card {
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  background: linear-gradient(125deg, rgba(var(--bs-tertiary-bg-rgb), 0.4), rgba(var(--bs-body-bg-rgb), 0.5), rgba(var(--bs-tertiary-bg-rgb), 0.4));
+  background-size: 200% 200%;
+  animation: animated-gradient 15s ease infinite;
 }
 
 .card:hover {

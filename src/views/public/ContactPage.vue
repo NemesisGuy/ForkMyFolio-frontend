@@ -1,9 +1,7 @@
 <template>
-  <!-- KEY CHANGE: Reduced vertical padding from py-5 to py-4 -->
-  <div class="contact-page py-4">
+  <!-- The template is already correctly using the new global classes. No changes needed here. -->
+  <div class="contact-page py-4 animated-gradient-background">
     <div class="container" style="max-width: 600px;">
-      <!-- Centered and animated hero section -->
-      <!-- KEY CHANGE: Reduced margin-bottom from mb-5 to mb-4 -->
       <div class="text-center mb-4">
         <h1 class="display-4 fw-bold animate-fade-in-up">📧 Get In Touch</h1>
         <p class="lead text-muted animate-fade-in-up" style="animation-delay: 0.1s;">
@@ -11,8 +9,8 @@
         </p>
       </div>
 
-      <!-- Glassmorphism card for the form -->
-      <div class="card glass-card animate-fade-in-up" style="animation-delay: 0.2s;">
+      <!-- The card has the correct interactive classes -->
+      <div class="card glass-card shimmering animate-fade-in-up interactive-card-lift interactive-card-shadow-primary" style="animation-delay: 0.2s;">
         <div class="card-body p-4 p-md-5">
           <form novalidate @submit.prevent="handleSubmit">
             <div class="mb-3">
@@ -33,7 +31,7 @@
                         class="form-control" required rows="5"></textarea>
               <div v-if="fieldErrors.message" class="invalid-feedback">{{ fieldErrors.message }}</div>
             </div>
-            <button :disabled="isLoading" class="btn btn-primary w-100" type="submit">
+            <button :disabled="isLoading" class="btn btn-primary w-100 interactive-lift interactive-shadow-primary" type="submit">
               <span v-if="isLoading" aria-hidden="true" class="spinner-border spinner-border-sm me-1"
                     role="status"></span>
               {{ isLoading ? 'Sending...' : 'Send Message' }}
@@ -61,7 +59,7 @@
 
 <script setup>
 import { reactive, ref } from 'vue';
-import { submitContactMessage, ApiError } from '@/services/api';
+import { submitContactMessage, ApiError } from '@/services/api/index.js';
 import SuccessModal from '@/components/common/SuccessModal.vue';
 import ErrorModal from '@/components/common/ErrorModal.vue';
 
@@ -153,14 +151,21 @@ const handleSubmit = async () => {
 <style scoped>
 .contact-page {
   min-height: calc(100vh - 56px - 1px);
-  /* KEY CHANGE: Removed flex properties that caused vertical centering */
-  background: linear-gradient(125deg, var(--bs-body-bg), var(--bs-tertiary-bg), var(--bs-body-bg));
-  background-size: 200% 200%;
-  animation: animated-gradient 20s ease infinite;
+  /* REMOVED: background, background-size, and animation properties.
+     These are now handled by the `.animated-gradient-background` class. */
   overflow-x: hidden;
 }
 
-/* Animations */
+/*
+  KEY FIX: This ensures the card's content is clickable by lifting it
+  above the decorative ::before pseudo-element.
+*/
+.card-body {
+  position: relative;
+  z-index: 1;
+}
+
+/* Animations are page-specific and should remain. */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -172,28 +177,16 @@ const handleSubmit = async () => {
   }
 }
 
-@keyframes animated-gradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
+/* REMOVED: @keyframes animated-gradient. Handled by `.animated-gradient-background`. */
 
 .animate-fade-in-up {
   opacity: 0;
   animation: fadeInUp 0.8s ease-out forwards;
 }
 
-/* Glass Card Styling */
-.card {
-  background: rgba(var(--bs-tertiary-bg-rgb), 0.4);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(var(--bs-body-color-rgb), 0.1);
-  border-radius: 1rem;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
-}
+/* REMOVED: .card styling. Handled by `.glass-card` and `.shimmering`. */
 
-/* Form inputs on glass */
+/* Form-specific styles are correctly kept here as they are scoped to this component. */
 .form-control {
   background-color: rgba(var(--bs-body-bg-rgb), 0.5);
   border: 1px solid rgba(var(--bs-body-color-rgb), 0.1);
@@ -215,11 +208,6 @@ const handleSubmit = async () => {
   font-weight: 500;
 }
 
-.btn-primary {
-  transition: all 0.3s ease;
-}
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.3);
-}
+/* REMOVED: .btn-primary and .btn-primary:hover styling.
+   Handled by `.interactive-lift` and `.interactive-shadow-primary`. */
 </style>

@@ -1,5 +1,6 @@
 <template>
-  <div class="project-details-page">
+  <!-- The root element correctly uses the global animated background class -->
+  <div class="project-details-page animated-gradient-background">
     <LoadingModal :visible="isLoading" />
 
     <div v-if="error" class="container py-5 text-center">
@@ -21,7 +22,7 @@
 
       <div class="container content-container">
         <!-- Main Content Card -->
-        <div class="card glass-card p-4 p-md-5 animate-fade-in-up">
+        <div class="card glass-card shimmering p-4 p-md-5 animate-fade-in-up interactive-card-lift interactive-card-shadow-primary">
           <!-- Header -->
           <div class="text-center mb-4">
             <h1 class="display-4 fw-bold">{{ project.title }}</h1>
@@ -39,20 +40,16 @@
             <p>{{ project.description }}</p>
           </div>
 
-          <!-- This container renders if at least one link exists -->
-          <!-- Links Section (only shows if any links are available) -->
+          <!-- Links Section -->
           <div v-if="project.liveUrl || project.repoUrl" class="d-flex flex-wrap justify-content-center gap-3 mb-5">
-            <template v-if="project.liveUrl">
-              <a :href="project.liveUrl" target="_blank" class="btn btn-primary btn-lg">
-                <i class="bi bi-box-arrow-up-right me-2"></i> Live Demo
-              </a>
-            </template>
-
-            <template v-if="project.repoUrl">
-              <a :href="project.repoUrl" target="_blank" class="btn btn-outline-secondary btn-lg">
-                <i class="bi bi-github me-2"></i> Source Code
-              </a>
-            </template>
+            <!-- Buttons correctly use the global interactive classes -->
+            <a v-if="project.liveUrl" :href="project.liveUrl" target="_blank" class="btn btn-primary btn-lg interactive-lift interactive-shadow-primary">
+              <i class="bi bi-box-arrow-up-right me-2"></i> Live Demo
+            </a>
+            <!-- KEY CHANGE: Switched to a solid button for better contrast in dark mode -->
+            <a v-if="project.repoUrl" :href="project.repoUrl" target="_blank" class="btn btn-secondary btn-lg interactive-lift">
+              <i class="bi bi-github me-2"></i> Source Code
+            </a>
           </div>
 
           <div class="text-center">
@@ -79,7 +76,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { getPublicProjectById, ApiError } from '@/services/api';
+import { getPublicProjectById, ApiError } from '@/services/api/index.js';
 import LoadingModal from '@/components/common/LoadingModal.vue';
 
 const props = defineProps({
@@ -117,9 +114,7 @@ onMounted(async () => {
 
 <style scoped>
 .project-details-page {
-  background: linear-gradient(125deg, var(--bs-body-bg), var(--bs-tertiary-bg), var(--bs-body-bg));
-  background-size: 200% 200%;
-  animation: animated-gradient 20s ease infinite;
+  /* REMOVED: background, background-size, animation. Handled by .animated-gradient-background */
   overflow-x: hidden;
   padding-bottom: 5rem;
 }
@@ -146,13 +141,13 @@ onMounted(async () => {
   z-index: 2;
 }
 
-.glass-card {
-  background: rgba(var(--bs-tertiary-bg-rgb), 0.6);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border: 1px solid rgba(var(--bs-body-color-rgb), 0.1);
-  border-radius: 1rem;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+/*
+  KEY FIX: This ensures the card's content is clickable by lifting it
+  above the decorative ::before pseudo-element.
+*/
+.card > * {
+  position: relative;
+  z-index: 1;
 }
 
 .project-description {
@@ -170,19 +165,6 @@ onMounted(async () => {
   border: 1px solid transparent;
 }
 
-.btn {
-  transition: all 0.3s ease;
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(var(--bs-primary-rgb), 0.3);
-}
-
-.btn-outline-secondary:hover {
-  transform: translateY(-2px);
-}
-
 /* Animations */
 @keyframes fadeIn {
   from { opacity: 0; }
@@ -198,12 +180,6 @@ onMounted(async () => {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-@keyframes animated-gradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
 }
 
 .animate-fade-in {

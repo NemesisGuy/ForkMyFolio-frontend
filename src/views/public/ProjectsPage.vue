@@ -1,7 +1,7 @@
 <template>
-  <div class="projects-page py-5">
+  <div class="projects-page py-5 animated-gradient-background">
     <div class="container-fluid">
-      <!-- KEY CHANGE: Centered and restyled hero section -->
+      <!-- Centered and restyled hero section -->
       <div class="text-center mb-5">
         <h1 class="display-4 fw-bold animate-fade-in-up">💻 Projects Showcase</h1>
         <p class="lead text-muted animate-fade-in-up" style="animation-delay: 0.1s;">
@@ -22,9 +22,10 @@
           <div v-for="(project, index) in projects" :key="project.uuid"
                class="col animate-fade-in-up"
                :style="{ 'animation-delay': (index * 0.1) + 0.2 + 's' }">
+            <!-- The interactive classes are on the link wrapper -->
             <router-link :to="{ name: 'project-details', params: { uuid: project.uuid } }"
-                         class="project-card-link">
-              <div class="card h-100 shadow-sm">
+                         class="project-card-link interactive-card-lift interactive-card-shadow-primary">
+              <div class="card h-100 shadow-sm glass-card shimmering">
                 <div class="card-img-container">
                   <img
                     v-if="project.imageUrl"
@@ -42,7 +43,6 @@
                 </div>
                 <div class="card-body d-flex flex-column">
                   <h5 class="card-title">{{ project.title }}</h5>
-                  <!-- KEY CHANGE: Description length increased to 180 -->
                   <p class="card-text text-muted small">
                     {{
                       project.description?.substring(0, 180)
@@ -71,7 +71,7 @@
 
 <script setup>
 import {onMounted, ref} from 'vue';
-import {ApiError, getPublicProjects} from '@/services/api';
+import {ApiError, getPublicProjects} from '@/services/api/index.js';
 import LoadingModal from '@/components/common/LoadingModal.vue';
 
 const projects = ref([]);
@@ -103,10 +103,6 @@ onMounted(fetchProjects);
 <style scoped>
 /* --- Page Styling --- */
 .projects-page {
-  /* NEW: Animated Aurora Background */
-  background: linear-gradient(125deg, var(--bs-body-bg), var(--bs-tertiary-bg), var(--bs-body-bg));
-  background-size: 200% 200%;
-  animation: animated-gradient 20s ease infinite;
   overflow-x: hidden;
 }
 
@@ -126,12 +122,6 @@ onMounted(fetchProjects);
   }
 }
 
-@keyframes animated-gradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
 .animate-fade-in-up {
   opacity: 0;
   animation: fadeInUp 0.8s ease-out forwards;
@@ -143,27 +133,28 @@ onMounted(fetchProjects);
   height: 100%;
   text-decoration: none;
   color: inherit;
+  border-radius: 1rem;
 }
 
 .project-card-link:hover {
   color: inherit;
 }
 
-/* --- Enhanced Card Styling --- */
-.card {
-  /* Glassmorphism effect */
-  background: rgba(var(--bs-tertiary-bg-rgb), 0.4);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(var(--bs-body-color-rgb), 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border-radius: 1rem;
+/*
+  KEY FIX: This ensures the card's content is clickable by lifting it
+  above the decorative ::before pseudo-element.
+*/
+.card-body {
+  position: relative;
+  z-index: 1;
 }
 
+/*
+  KEY FIX: This rule specifically targets the card's border when the link wrapper is hovered,
+  which restores the glowing border effect to match the other pages.
+*/
 .project-card-link:hover .card {
-  transform: translateY(-8px);
-  /* NEW: Primary color glow on hover */
-  box-shadow: 0 8px 32px 0 rgba(var(--bs-primary-rgb), 0.3) !important;
+  border-color: rgba(var(--bs-primary-rgb), 0.4);
 }
 
 .card-img-container {
@@ -224,7 +215,6 @@ onMounted(fetchProjects);
 }
 
 .project-card-link:hover .card-img-overlay .icon {
-  /* NEW: Icon animation */
   transform: scale(1.1) rotate(5deg);
 }
 
@@ -236,7 +226,6 @@ onMounted(fetchProjects);
 /* --- Badge Styling --- */
 .badge {
   font-weight: 500;
-  /* NEW: Refined padding and colors */
   padding: 0.4em 0.7em;
   background-color: rgba(var(--bs-body-color-rgb), 0.1) !important;
   color: var(--bs-emphasis-color) !important;

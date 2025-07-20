@@ -1,5 +1,5 @@
 <template>
-  <div class="qualifications-page py-5">
+  <div class="qualifications-page py-5 animated-gradient-background">
     <div class="container">
       <!-- KEY CHANGE: Centered and animated hero section -->
       <div class="text-center mb-5">
@@ -20,8 +20,8 @@
         <div v-for="(qual, index) in qualifications" :key="qual.uuid"
              class="col animate-fade-in-up"
              :style="{ 'animation-delay': (index * 0.1) + 0.2 + 's' }">
-          <!-- KEY CHANGE: Using new glass-card style -->
-          <div class="card glass-card h-100 shadow-sm">
+          <!-- KEY CHANGE: Using new glass-card style with interactive classes -->
+          <div class="card glass-card h-100 shadow-sm shimmering interactive-card-lift interactive-card-shadow-primary">
             <div class="card-body d-flex align-items-center p-4">
               <div class="qual-icon me-4">
                 <i class="bi bi-patch-check-fill"></i>
@@ -53,7 +53,7 @@
 
 <script setup>
 import {ref, onMounted} from 'vue';
-import {getPublicQualifications, ApiError} from '@/services/api';
+import {getPublicQualifications, ApiError} from '@/services/api/index.js';
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
 
@@ -81,9 +81,7 @@ onMounted(async () => {
 <style scoped>
 /* --- Page Styling --- */
 .qualifications-page {
-  background: linear-gradient(125deg, var(--bs-body-bg), var(--bs-tertiary-bg), var(--bs-body-bg));
-  background-size: 200% 200%;
-  animation: animated-gradient 20s ease infinite;
+  /* REMOVED: background, background-size, animation. Handled by .animated-gradient-background */
   overflow-x: hidden;
 }
 
@@ -99,39 +97,16 @@ onMounted(async () => {
   }
 }
 
-@keyframes animated-gradient {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
+/* REMOVED: @keyframes animated-gradient. Handled by common.css */
 
 .animate-fade-in-up {
   opacity: 0;
   animation: fadeInUp 0.8s ease-out forwards;
 }
 
-/* --- Glass Card Styling --- */
-.glass-card {
-  background: rgba(var(--bs-tertiary-bg-rgb), 0.4);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(var(--bs-body-color-rgb), 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border-radius: 1rem;
-}
+/* REMOVED: .glass-card and .glass-card:hover rules. Handled by global utility classes. */
 
-.glass-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 8px 32px 0 rgba(var(--bs-primary-rgb), 0.3) !important;
-}
-
-/* --- Card Content Styling --- */
+/* --- Card Content Styling (remains page-specific) --- */
 .qual-icon {
   font-size: 2.5rem;
   color: var(--bs-primary);
