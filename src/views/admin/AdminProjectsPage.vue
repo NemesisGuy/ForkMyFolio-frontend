@@ -35,6 +35,12 @@
                     <label for="description" class="form-label">Description</label>
                     <textarea class="form-control" id="description" rows="4" v-model="formState.description" required></textarea>
                   </div>
+                  <!-- KEY CHANGE: Added Tech Stack input -->
+                  <div class="col-12">
+                    <label for="techStack" class="form-label">Tech Stack</label>
+                    <input type="text" class="form-control" id="techStack" v-model="techStackInput" placeholder="e.g., Vue.js, Spring Boot, MySQL">
+                    <div class="form-text">Enter technologies separated by commas.</div>
+                  </div>
                   <div class="col-12">
                     <label for="imageUrl" class="form-label">Image URL</label>
                     <input type="url" class="form-control" id="imageUrl" v-model="formState.imageUrl" placeholder="https://example.com/image.png">
@@ -83,6 +89,10 @@
                     <button class="btn btn-sm btn-outline-danger" @click="requestDelete(project)" title="Delete"><i class="bi bi-trash-fill"></i></button>
                   </div>
                 </div>
+                <!-- KEY CHANGE: Display tech stack badges -->
+                <div v-if="project.techStack && project.techStack.length" class="mt-2">
+                  <span v-for="tech in project.techStack" :key="tech" class="badge bg-info text-dark me-1 mb-1 fw-normal">{{ tech }}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -99,8 +109,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
-import { getPublicProjects, createProject, updateProject, deleteProject, ApiError } from '@/services/api';
+import { ref, reactive, onMounted, computed } from 'vue';
+import { getAdminProjects, createProject, updateProject, deleteProject } from '@/services/api/admin.api.js';
 import LoadingModal from '@/components/common/LoadingModal.vue';
 import ErrorModal from '@/components/common/ErrorModal.vue';
 import ConfirmModal from '@/components/common/ConfirmModal.vue';
@@ -120,6 +130,7 @@ const projectToDelete = ref(null);
 const showSuccessModal = ref(false);
 const successMessage = ref('');
 
+// KEY CHANGE: Added techStack to the initial state
 const initialFormState = {
   uuid: null,
   title: '',
@@ -128,9 +139,31 @@ const initialFormState = {
   repoUrl: '',
   liveUrl: '',
   published: true,
+  techStack: [],
 };
 
 const formState = reactive({ ...initialFormState });
+
+// KEY CHANGE: Added a computed property to manage the techStack input
+/**
+ * A computed property that acts as a bridge between the form's text input
+ * and the `formState.techStack` array.
+ * - `get`: Joins the array into a comma-separated string for display.
+ * - `set`: Parses a comma-separated string back into an array.
+ */
+const techStackInput = computed({
+  get() {
+    return formState.techStack ? formState.techStack.join(', ') : '';
+  },
+  set(value) {
+    if (typeof value === 'string') {
+      formState.techStack = value.split(',').map(s => s.trim()).filter(s => s.length > 0);
+    } else {
+      formState.techStack = [];
+    }
+  }
+});
+
 
 const closeErrorModal = () => {
   showErrorModal.value = false;
@@ -145,7 +178,8 @@ const closeSuccessModal = () => {
 const fetchProjects = async () => {
   isLoading.value = true;
   try {
-    const data = await getPublicProjects();
+    // Using getAdminProjects to ensure we get all data, including drafts
+    const data = await getAdminProjects();
     projects.value = data.sort((a, b) => a.title.localeCompare(b.title));
   } catch (err) {
     console.error("Failed to fetch projects:", err);
@@ -161,11 +195,9 @@ const handleSave = async () => {
   try {
     const savedProjectTitle = formState.title;
     if (isEditing.value) {
-      // --- FIX: Add a guard clause to prevent updating with a null UUID ---
       if (!formState.uuid) {
-        throw new Error("Cannot update project: The record is missing a unique identifier (UUID). This may be a data issue from the server.");
+        throw new Error("Cannot update project: The record is missing a unique identifier (UUID).");
       }
-      // --- END FIX ---
       await updateProject(formState.uuid, formState);
       successMessage.value = `Project '${savedProjectTitle}' has been updated successfully.`;
     } else {
@@ -185,7 +217,9 @@ const handleSave = async () => {
 };
 
 const selectForEdit = (project) => {
-  Object.assign(formState, project);
+  // Ensure the project object has a techStack property to avoid errors
+  const projectData = { ...initialFormState, ...project };
+  Object.assign(formState, projectData);
   isEditing.value = true;
   window.scrollTo({ top: 0, behavior: 'smooth' });
 };
@@ -210,11 +244,9 @@ const executeDelete = async () => {
   isSaving.value = true;
   const deletedProjectTitle = projectToDelete.value.title;
   try {
-    // --- FIX: Add a guard clause for deletion as well ---
     if (!projectToDelete.value.uuid) {
       throw new Error("Cannot delete project: The record is missing a unique identifier (UUID).");
     }
-    // --- END FIX ---
     await deleteProject(projectToDelete.value.uuid);
     successMessage.value = `Project '${deletedProjectTitle}' has been deleted successfully.`;
     showSuccessModal.value = true;
