@@ -6,4 +6,4 @@ import { fetchWithAuth } from './apiClient';
  * This is different from the public-facing getPublicProfile().
  * @returns {Promise<object>} A UserDto object.
  */
-export const getCurrentUserProfile = () => fetchWithAuth('/me/profile', { method: 'GET' }, true);
+export const getCurrentUserProfile = () => fetchWithAuth('/users/me/profile', { method: 'GET' }, true);
