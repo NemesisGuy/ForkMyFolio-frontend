@@ -1,7 +1,6 @@
 <template>
   <div class="qualifications-page py-5 animated-gradient-background">
     <div class="container">
-      <!-- KEY CHANGE: Centered and animated hero section -->
       <div class="text-center mb-5">
         <h1 class="display-4 fw-bold animate-fade-in-up">🎓 Qualifications & Certifications</h1>
         <p class="lead text-muted animate-fade-in-up" style="animation-delay: 0.1s;">
@@ -9,18 +8,36 @@
         </p>
       </div>
 
-      <LoadingSpinner v-if="isLoading"/>
+      <!-- The glassmorphic modal will overlay everything while loading -->
+      <LoadingModal :visible="isLoading"/>
+
+      <!-- THIS IS THE FIX: A shimmering skeleton loader that mimics the qualification cards -->
+      <div v-if="isLoading" class="row row-cols-1 row-cols-lg-2 g-4">
+        <div v-for="n in 4"
+             :key="n"
+             class="col animate-fade-in-up"
+             :style="{ 'animation-delay': (n * 0.05) + 's' }">
+          <div class="card glass-card shimmering h-100">
+            <div class="card-body d-flex align-items-center p-4">
+              <div class="skeleton-icon me-4"></div>
+              <div class="flex-grow-1">
+                <div class="skeleton-line skeleton-title"></div>
+                <div class="skeleton-line skeleton-subtitle"></div>
+              </div>
+              <div class="skeleton-year-badge ms-3"></div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div v-else-if="error" class="alert alert-danger shadow-sm">
         Could not load qualifications data. Please try again later.
       </div>
 
-      <!-- KEY CHANGE: Using a responsive grid layout instead of a single column -->
       <div v-else-if="qualifications.length > 0" class="row row-cols-1 row-cols-lg-2 g-4">
         <div v-for="(qual, index) in qualifications" :key="qual.uuid"
              class="col animate-fade-in-up"
              :style="{ 'animation-delay': (index * 0.1) + 0.2 + 's' }">
-          <!-- KEY CHANGE: Using new glass-card style with interactive classes -->
           <div class="card glass-card h-100 shadow-sm shimmering interactive-card-lift interactive-card-shadow-primary">
             <div class="card-body d-flex align-items-center p-4">
               <div class="qual-icon me-4">
@@ -54,7 +71,8 @@
 <script setup>
 import {ref, onMounted} from 'vue';
 import {getPublicQualifications, ApiError} from '@/services/api/index.js';
-import LoadingSpinner from '@/components/common/LoadingSpinner.vue';
+// THIS IS THE FIX: Import LoadingModal instead of LoadingSpinner
+import LoadingModal from '@/components/common/LoadingModal.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
 
 const qualifications = ref([]);
@@ -81,7 +99,6 @@ onMounted(async () => {
 <style scoped>
 /* --- Page Styling --- */
 .qualifications-page {
-  /* REMOVED: background, background-size, animation. Handled by .animated-gradient-background */
   overflow-x: hidden;
 }
 
@@ -97,16 +114,12 @@ onMounted(async () => {
   }
 }
 
-/* REMOVED: @keyframes animated-gradient. Handled by common.css */
-
 .animate-fade-in-up {
   opacity: 0;
   animation: fadeInUp 0.8s ease-out forwards;
 }
 
-/* REMOVED: .glass-card and .glass-card:hover rules. Handled by global utility classes. */
-
-/* --- Card Content Styling (remains page-specific) --- */
+/* --- Card Content Styling --- */
 .qual-icon {
   font-size: 2.5rem;
   color: var(--bs-primary);
@@ -123,5 +136,36 @@ onMounted(async () => {
   font-size: 1.25rem;
   color: var(--bs-primary);
   opacity: 0.7;
+}
+
+/* --- THIS IS THE FIX: Skeleton Placeholder Styles --- */
+.skeleton-line, .skeleton-icon, .skeleton-year-badge {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.skeleton-icon {
+  width: 40px; /* Matches the font-size of the real icon */
+  height: 40px;
+  border-radius: 8px;
+}
+
+.skeleton-line {
+  margin-bottom: 0.5rem;
+}
+
+.skeleton-title {
+  width: 80%;
+  height: 20px;
+}
+
+.skeleton-subtitle {
+  width: 60%;
+  height: 16px;
+}
+
+.skeleton-year-badge {
+  width: 50px;
+  height: 28px;
 }
 </style>

@@ -1,28 +1,51 @@
 <template>
   <div class="home-page py-5 animated-gradient-background">
-    <LoadingSpinner v-if="isLoading"/>
+    <LoadingModal :visible="isLoading"/>
 
-    <!-- Error State -->
+    <!-- Skeleton Loader: Shown ONLY during the initial load -->
+    <div v-if="isLoading" class="container">
+      <div class="card glass-card shimmering p-4 p-md-5 animate-fade-in-up">
+        <div class="card-body">
+          <div class="row align-items-center">
+            <div class="col-md-4 text-center mb-4 mb-md-0">
+              <div class="skeleton-image rounded-circle shadow-lg mx-auto"></div>
+            </div>
+            <div class="col-md-8">
+              <div class="skeleton-line skeleton-main-title"></div>
+              <div class="skeleton-line skeleton-subtitle mb-4"></div>
+              <div class="skeleton-line skeleton-text"></div>
+              <div class="skeleton-line skeleton-text"></div>
+              <div class="skeleton-line skeleton-text-short mb-4"></div>
+              <div class="d-flex flex-wrap align-items-center mb-3">
+                <div class="skeleton-button me-3 mb-2"></div>
+                <div class="skeleton-button mb-2"></div>
+              </div>
+              <div class="d-flex flex-wrap">
+                <div class="skeleton-social-icon"></div>
+                <div class="skeleton-social-icon"></div>
+                <div class="skeleton-social-icon"></div>
+                <div class="skeleton-social-icon"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error State: Shown if loading fails -->
     <div v-else-if="error" class="container py-5">
       <div class="alert alert-danger">
         Could not load profile data. Please try again later.
       </div>
     </div>
 
-    <!-- Profile Display State -->
+    <!-- Profile Display State: Shown if profile data is successfully loaded -->
     <div v-else-if="profile" class="hero-section">
-      <!-- KEY CHANGE: The container no longer needs its own padding -->
       <div class="container">
-        <!--
-          KEY CHANGE: The main content is now wrapped in a single, interactive glass card.
-          This makes the HomePage visually consistent with the other public pages
-          and enables the "orb" hover effect.
-        -->
         <div class="card glass-card shimmering p-4 p-md-5 animate-fade-in-up interactive-card-lift interactive-card-shadow-primary">
           <div class="card-body">
             <div class="row align-items-center">
               <div class="col-md-4 text-center mb-4 mb-md-0">
-                <!-- Animations are now on the parent card, so they are removed from children -->
                 <a :href="profile.resumeUrl || '#'" target="_blank" class="profile-image-link">
                   <img v-if="profile.resumeImageUrl" :src="profile.resumeImageUrl"
                        alt="Resume Preview"
@@ -71,7 +94,7 @@
       </div>
     </div>
 
-    <!-- Profile Missing / Empty -->
+    <!-- Profile Missing / Empty State: Shown if loading is done but no profile was found -->
     <div v-else class="container py-5 text-center">
       <div class="py-5">
         <i class="bi bi-person-workspace display-1 text-muted mb-3"></i>
@@ -87,23 +110,29 @@
       </div>
     </div>
 
-    <!-- Cover Letter Modal -->
+    <!-- Cover Letter Modal with Glassmorphic styling -->
     <div v-if="showCoverLetterModal" class="modal fade show" style="display: block;" tabindex="-1">
       <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content">
+        <div class="modal-content glass-card">
           <div class="modal-header">
             <h5 class="modal-title">Cover Letter Template</h5>
-            <button type="button" class="btn-close" @click="showCoverLetterModal = false"></button>
+            <button
+              type="button"
+              :class="['btn-close', { 'btn-close-white': currentTheme === 'dark' }]"
+              aria-label="Close"
+              @click="showCoverLetterModal = false"
+            ></button>
           </div>
           <div class="modal-body">
             <pre class="cover-letter-text">{{ profile.coverLetterTemplate }}</pre>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="showCoverLetterModal = false">Close</button>
+            <button type="button" class="btn btn-outline-secondary" @click="showCoverLetterModal = false">Close</button>
           </div>
         </div>
       </div>
     </div>
+    <!-- The backdrop for the modal -->
     <div v-if="showCoverLetterModal" class="modal-backdrop fade show"></div>
 
     <!-- PDF Download Error Alert -->
@@ -127,11 +156,11 @@
 </template>
 
 <script setup>
-// The script section remains unchanged
 import {onMounted, ref, computed} from 'vue';
 import {getPublicProfile, downloadPortfolioAsPdf, ApiError} from '@/services/api/index.js';
 import {authService} from '@/services/authService.js';
-import LoadingSpinner from '@/components/common/LoadingSpinner.vue';
+import LoadingModal from '@/components/common/LoadingModal.vue';
+import { useTheme } from '@/services/themeService.js';
 
 const profile = ref(null);
 const isLoading = ref(true);
@@ -139,6 +168,8 @@ const error = ref(null);
 const showCoverLetterModal = ref(false);
 const isDownloadingPdf = ref(false);
 const pdfDownloadError = ref(null);
+
+const { currentTheme } = useTheme();
 
 const fullName = computed(() => {
   if (!profile.value) return '';
@@ -209,10 +240,6 @@ onMounted(async () => {
   width: 100%;
 }
 
-/*
-  KEY FIX: This ensures the card's content is clickable by lifting it
-  above the decorative ::before pseudo-element.
-*/
 .card-body {
   position: relative;
   z-index: 1;
@@ -323,5 +350,85 @@ onMounted(async () => {
   font-family: var(--bs-font-sans-serif);
   font-size: 1rem;
   line-height: 1.6;
+}
+
+/* Cover Letter Modal Styling */
+.modal-content.glass-card {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.modal-content.glass-card .modal-header {
+  background-color: rgba(var(--bs-body-color-rgb), 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--bs-emphasis-color);
+}
+
+.modal-content.glass-card .modal-body {
+  color: var(--bs-body-color);
+}
+
+.modal-content.glass-card .modal-footer {
+  background-color: rgba(var(--bs-body-color-rgb), 0.05);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/*
+  THIS IS THE FIX: Lifts the modal's content above the shimmering
+  pseudo-element, making all buttons inside clickable.
+*/
+.modal-content.glass-card .modal-header,
+.modal-content.glass-card .modal-body,
+.modal-content.glass-card .modal-footer {
+  position: relative;
+  z-index: 1;
+}
+
+
+/* --- Skeleton Placeholder Styles --- */
+.skeleton-image {
+  width: 250px;
+  height: 250px;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.skeleton-line {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.skeleton-main-title {
+  width: 70%;
+  height: 48px;
+}
+
+.skeleton-subtitle {
+  width: 50%;
+  height: 28px;
+}
+
+.skeleton-text {
+  width: 100%;
+  height: 18px;
+}
+
+.skeleton-text-short {
+  width: 80%;
+  height: 18px;
+}
+
+.skeleton-button {
+  width: 180px;
+  height: 48px;
+  border-radius: var(--bs-btn-border-radius);
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.skeleton-social-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.1);
+  margin-right: 20px;
 }
 </style>

@@ -3,12 +3,13 @@
  * @description Manages authentication state, including login, logout, token storage, and session initialization.
  * This service acts as the central hub for authentication logic, using the low-level API functions.
  */
-import { ref } from 'vue';
+import { ref, computed } from 'vue'; // Import 'computed'
 import { jwtDecode } from 'jwt-decode';
 
 // Import the specific API functions and the dependency injector
 import { login as apiLogin, logout as apiLogout, register as apiRegister, refreshToken as apiRefreshToken } from './api/auth.api';
-import { getCurrentUserProfile } from './api/user.api';
+// KEY CHANGE: We will use getAccount as it provides the full user DTO, including the profile image URL.
+import { getAccount } from './api/admin.api';
 import { setAuthService } from './api/apiClient';
 
 // --- Reactive State ---
@@ -19,7 +20,7 @@ let accessToken = null;
 
 // --- Token Refresh State ---
 let isRefreshing = false;
-let refreshPromise = null; // Stores the promise of the in-progress refresh
+let refreshPromise = null;
 
 // --- Private Functions ---
 function _updateAuthState(token, userData) {
@@ -60,7 +61,9 @@ function _clearAuthState() {
 // --- Public API for the Service ---
 async function login(credentials) {
   const response = await apiLogin(credentials);
-  _updateAuthState(response.accessToken, response.user);
+  // After login, fetch the full account data to get the image URL
+  const fullUser = await getAccount();
+  _updateAuthState(response.accessToken, fullUser);
 }
 
 async function logout() {
@@ -75,39 +78,28 @@ async function logout() {
 
 async function register(userData) {
   const response = await apiRegister(userData);
-  _updateAuthState(response.accessToken, response.user);
+  // After register, fetch the full account data
+  const fullUser = await getAccount();
+  _updateAuthState(response.accessToken, fullUser);
 }
 
-/**
- * Refreshes the access token using the refresh token cookie.
- * This function is enhanced to prevent race conditions where multiple API calls
- * fail simultaneously and all attempt to refresh the token. It ensures only one
- * refresh attempt is made, and all other calls wait for its result.
- */
 async function refreshToken() {
   if (isRefreshing) {
-    console.log('[AuthService] A token refresh is already in progress. Waiting for it to complete.');
-    // If a refresh is already happening, return the existing promise.
-    // This allows subsequent failed requests to wait for the same refresh to complete.
     return refreshPromise;
   }
 
-  console.log('[AuthService] Starting token refresh...');
   isRefreshing = true;
-  // Create a new promise. All subsequent calls that arrive while this is in-progress
-  // will wait on this same promise.
   refreshPromise = new Promise(async (resolve, reject) => {
     try {
       const response = await apiRefreshToken();
       _updateAuthState(response.accessToken, response.user);
       console.log('[AuthService] Token refresh successful.');
-      resolve(true); // Resolve with success status.
+      resolve(true);
     } catch (e) {
       console.error("[AuthService] Token refresh failed:", e.message);
-      _clearAuthState(); // Log the user out if refresh fails.
-      reject(e); // Reject the promise to signal failure to all waiting calls.
+      _clearAuthState();
+      reject(e);
     } finally {
-      // Reset the state once the refresh attempt is complete.
       isRefreshing = false;
       refreshPromise = null;
     }
@@ -125,31 +117,66 @@ function updateLocalUser(updatedUser) {
 async function initAuth() {
   console.log('[AuthService] Initializing auth state...');
   try {
-    // On application startup, we try to refresh the token.
-    // This will restore the user's session if they have a valid refresh token cookie.
+    // This is the call that is likely failing in production due to an incorrect API_BASE_URL.
+    // When this throws an error, the catch block below logs you out.
     await refreshToken();
 
-    // If the refresh was successful, we are authenticated.
-    // Let's fetch the absolute latest user profile data from the server to ensure the UI is up-to-date.
     if (isAuthenticated.value) {
-      const freshUserProfile = await getCurrentUserProfile();
-      updateLocalUser(freshUserProfile);
+      // KEY CHANGE: Fetch the full account data to ensure the profile image URL is present.
+      const freshUserAccount = await getAccount();
+      updateLocalUser(freshUserAccount);
       console.log('[AuthService] User profile updated with latest data from server.');
     }
   } catch (error) {
-    // This is an expected and normal failure if the user is not logged in,
-    // their refresh token is expired, or the backend is offline on first load.
-    // The refreshToken() function already handles clearing auth state, so we just log this for clarity.
-    console.log('[AuthService] Initial token refresh failed (user is likely not logged in).');
+    console.log('[AuthService] Initial token refresh failed (user is likely not logged in or API_BASE_URL is misconfigured in production).');
   } finally {
     console.log(`[AuthService] Auth state initialized. User is ${isAuthenticated.value ? 'authenticated' : 'not authenticated'}.`);
   }
 }
 
+// --- KEY CHANGE: Centralized Computed Property for User ---
+/**
+ * A computed property that provides the user object with a guaranteed
+ * absolute URL for the profile image. Use this in all components.
+ */
+const computedUser = computed(() => {
+  const currentUser = user.value;
+  if (!currentUser) {
+    return null;
+  }
+
+  const imageUrl = currentUser.profileImageUrl;
+  let fullProfileImageUrl = null;
+
+  if (imageUrl) {
+    if (/^(https?:\/\/|\/\/)/.test(imageUrl)) {
+      fullProfileImageUrl = imageUrl;
+    } else {
+      const apiBaseUrl = window.runtimeConfig.API_BASE_URL.startsWith('##')
+        ? 'http://localhost:8080/api/v1'
+        : window.runtimeConfig.API_BASE_URL;
+      try {
+        const serverUrl = new URL(apiBaseUrl);
+        const serverRoot = `${serverUrl.protocol}//${serverUrl.host}`;
+        fullProfileImageUrl = `${serverRoot}${imageUrl.startsWith('/') ? imageUrl : '/' + imageUrl}`;
+      } catch (e) {
+        console.error('Invalid VITE_API_BASE_URL:', apiBaseUrl);
+        fullProfileImageUrl = imageUrl; // Fallback
+      }
+    }
+  }
+
+  return {
+    ...currentUser,
+    fullProfileImageUrl, // Add the fully resolved URL to the user object
+  };
+});
+
+
 export const authService = {
   // State
   isAuthenticated,
-  user,
+  user: computedUser, // <-- Expose the computed user object
   isLoading,
   // Getters
   getAccessToken: () => accessToken,

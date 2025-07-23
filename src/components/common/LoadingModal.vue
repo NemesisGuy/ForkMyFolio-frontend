@@ -1,24 +1,22 @@
 <template>
   <teleport to="body">
     <div v-if="visible" class="loading-modal-overlay">
-      <!-- Backdrop -->
+      <!-- Backdrop with blur effect -->
       <div class="loading-modal-backdrop"></div>
       <!-- Spinner Container -->
       <div class="loading-modal-content">
-        <LoadingSpinner class="text-light"/>
+        <!-- THIS IS THE FIX: A custom glassmorphic spinner -->
+        <div class="glass-spinner"></div>
       </div>
     </div>
   </teleport>
 </template>
 
 <script setup>
-import LoadingSpinner from './LoadingSpinner.vue';
-
 /**
  * @file src/components/common/LoadingModal.vue
- * @description A full-screen loading modal component.
- * Displays a semi-transparent overlay and a centered spinner to block UI interaction
- * during long-running asynchronous operations.
+ * @description A full-screen, glassmorphic loading modal component.
+ * Displays a blurred, semi-transparent overlay and a centered, glowing spinner.
  */
 
 defineProps({
@@ -41,7 +39,7 @@ defineProps({
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 1060; /* Higher than other modals to ensure it's on top */
+  z-index: 1060;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -53,17 +51,31 @@ defineProps({
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+  /* THIS IS THE FIX: Frosted glass effect */
+  background-color: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px); /* For Safari */
 }
 
 .loading-modal-content {
-  position: relative; /* To be above the backdrop */
+  position: relative;
   z-index: 1061;
 }
 
-/* Make the spinner inside the modal larger for better visibility */
-.loading-modal-content :deep(.spinner-border) {
-  width: 4rem;
-  height: 4rem;
+/* THIS IS THE FIX: Custom Glassmorphic Spinner */
+.glass-spinner {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 4px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #ffffff;
+  animation: spin 1s linear infinite;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

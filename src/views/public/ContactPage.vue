@@ -1,6 +1,5 @@
 <template>
-  <!-- The template is already correctly using the new global classes. No changes needed here. -->
-  <div class="contact-page py-4 animated-gradient-background">
+  <div class="contact-page py-5 animated-gradient-background">
     <div class="container" style="max-width: 600px;">
       <div class="text-center mb-4">
         <h1 class="display-4 fw-bold animate-fade-in-up">📧 Get In Touch</h1>
@@ -9,8 +8,28 @@
         </p>
       </div>
 
-      <!-- The card has the correct interactive classes -->
-      <div class="card glass-card shimmering animate-fade-in-up interactive-card-lift interactive-card-shadow-primary" style="animation-delay: 0.2s;">
+      <!-- The glassmorphic modal will overlay everything while loading -->
+      <LoadingModal :visible="isPageLoading" />
+
+      <!-- THIS IS THE FIX: A shimmering skeleton loader that mimics the contact form -->
+      <div v-if="isPageLoading"
+           class="card glass-card shimmering animate-fade-in-up"
+           style="animation-delay: 0.2s;">
+        <div class="card-body p-4 p-md-5">
+          <div class="skeleton-line skeleton-label mb-2"></div>
+          <div class="skeleton-input mb-3"></div>
+          <div class="skeleton-line skeleton-label mb-2"></div>
+          <div class="skeleton-input mb-3"></div>
+          <div class="skeleton-line skeleton-label mb-2"></div>
+          <div class="skeleton-textarea mb-3"></div>
+          <div class="skeleton-button"></div>
+        </div>
+      </div>
+
+      <!-- The real form card, now shown with v-else -->
+      <div v-else
+           class="card glass-card shimmering animate-fade-in-up interactive-card-lift interactive-card-shadow-primary"
+           style="animation-delay: 0.2s;">
         <div class="card-body p-4 p-md-5">
           <form novalidate @submit.prevent="handleSubmit">
             <div class="mb-3">
@@ -31,10 +50,10 @@
                         class="form-control" required rows="5"></textarea>
               <div v-if="fieldErrors.message" class="invalid-feedback">{{ fieldErrors.message }}</div>
             </div>
-            <button :disabled="isLoading" class="btn btn-primary w-100 interactive-lift interactive-shadow-primary" type="submit">
-              <span v-if="isLoading" aria-hidden="true" class="spinner-border spinner-border-sm me-1"
+            <button :disabled="isSubmitting" class="btn btn-primary w-100 interactive-lift interactive-shadow-primary" type="submit">
+              <span v-if="isSubmitting" aria-hidden="true" class="spinner-border spinner-border-sm me-1"
                     role="status"></span>
-              {{ isLoading ? 'Sending...' : 'Send Message' }}
+              {{ isSubmitting ? 'Sending...' : 'Send Message' }}
             </button>
           </form>
         </div>
@@ -58,15 +77,11 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue';
+import { reactive, ref, onMounted } from 'vue';
 import { submitContactMessage, ApiError } from '@/services/api/index.js';
 import SuccessModal from '@/components/common/SuccessModal.vue';
 import ErrorModal from '@/components/common/ErrorModal.vue';
-
-/**
- * @file src/views/ContactPage.vue
- * @description A sexy, modern contact page with form submission and feedback.
- */
+import LoadingModal from '@/components/common/LoadingModal.vue';
 
 const form = reactive({
   name: '',
@@ -80,7 +95,10 @@ const fieldErrors = reactive({
   message: null
 });
 
-const isLoading = ref(false);
+// THIS IS THE FIX: Separate loading states for page load vs. form submission
+const isPageLoading = ref(true);
+const isSubmitting = ref(false);
+
 const error = ref({ title: '', message: '' });
 const showErrorModal = ref(false);
 const successMessage = ref('');
@@ -97,11 +115,9 @@ const closeSuccessModal = () => {
 };
 
 const validateForm = () => {
-  // Clear previous errors
   for (const key in fieldErrors) {
     fieldErrors[key] = null;
   }
-
   let isValid = true;
   if (!form.name.trim()) {
     fieldErrors.name = "Name is required.";
@@ -126,12 +142,11 @@ const handleSubmit = async () => {
     return;
   }
 
-  isLoading.value = true;
+  isSubmitting.value = true;
   try {
     await submitContactMessage({ ...form });
     successMessage.value = 'Thank you for your message! I will get back to you shortly.';
     showSuccessModal.value = true;
-    // Reset form
     form.name = '';
     form.email = '';
     form.message = '';
@@ -143,29 +158,29 @@ const handleSubmit = async () => {
     };
     showErrorModal.value = true;
   } finally {
-    isLoading.value = false;
+    isSubmitting.value = false;
   }
 };
+
+// THIS IS THE FIX: Simulate a page load to allow the skeleton to be visible
+onMounted(() => {
+  setTimeout(() => {
+    isPageLoading.value = false;
+  }, 500); // A 500ms delay provides a smooth visual transition
+});
 </script>
 
 <style scoped>
 .contact-page {
   min-height: calc(100vh - 56px - 1px);
-  /* REMOVED: background, background-size, and animation properties.
-     These are now handled by the `.animated-gradient-background` class. */
   overflow-x: hidden;
 }
 
-/*
-  KEY FIX: This ensures the card's content is clickable by lifting it
-  above the decorative ::before pseudo-element.
-*/
 .card-body {
   position: relative;
   z-index: 1;
 }
 
-/* Animations are page-specific and should remain. */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -177,16 +192,11 @@ const handleSubmit = async () => {
   }
 }
 
-/* REMOVED: @keyframes animated-gradient. Handled by `.animated-gradient-background`. */
-
 .animate-fade-in-up {
   opacity: 0;
   animation: fadeInUp 0.8s ease-out forwards;
 }
 
-/* REMOVED: .card styling. Handled by `.glass-card` and `.shimmering`. */
-
-/* Form-specific styles are correctly kept here as they are scoped to this component. */
 .form-control {
   background-color: rgba(var(--bs-body-bg-rgb), 0.5);
   border: 1px solid rgba(var(--bs-body-color-rgb), 0.1);
@@ -208,6 +218,25 @@ const handleSubmit = async () => {
   font-weight: 500;
 }
 
-/* REMOVED: .btn-primary and .btn-primary:hover styling.
-   Handled by `.interactive-lift` and `.interactive-shadow-primary`. */
+/* --- THIS IS THE FIX: Skeleton Placeholder Styles --- */
+.skeleton-line, .skeleton-input, .skeleton-textarea, .skeleton-button {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: var(--bs-border-radius);
+}
+.skeleton-label {
+  width: 25%;
+  height: 16px;
+}
+.skeleton-input {
+  width: 100%;
+  height: 38px; /* Standard Bootstrap input height */
+}
+.skeleton-textarea {
+  width: 100%;
+  height: 120px; /* Matches rows="5" */
+}
+.skeleton-button {
+  width: 100%;
+  height: 38px; /* Standard Bootstrap button height */
+}
 </style>

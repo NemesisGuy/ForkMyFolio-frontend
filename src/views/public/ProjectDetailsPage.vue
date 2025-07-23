@@ -3,7 +3,36 @@
   <div class="project-details-page animated-gradient-background">
     <LoadingModal :visible="isLoading" />
 
-    <div v-if="error" class="container py-5 text-center">
+    <!-- THIS IS THE FIX: A full-page skeleton loader for the initial loading state -->
+    <div v-if="isLoading">
+      <div class="hero-image-container skeleton-hero"></div>
+      <div class="container content-container">
+        <div class="card glass-card shimmering p-4 p-md-5">
+          <div class="text-center mb-4">
+            <div class="skeleton-line skeleton-main-title"></div>
+          </div>
+          <div class="d-flex justify-content-center flex-wrap gap-2 mb-4">
+            <div class="skeleton-badge"></div>
+            <div class="skeleton-badge"></div>
+            <div class="skeleton-badge"></div>
+          </div>
+          <div class="project-description mb-5">
+            <div class="skeleton-line skeleton-text"></div>
+            <div class="skeleton-line skeleton-text"></div>
+            <div class="skeleton-line skeleton-text-short"></div>
+          </div>
+          <div class="d-flex flex-wrap justify-content-center gap-3 mb-5">
+            <div class="skeleton-button"></div>
+            <div class="skeleton-button"></div>
+          </div>
+          <div class="text-center">
+            <div class="skeleton-line skeleton-back-link"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div v-else-if="error" class="container py-5 text-center">
       <div class="alert alert-danger shadow-sm">
         <h4 class="alert-heading">🚫 Error Loading Project</h4>
         <p>{{ error.message || 'Could not fetch the project details. It might not exist or there was a server error.' }}</p>
@@ -46,7 +75,6 @@
             <a v-if="project.liveUrl" :href="project.liveUrl" target="_blank" class="btn btn-primary btn-lg interactive-lift interactive-shadow-primary">
               <i class="bi bi-box-arrow-up-right me-2"></i> Live Demo
             </a>
-            <!-- KEY CHANGE: Switched to a solid button for better contrast in dark mode -->
             <a v-if="project.repoUrl" :href="project.repoUrl" target="_blank" class="btn btn-secondary btn-lg interactive-lift">
               <i class="bi bi-github me-2"></i> Source Code
             </a>
@@ -114,7 +142,6 @@ onMounted(async () => {
 
 <style scoped>
 .project-details-page {
-  /* REMOVED: background, background-size, animation. Handled by .animated-gradient-background */
   overflow-x: hidden;
   padding-bottom: 5rem;
 }
@@ -141,10 +168,6 @@ onMounted(async () => {
   z-index: 2;
 }
 
-/*
-  KEY FIX: This ensures the card's content is clickable by lifting it
-  above the decorative ::before pseudo-element.
-*/
 .card > * {
   position: relative;
   z-index: 1;
@@ -189,5 +212,49 @@ onMounted(async () => {
 .animate-fade-in-up {
   opacity: 0;
   animation: fadeInUp 0.8s ease-out 0.2s forwards; /* Added delay */
+}
+
+/* --- THIS IS THE FIX: Skeleton Placeholder Styles --- */
+.skeleton-hero {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.skeleton-line, .skeleton-badge, .skeleton-button {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.skeleton-main-title {
+  width: 60%;
+  height: 45px;
+  margin: 0 auto;
+}
+
+.skeleton-badge {
+  width: 80px;
+  height: 30px;
+}
+
+.skeleton-line.skeleton-text {
+  width: 100%;
+  height: 18px;
+  margin-bottom: 1rem;
+}
+
+.skeleton-line.skeleton-text-short {
+  width: 70%;
+  height: 18px;
+}
+
+.skeleton-button {
+  width: 180px;
+  height: 48px;
+  border-radius: var(--bs-btn-border-radius);
+}
+
+.skeleton-back-link {
+  width: 200px;
+  height: 24px;
+  margin: 0 auto;
 }
 </style>

@@ -13,7 +13,8 @@
               <!-- KEY CHANGE: Added card-body for z-index fix and padding -->
               <div class="card-body p-4 p-md-5">
                 <div class="text-center mb-4">
-                  <img v-if="user.profileImageUrl" :src="user.profileImageUrl"
+                  <!-- THIS IS THE FIX: Use the new computed property for the src -->
+                  <img v-if="fullProfileImageUrl" :src="fullProfileImageUrl"
                        alt="Profile Picture" class="profile-image img-fluid rounded-circle shadow-lg">
                   <div v-else
                        class="profile-image-placeholder rounded-circle shadow-lg d-flex align-items-center justify-content-center">
@@ -45,10 +46,10 @@
 
                 <div class="d-flex flex-wrap justify-content-center mt-4 pt-4 border-top border-white border-opacity-10">
                   <!-- KEY CHANGE: Added interactive classes to buttons -->
-                  <router-link class="btn btn-primary me-2 mb-2 interactive-lift interactive-shadow-primary" to="/admin/account">
+                  <router-link class="btn btn-primary me-2 mb-2 interactive-lift interactive-shadow-primary" :to="{ name: 'admin-account' }">
                     <i class="bi bi-person-gear me-1"></i> Edit Account Details
                   </router-link>
-                  <router-link class="btn btn-outline-secondary mb-2 interactive-lift" to="/admin/portfolio-profile">
+                  <router-link class="btn btn-outline-secondary mb-2 interactive-lift" :to="{ name: 'admin-portfolio-profile' }">
                     <i class="bi bi-layout-text-sidebar-reverse me-1"></i> Edit Public Profile
                   </router-link>
                 </div>
@@ -60,15 +61,52 @@
     </div>
   </div>
 </template>
+
 <script setup>
-import { ref, onMounted } from 'vue';
-import { getAccount } from '@/services/api/index.js';
+import { ref, onMounted, computed } from 'vue';
+import { getAccount } from '@/services/api/admin.api.js'; // Corrected import path
 import LoadingModal from '@/components/common/LoadingModal.vue';
 import ErrorModal from '@/components/common/ErrorModal.vue';
 
 const user = ref(null);
 const isLoading = ref(true);
 const error = ref(null);
+
+/**
+ * Creates a full, absolute URL for the profile image, resolving issues in production.
+ * It checks if the URL from the backend is relative and, if so, prepends the
+ * server's root URL derived from the VITE_API_BASE_URL environment variable.
+ */
+const fullProfileImageUrl = computed(() => {
+  const imageUrl = user.value?.profileImageUrl;
+  if (!imageUrl) {
+    return null; // No image to process
+  }
+
+  // If the URL is already absolute (starts with http, https, or //), use it directly.
+  if (/^(https?:\/\/|\/\/)/.test(imageUrl)) {
+    return imageUrl;
+  }
+
+  // Otherwise, it's a relative path. We need to construct the full URL.
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+  if (!apiBaseUrl) {
+    console.error('VITE_API_BASE_URL is not defined in your .env file. Cannot construct full image URL.');
+    return imageUrl; // Fallback to the original relative URL
+  }
+
+  try {
+    // Create a URL object to safely extract the protocol and host (e.g., 'http://localhost:8080')
+    const serverUrl = new URL(apiBaseUrl);
+    const serverRoot = `${serverUrl.protocol}//${serverUrl.host}`;
+
+    // Combine the server root with the relative image path, ensuring a single slash
+    return `${serverRoot}${imageUrl.startsWith('/') ? imageUrl : '/' + imageUrl}`;
+  } catch (e) {
+    console.error('Invalid VITE_API_BASE_URL:', apiBaseUrl);
+    return imageUrl; // Fallback on error
+  }
+});
 
 onMounted(async () => {
   try {
@@ -87,7 +125,6 @@ onMounted(async () => {
 /* --- Page Styling --- */
 .user-account-page {
   min-height: calc(100vh - 56px - 1px);
-  /* REMOVED: background, background-size, animation. Handled by .animated-gradient-background */
   overflow-x: hidden;
 }
 
@@ -116,14 +153,10 @@ onMounted(async () => {
   }
 }
 
-/* REMOVED: @keyframes animated-gradient. Handled by common.css */
-
 .animate-fade-in-up {
   opacity: 0;
   animation: fadeInUp 0.8s ease-out forwards;
 }
-
-/* REMOVED: .glass-card styling. Handled by common.css */
 
 /* --- Profile Image --- */
 .profile-image,
@@ -177,6 +210,4 @@ onMounted(async () => {
   font-weight: 500;
   padding: 0.4em 0.7em;
 }
-
-/* REMOVED: .btn and .btn:hover styling. Handled by global interactive classes. */
 </style>

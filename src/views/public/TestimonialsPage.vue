@@ -8,7 +8,31 @@
         </p>
       </div>
 
-      <LoadingSpinner v-if="isLoading" />
+      <!-- The glassmorphic modal will overlay everything while loading -->
+      <LoadingModal :visible="isLoading" />
+
+      <!-- A shimmering skeleton loader that mimics the testimonial cards -->
+      <div v-if="isLoading" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        <!-- THIS IS THE FIX: The 'col' div now has the animation class and a staggered delay -->
+        <div v-for="n in 6"
+             :key="n"
+             class="col animate-fade-in-up"
+             :style="{ 'animation-delay': (n * 0.05) + 's' }">
+          <div class="card glass-card shimmering h-100">
+            <div class="card-body d-flex flex-column">
+              <div class="flex-grow-1">
+                <div class="skeleton-line skeleton-text"></div>
+                <div class="skeleton-line skeleton-text"></div>
+                <div class="skeleton-line skeleton-text-short"></div>
+              </div>
+              <div class="mt-auto text-end">
+                <div class="skeleton-line skeleton-author"></div>
+                <div class="skeleton-line skeleton-title"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div v-else-if="error" class="alert alert-danger shadow-sm" role="alert">
         <h4 class="alert-heading"><i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i> Error Loading Testimonials</h4>
@@ -23,10 +47,6 @@
           <div class="card glass-card h-100 shadow-sm shimmering interactive-card-lift interactive-card-shadow-primary">
             <div class="card-body d-flex flex-column">
               <i class="bi bi-quote card-quote-icon" aria-hidden="true"></i>
-              <!--
-                KEY CHANGE: The blockquote and figcaption are now correctly
-                wrapped in a <figure> element. This is semantically correct HTML.
-              -->
               <figure class="mb-0 d-flex flex-column flex-grow-1">
                 <blockquote class="blockquote mb-4 flex-grow-1">
                   <p>{{ testimonial.quote }}</p>
@@ -57,7 +77,7 @@
  */
 import { onMounted, ref } from 'vue';
 import { getPublicTestimonials, ApiError } from '@/services/api/index.js';
-import LoadingSpinner from '@/components/common/LoadingSpinner.vue';
+import LoadingModal from '@/components/common/LoadingModal.vue';
 
 const testimonials = ref([]);
 const isLoading = ref(true);
@@ -77,7 +97,6 @@ onMounted(async () => {
 
 <style scoped>
 .testimonials-page {
-  /* REMOVED: background, background-size, animation. Handled by .animated-gradient-background */
   overflow-x: hidden;
 }
 
@@ -93,14 +112,10 @@ onMounted(async () => {
   }
 }
 
-/* REMOVED: @keyframes animated-gradient. Handled by common.css */
-
 .animate-fade-in-up {
   opacity: 0;
   animation: fadeInUp 0.8s ease-out forwards;
 }
-
-/* REMOVED: .glass-card and .glass-card:hover rules. Handled by global utility classes. */
 
 /* Watermark Quote Icon */
 .card-quote-icon {
@@ -135,5 +150,30 @@ onMounted(async () => {
 .blockquote-footer strong {
   color: var(--bs-emphasis-color);
   font-weight: 500;
+}
+
+/* --- Skeleton Placeholder Styles --- */
+.skeleton-line {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  margin-bottom: 0.75rem;
+}
+.skeleton-text {
+  width: 100%;
+  height: 16px;
+}
+.skeleton-text-short {
+  width: 70%;
+  height: 16px;
+}
+.skeleton-author {
+  width: 60%;
+  height: 18px;
+  margin-left: auto; /* Align to the right */
+}
+.skeleton-title {
+  width: 80%;
+  height: 14px;
+  margin-left: auto; /* Align to the right */
 }
 </style>

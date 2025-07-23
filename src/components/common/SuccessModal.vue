@@ -13,8 +13,8 @@
         tabindex="-1"
       >
         <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
-            <div class="modal-header bg-success text-white">
+          <div class="modal-content glass-card">
+            <div class="modal-header">
               <h5 :id="modalId + 'Label'" class="modal-title">{{ title }}</h5>
               <button
                 aria-label="Close"
@@ -41,43 +41,22 @@
 <script setup>
 /**
  * @file src/components/common/SuccessModal.vue
- * @description A reusable modal component for displaying success messages.
- * This is a custom implementation using Vue and Bootstrap CSS, without Bootstrap JS.
+ * @description A reusable, glassmorphic modal component for displaying success messages.
  */
 
-const props = defineProps({
-  /**
-   * The title of the modal.
-   * @type {String}
-   * @default 'Success'
-   */
+defineProps({
   title: {
     type: String,
     default: 'Success',
   },
-  /**
-   * The success message to display in the modal body.
-   * @type {String}
-   * @required
-   */
   message: {
     type: String,
     required: true,
   },
-  /**
-   * Controls the visibility of the modal.
-   * @type {Boolean}
-   * @required
-   */
   visible: {
     type: Boolean,
     required: true,
   },
-  /**
-   * A unique ID for the modal, useful if multiple modals are on a page.
-   * Defaults to a dynamically generated unique ID.
-   * @type {String}
-   */
   modalId: {
     type: String,
     default: () => `success-modal-${Math.random().toString(36).slice(2, 11)}`,
@@ -86,24 +65,50 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 
-/**
- * Handles the click on the close button or OK button.
- * Emits a 'close' event to the parent component.
- */
 const handleClose = () => {
   emit('close');
 };
 </script>
 
 <style scoped>
-/* The .show class from Bootstrap CSS will handle the opacity of the backdrop. */
-/* The `style="display: block"` makes the modal visible. */
-/* No extra CSS is needed for basic functionality. */
-.modal-header.bg-success {
-  /* Customizations for success header if Bootstrap defaults aren't enough */
+/* Glassmorphism styles for the modal */
+.modal-content.glass-card {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--bs-light);
+}
+
+.modal-header {
+  background-color: rgba(var(--bs-success-rgb), 0.7);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.modal-body {
+  color: var(--bs-body-color);
+}
+
+.modal-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: rgba(0, 0, 0, 0.1);
 }
 
 .btn-outline-success {
-  /* Ensure good contrast and theming */
+  border-color: var(--bs-success);
+  color: var(--bs-success);
+}
+.btn-outline-success:hover {
+  background-color: var(--bs-success);
+  color: #fff;
+}
+
+/*
+  THIS IS THE FIX: Lifts the modal's content above any shimmering
+  pseudo-element, making all buttons inside clickable.
+*/
+.modal-content.glass-card .modal-header,
+.modal-content.glass-card .modal-body,
+.modal-content.glass-card .modal-footer {
+  position: relative;
+  z-index: 1;
 }
 </style>

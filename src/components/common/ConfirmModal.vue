@@ -13,12 +13,12 @@
         tabindex="-1"
       >
         <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
+          <div class="modal-content glass-card">
             <div class="modal-header">
               <h5 :id="modalId + 'Label'" class="modal-title">{{ title }}</h5>
               <button
+                :class="['btn-close', { 'btn-close-white': currentTheme === 'dark' }]"
                 aria-label="Close"
-                class="btn-close"
                 type="button"
                 @click="handleCancel"
               ></button>
@@ -30,7 +30,8 @@
               <button class="btn btn-outline-secondary" type="button" @click="handleCancel">
                 {{ cancelText }}
               </button>
-              <button class="btn btn-primary" type="button" @click="handleConfirm">
+              <!-- THIS IS THE FIX: The button now uses a computed class based on the 'type' prop -->
+              <button :class="['btn', confirmButtonClass]" type="button" @click="handleConfirm">
                 {{ confirmText }}
               </button>
             </div>
@@ -44,94 +45,102 @@
 <script setup>
 /**
  * @file src/components/common/ConfirmModal.vue
- * @description A reusable modal component for asking users to confirm an action.
- * This is a custom implementation using Vue and Bootstrap CSS, without Bootstrap JS.
+ * @description A reusable, glassmorphic modal for asking users to confirm an action.
  */
+import { computed } from 'vue';
+import { useTheme } from '@/services/themeService.js';
+
+const { currentTheme } = useTheme();
 
 const props = defineProps({
-  /**
-   * The title of the modal.
-   * @type {String}
-   * @required
-   */
   title: {
     type: String,
     required: true,
   },
-  /**
-   * The confirmation message to display in the modal body.
-   * @type {String}
-   * @required
-   */
   message: {
     type: String,
     required: true,
   },
-  /**
-   * Controls the visibility of the modal.
-   * @type {Boolean}
-   * @required
-   */
   visible: {
     type: Boolean,
     required: true,
   },
-  /**
-   * Text for the confirmation button.
-   * @type {String}
-   * @default 'Confirm'
-   */
   confirmText: {
     type: String,
     default: 'Confirm',
   },
-  /**
-   * Text for the cancel button.
-   * @type {String}
-   * @default 'Cancel'
-   */
   cancelText: {
     type: String,
     default: 'Cancel',
   },
-  /**
-   * A unique ID for the modal.
-   * @type {String}
-   */
+  // THIS IS THE FIX: Replaced confirmButtonClass with a more robust 'type' prop
+  type: {
+    type: String,
+    default: 'primary',
+    validator: (value) => ['primary', 'success', 'danger'].includes(value),
+  },
   modalId: {
     type: String,
     default: () => `confirm-modal-${Math.random().toString(36).slice(2, 11)}`,
   }
 });
 
+// This computed property translates the 'type' prop into a Bootstrap button class
+const confirmButtonClass = computed(() => {
+  return `btn-${props.type}`;
+});
+
 const emit = defineEmits(['confirm', 'cancel', 'close']);
 
-/**
- * Handles the click on the confirm button.
- * Emits a 'confirm' event.
- */
 const handleConfirm = () => {
   emit('confirm');
 };
 
-/**
- * Handles the click on the cancel button or the header close button.
- * Emits a 'cancel' event. Also emits 'close' for general handling.
- */
 const handleCancel = () => {
   emit('cancel');
-  emit('close'); // Emit 'close' as well for general purpose modal handling
+  emit('close');
 };
 </script>
 
 <style scoped>
-/* Scoped styles for the modal if needed */
-.modal-header {
-  /* Standard Bootstrap header, can be customized if needed */
+/* Glassmorphism styles for the modal */
+.modal-content.glass-card {
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Ensure button spacing or specific styling if defaults aren't ideal */
-.modal-footer .btn + .btn {
-  margin-left: 0.5rem;
+.modal-header {
+  background-color: rgba(var(--bs-body-color-rgb), 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--bs-emphasis-color);
+}
+
+.modal-body {
+  color: var(--bs-body-color);
+}
+
+.modal-footer {
+  background-color: rgba(var(--bs-body-color-rgb), 0.05);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Lifts the modal's content above any shimmering pseudo-elements */
+.modal-content.glass-card .modal-header,
+.modal-content.glass-card .modal-body,
+.modal-content.glass-card .modal-footer {
+  position: relative;
+  z-index: 1;
+}
+
+/* THIS IS THE FIX: Added specific styles for danger/success buttons for better visual feedback */
+.modal-footer .btn {
+  transition: all 0.2s ease-in-out;
+}
+
+.modal-footer .btn.btn-danger {
+  color: #fff;
+}
+
+.modal-footer .btn.btn-success {
+  color: #fff;
 }
 </style>

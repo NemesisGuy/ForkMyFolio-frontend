@@ -1,6 +1,7 @@
 <template>
-  <div class="empty-state-container text-center py-5">
-    <div class="py-5">
+  <!-- THIS IS THE FIX: The component is now a full-fledged, animated glass card -->
+  <div class="card glass-card shimmering animate-fade-in-up interactive-card-lift interactive-card-shadow-primary">
+    <div class="card-body text-center p-5">
       <i v-if="iconClass" :class="iconClasses"></i>
       <h2 class="display-6">{{ title }}</h2>
       <p class="lead text-muted">{{ message }}</p>
@@ -17,7 +18,7 @@ const props = defineProps({
    */
   title: {
     type: String,
-    required: true,
+    // A prop with a default value is not required.
     default: 'Nothing to see here yet!'
   },
   /**
@@ -25,7 +26,7 @@ const props = defineProps({
    */
   message: {
     type: String,
-    required: true,
+    // A prop with a default value is not required.
     default: 'Please check back later.'
   },
   /**
@@ -33,7 +34,6 @@ const props = defineProps({
    */
   iconClass: {
     type: String,
-    required: false,
     default: ''
   }
 });
@@ -45,7 +45,33 @@ const iconClasses = computed(() => {
 </script>
 
 <style scoped>
-.empty-state-container h2 {
+/*
+  THIS IS THE FIX: Lifts the card's content above the shimmering
+  pseudo-element, making it fully visible.
+*/
+.card-body {
+  position: relative;
+  z-index: 1;
+}
+
+h2 {
   font-weight: 300;
+}
+
+/* THIS IS THE FIX: Adds the fade-in animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  opacity: 0;
+  animation: fadeInUp 0.8s ease-out forwards;
 }
 </style>

@@ -9,17 +9,34 @@
         </p>
       </div>
 
-      <LoadingSpinner v-if="isLoading"/>
+      <!-- The glassmorphic modal will overlay everything while loading -->
+      <LoadingModal :visible="isLoading"/>
 
-      <div v-else-if="error" class="alert alert-danger shadow-sm">
-        Could not load experience data. Please try again later.
+      <!-- A shimmering skeleton loader that mimics the timeline -->
+      <div v-if="isLoading" class="timeline">
+        <div v-for="n in 3" :key="n" class="timeline-item">
+          <div class="timeline-content card glass-card shimmering h-100">
+            <div class="card-body">
+              <div class="skeleton-line skeleton-title"></div>
+              <div class="skeleton-line skeleton-subtitle"></div>
+              <div class="skeleton-line skeleton-date"></div>
+              <div class="skeleton-line skeleton-text"></div>
+              <div class="skeleton-line skeleton-text-short"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-else-if="error" class="alert alert-danger shadow-sm" role="alert">
+        <h4 class="alert-heading">🚫 Error Loading Experience</h4>
+        <p>{{ error.message || 'Could not load experience data. Please try again later.' }}</p>
       </div>
 
       <div v-else-if="experiences.length > 0" class="timeline">
         <div v-for="(exp, index) in experiences" :key="exp.id"
              class="timeline-item animate-fade-in-up"
              :style="{ 'animation-delay': (index * 0.15) + 0.2 + 's' }">
-          <!-- The timeline card now has the consistent interactive classes -->
+          <!-- The real timeline card -->
           <div class="timeline-content card shadow-sm glass-card shimmering interactive-card-lift interactive-card-shadow-primary">
             <div class="card-body">
               <h5 class="card-title">{{ exp.jobTitle }}</h5>
@@ -32,7 +49,8 @@
                 <i class="bi bi-geo-alt-fill me-1"></i>
                 {{ exp.location }}
               </p>
-              <p class="card-text">{{ exp.description }}</p>
+              <!-- THIS IS THE FIX: Added a class to enable text formatting -->
+              <p class="card-text experience-description">{{ exp.description }}</p>
             </div>
           </div>
         </div>
@@ -49,8 +67,8 @@
 
 <script setup>
 import {onMounted, ref} from 'vue';
-import {getPublicExperience} from '@/services/api/index.js';
-import LoadingSpinner from '@/components/common/LoadingSpinner.vue';
+import {getPublicExperience, ApiError} from '@/services/api/index.js';
+import LoadingModal from '@/components/common/LoadingModal.vue';
 
 const experiences = ref([]);
 const isLoading = ref(true);
@@ -64,12 +82,12 @@ const formatDate = (dateString) => {
 
 onMounted(async () => {
   try {
-    const data = await getPublicExperience();
+    const data = await getPublicExperience() || [];
     // Sort by end date descending (most recent first)
     experiences.value = data.sort((a, b) => new Date(b.endDate || new Date()) - new Date(a.endDate || new Date()));
   } catch (err) {
     console.error("Failed to fetch experience data:", err);
-    error.value = err;
+    error.value = err instanceof ApiError ? err : { message: 'An unexpected error occurred.' };
   } finally {
     isLoading.value = false;
   }
@@ -86,14 +104,20 @@ onMounted(async () => {
   font-weight: 300;
 }
 
-/*
-  KEY FIX: This ensures the card's content is clickable by lifting it
-  above the decorative ::before pseudo-element.
-*/
 .card-body {
   position: relative;
   z-index: 1;
 }
+
+/*
+  THIS IS THE FIX: This CSS rule tells the browser to respect newlines
+  and spaces in the description text, allowing for paragraphs.
+*/
+.experience-description {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
 
 /* --- Animations --- */
 @keyframes fadeInUp {
@@ -165,38 +189,62 @@ onMounted(async () => {
   left: -12.5px;
 }
 
-/* --- Card Content --- */
 .timeline-content {
   position: relative;
   border-radius: var(--bs-card-border-radius);
 }
 
-/*
-  KEY CHANGE: The arrow is now on the timeline-item's ::before pseudo-element,
-  which frees up the card's ::before for the orb effect from common.css.
-*/
 .timeline-item::before {
   content: '';
   position: absolute;
   top: 28px;
   width: 15px;
   height: 15px;
-  /* Replicating the glass effect as we can no longer inherit from the card */
   background: rgba(var(--bs-tertiary-bg-rgb), 0.4);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   transform: translateY(-50%) rotate(45deg);
-  z-index: 0; /* Sits behind the card */
+  z-index: 0;
 }
 
 .timeline-item:nth-child(odd)::before {
-  /* Position it on the right side of the item, just inside the padding boundary */
-  right: 32.5px; /* 40px padding - 7.5px half-width */
+  right: 32.5px;
 }
 
 .timeline-item:nth-child(even)::before {
-  /* Position it on the left side of the item */
-  left: 32.5px; /* 40px padding - 7.5px half-width */
+  left: 32.5px;
+}
+
+/* --- Skeleton Placeholder Styles --- */
+.skeleton-line {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  margin-bottom: 0.75rem;
+}
+.skeleton-line:last-child {
+  margin-bottom: 0;
+}
+.skeleton-title {
+  width: 60%;
+  height: 24px;
+}
+.skeleton-subtitle {
+  width: 40%;
+  height: 20px;
+}
+.skeleton-date {
+  width: 50%;
+  height: 16px;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+.skeleton-text {
+  width: 90%;
+  height: 16px;
+}
+.skeleton-text-short {
+  width: 75%;
+  height: 16px;
 }
 
 
@@ -221,9 +269,8 @@ onMounted(async () => {
     left: 2.5px;
   }
 
-  /* Adjust arrow position for mobile view */
   .timeline-item::before {
-    left: 62.5px; /* 70px padding - 7.5px half-width */
+    left: 62.5px;
     right: auto;
   }
 }

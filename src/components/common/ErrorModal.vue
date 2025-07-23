@@ -13,8 +13,9 @@
         tabindex="-1"
       >
         <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
+          <!-- THIS IS THE FIX: The modal-content now has the glass-card class -->
+          <div class="modal-content glass-card">
+            <div class="modal-header">
               <h5 :id="modalId + 'Label'" class="modal-title">{{ title }}</h5>
               <button
                 aria-label="Close"
@@ -48,43 +49,22 @@
 <script setup>
 /**
  * @file src/components/common/ErrorModal.vue
- * @description A reusable modal component for displaying error messages.
- * This is a custom implementation using Vue and Bootstrap CSS, without Bootstrap JS.
+ * @description A reusable, glassmorphic modal component for displaying error messages.
  */
 
-const props = defineProps({
-  /**
-   * The title of the modal.
-   * @type {String}
-   * @default 'Error'
-   */
+defineProps({
   title: {
     type: String,
     default: 'Error',
   },
-  /**
-   * The error message(s) to display. Can be a single string or an array of strings.
-   * If an array, messages will be displayed as a list.
-   * @type {String|Array<String>}
-   * @required
-   */
   message: {
     type: [String, Array],
     required: true,
   },
-  /**
-   * Controls the visibility of the modal.
-   * @type {Boolean}
-   * @required
-   */
   visible: {
     type: Boolean,
     required: true,
   },
-  /**
-   * A unique ID for the modal.
-   * @type {String}
-   */
   modalId: {
     type: String,
     default: () => `error-modal-${Math.random().toString(36).slice(2, 11)}`,
@@ -93,26 +73,50 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 
-/**
- * Handles the click on the close button or OK button.
- * Emits a 'close' event to the parent component.
- */
 const handleClose = () => {
   emit('close');
 };
 </script>
 
 <style scoped>
-/* Scoped styles for the modal if needed */
-.modal-header.bg-danger {
-  /* Customizations for error header if Bootstrap defaults aren't enough */
+/* THIS IS THE FIX: Glassmorphism styles for the modal */
+.modal-content.glass-card {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--bs-light); /* Assuming a dark backdrop, so light text */
 }
 
-.btn-outline-danger {
-  /* Ensure good contrast and theming */
+/* Make header and footer semi-transparent to continue the glass effect */
+.modal-header {
+  background-color: rgba(var(--bs-danger-rgb), 0.7);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
 }
 
-.modal-body ul {
+.modal-body {
+  color: var(--bs-body-color); /* Use standard body color for readability */
   text-align: left;
+}
+
+.modal-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Ensure button has good contrast */
+.btn-outline-danger {
+  border-color: var(--bs-danger);
+  color: var(--bs-danger);
+}
+.btn-outline-danger:hover {
+  background-color: var(--bs-danger);
+  color: #fff;
+}
+
+/* Lifts the modal's content above any shimmering pseudo-elements */
+.modal-content.glass-card .modal-header,
+.modal-content.glass-card .modal-body,
+.modal-content.glass-card .modal-footer {
+  position: relative;
+  z-index: 1;
 }
 </style>

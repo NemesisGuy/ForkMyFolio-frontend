@@ -1,54 +1,67 @@
 <template>
-  <div class="container mt-5">
-    <div class="card">
-      <div class="card-body">
-        <h1 class="card-title">Modal Test Page</h1>
-        <p class="card-text">Use these buttons to test the application's modals.</p>
-        <hr>
-        <div class="d-flex gap-2 flex-wrap">
-          <button class="btn btn-success" @click="triggerSuccessModal">
-            Show Success Modal
-          </button>
-          <button class="btn btn-danger" @click="triggerErrorModalString">
-            Show Error Modal (String)
-          </button>
-          <button class="btn btn-danger" @click="triggerErrorModalList">
-            Show Error Modal (List)
-          </button>
-          <button class="btn btn-warning" @click="triggerConfirmModal">
-            Show Confirm Modal
-          </button>
-        </div>
-        <div v-if="confirmResult" class="mt-3 alert alert-info">
-          Confirm Modal Result: {{ confirmResult }}
+  <!-- THIS IS THE FIX: Removed the py-5 class to prevent vertical overflow -->
+  <div class="modal-test-page animated-gradient-background d-flex align-items-center">
+    <div class="container">
+      <!-- The content is now wrapped in a beautiful, animated glass card -->
+      <div class="card glass-card shimmering animate-fade-in-up interactive-card-lift interactive-card-shadow-primary">
+        <div class="card-body p-4 p-md-5">
+          <h1 class="card-title display-5">Modal Test Page</h1>
+          <p class="card-text text-muted">Use these buttons to test the application's modals.</p>
+          <hr class="my-4">
+          <div class="d-flex gap-2 flex-wrap">
+            <!-- Buttons now have interactive classes -->
+            <button class="btn btn-success interactive-lift" @click="triggerSuccessModal">
+              Show Success Modal
+            </button>
+            <button class="btn btn-danger interactive-lift" @click="triggerErrorModalString">
+              Show Error Modal (String)
+            </button>
+            <button class="btn btn-danger interactive-lift" @click="triggerErrorModalList">
+              Show Error Modal (List)
+            </button>
+            <button class="btn btn-primary interactive-lift" @click="triggerConfirmModal('primary')">
+              Show Confirm Modal (Primary)
+            </button>
+            <!-- THIS IS THE FIX: Added buttons to test the new confirm modal types -->
+            <button class="btn btn-danger interactive-lift" @click="triggerConfirmModal('danger')">
+              Show Confirm Modal (Danger)
+            </button>
+            <button class="btn btn-success interactive-lift" @click="triggerConfirmModal('success')">
+              Show Confirm Modal (Success)
+            </button>
+          </div>
+          <div v-if="confirmResult" class="mt-4 alert alert-info">
+            <strong>Confirm Modal Result:</strong> {{ confirmResult }}
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Modals to be tested -->
     <SuccessModal
-      :message="successMessage"
-      :title="successTitle"
       :visible="showSuccess"
+      :title="successTitle"
+      :message="successMessage"
       @close="closeSuccessModal"
     />
 
     <ErrorModal
-      :message="errorMessage"
-      :title="errorTitle"
       :visible="showError"
+      :title="errorTitle"
+      :message="errorMessage"
       @close="closeErrorModal"
     />
 
     <ConfirmModal
-      :cancelText="cancelButtonText"
-      :confirmText="confirmButtonText"
-      :message="confirmMessage"
-      :title="confirmTitle"
       :visible="showConfirm"
+      :title="confirmTitle"
+      :message="confirmMessage"
+      :confirmText="confirmButtonText"
+      :cancelText="cancelButtonText"
+      :type="confirmType"
+      @confirm="handleConfirm"
       @cancel="handleCancel"
       @close="handleCancel"
-      @confirm="handleConfirm"
     />
   </div>
 </template>
@@ -57,7 +70,7 @@
 import {ref} from 'vue';
 import SuccessModal from '@/components/common/SuccessModal.vue';
 import ErrorModal from '@/components/common/ErrorModal.vue';
-import ConfirmModal from '@/components/common/ConfirmModal.vue'; // Import ConfirmModal
+import ConfirmModal from '@/components/common/ConfirmModal.vue';
 
 /**
  * @file src/views/dev/ModalTestPage.vue
@@ -109,24 +122,58 @@ const confirmTitle = ref('Confirm Action');
 const confirmMessage = ref('Are you sure you want to proceed with this action?');
 const confirmButtonText = ref('Proceed');
 const cancelButtonText = ref('Abort');
-const confirmResult = ref(null); // To display the result of the confirmation
+const confirmResult = ref(null);
+const confirmType = ref('primary'); // To control the button color
 
-const triggerConfirmModal = () => {
-  confirmResult.value = null; // Clear previous result
+const triggerConfirmModal = (type = 'primary') => {
+  confirmResult.value = null;
+  confirmType.value = type;
+  confirmTitle.value = `Confirm ${type.charAt(0).toUpperCase() + type.slice(1)} Action`;
+  confirmMessage.value = `Are you sure you want to proceed with this ${type} action?`;
   showConfirm.value = true;
 };
 
 const handleConfirm = () => {
-  confirmResult.value = 'Confirmed!';
-  showConfirm.value = false; // Hide the modal
+  confirmResult.value = `Confirmed (${confirmType.value})!`;
+  showConfirm.value = false;
 };
 
 const handleCancel = () => {
-  confirmResult.value = 'Cancelled.';
-  showConfirm.value = false; // Hide the modal
+  confirmResult.value = `Cancelled (${confirmType.value}).`;
+  showConfirm.value = false;
 };
 </script>
 
 <style scoped>
-/* You can add any specific styles for the test page here if needed */
+/* THIS IS THE FIX: The page now takes up the full viewport height for better vertical centering */
+.modal-test-page {
+  min-height: calc(100vh - 56px - 1px); /* Full height minus navbar and its border */
+  overflow-x: hidden;
+}
+
+.card-body {
+  position: relative;
+  z-index: 1;
+}
+
+h1 {
+  font-weight: 300;
+}
+
+/* THIS IS THE FIX: Adds the fade-in animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  opacity: 0;
+  animation: fadeInUp 0.8s ease-out forwards;
+}
 </style>
