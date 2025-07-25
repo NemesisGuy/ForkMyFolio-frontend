@@ -65,8 +65,8 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { getAccount } from '@/services/api/admin.api.js'; // Corrected import path
-import LoadingModal from '@/components/common/LoadingModal.vue';
-import ErrorModal from '@/components/common/ErrorModal.vue';
+import LoadingModal from '@/components/common/modals/LoadingModal.vue';
+import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 
 const user = ref(null);
 const isLoading = ref(true);

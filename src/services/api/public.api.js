@@ -64,12 +64,19 @@ export const getPublicSettings = () => fetchWithAuth('/settings', { method: 'GET
 
 /**
  * Requests a PDF version of the portfolio from the backend.
+ * @param {string} templateName The name of the template to use for generation.
  * @returns {Promise<Blob>} A promise that resolves with the PDF file as a Blob.
  */
-export const downloadPortfolioAsPdf = () => {
+export const downloadPortfolioAsPdf = (templateName) => {
+  if (!templateName) {
+    // This provides a clear error if the setting isn't configured.
+    return Promise.reject(new Error("A template name must be provided."));
+  }
   // The endpoint is public, so requiresAuth is false.
-  return fetchWithAuth('/pdf/download', { method: 'GET' }, false, false, 'blob');
+  const endpoint = `/pdf/download?template=${encodeURIComponent(templateName)}`;
+  return fetchWithAuth(endpoint, { method: 'GET' }, false, false, 'blob');
 };
+
 /**
  * Records a total visit count. This is a fire-and-forget call.
  * @returns {Promise<void>}

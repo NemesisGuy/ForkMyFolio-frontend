@@ -111,11 +111,11 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue';
 import { getAdminProjects, createProject, updateProject, deleteProject } from '@/services/api/admin.api.js';
-import LoadingModal from '@/components/common/LoadingModal.vue';
-import ErrorModal from '@/components/common/ErrorModal.vue';
-import ConfirmModal from '@/components/common/ConfirmModal.vue';
+import LoadingModal from '@/components/common/modals/LoadingModal.vue';
+import ErrorModal from '@/components/common/modals/ErrorModal.vue';
+import ConfirmModal from '@/components/common/modals/ConfirmModal.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
-import SuccessModal from '@/components/common/SuccessModal.vue';
+import SuccessModal from '@/components/common/modals/SuccessModal.vue';
 
 const projects = ref([]);
 const isLoading = ref(true);

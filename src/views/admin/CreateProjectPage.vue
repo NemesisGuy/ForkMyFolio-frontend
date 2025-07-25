@@ -41,8 +41,8 @@ import {reactive, ref} from 'vue';
 import {useRouter} from 'vue-router';
 import {ApiError, createProject} from '@/services/api/index.js';
 import ProjectForm from '../../components/forms/ProjectForm.vue';
-import ErrorModal from '../../components/common/ErrorModal.vue';
-import SuccessModal from '../../components/common/SuccessModal.vue';
+import ErrorModal from '../../components/common/modals/ErrorModal.vue';
+import SuccessModal from '../../components/common/modals/SuccessModal.vue';
 
 const router = useRouter();
 

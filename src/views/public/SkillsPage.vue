@@ -3,38 +3,48 @@
     <div class="container-fluid">
       <!-- Hero Section -->
       <div class="text-center mb-5">
-        <h1 class="display-4 fw-bold animate-fade-in-up">🛠️ Skills & Proficiencies</h1>
-        <p class="lead text-muted animate-fade-in-up" style="animation-delay: 0.1s;">
+        <h1 class="display-4 fw-bold animate-fade-in-up glass-text">
+          <i class="bi bi-tools" aria-hidden="true"></i> Skills & Proficiencies
+        </h1>
+        <p class="lead animate-fade-in-up glass-subtitle" style="animation-delay: 0.1s;">
           A curated list of my technical competencies and tools I love to use.
         </p>
       </div>
 
-      <LoadingModal :visible="isLoading" />
+      <LoadingModal :visible="isLoading" class="glass-modal"/>
 
       <!-- The shimmering skeleton loader is shown when loading -->
       <div v-if="isLoading" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
         <div v-for="n in 8" :key="n" class="col">
-          <!-- THIS IS THE FIX: The skeleton card now uses the exact same base classes as the real card -->
-          <div class="card glass-card shimmering h-100 text-center">
+          <!-- Skeleton card with new glass styles -->
+          <div class="card glass-card glass-card-floating h-100 text-center">
             <div class="card-body d-flex flex-column justify-content-center align-items-center">
-              <div class="skeleton-icon"></div>
-              <div class="skeleton-text"></div>
-              <div class="skeleton-bar"></div>
+              <div class="skeleton-icon mb-3"></div>
+              <div class="skeleton-line skeleton-title" style="width: 70%;"></div>
+              <div class="skeleton-line skeleton-subtitle" style="width: 80%; height: 8px;"></div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- The error message is shown if an error occurs -->
-      <div v-else-if="error" class="alert alert-danger shadow-sm" role="alert">
-        <h4 class="alert-heading">🚫 Error Loading Skills</h4>
-        <p>{{ error.message || 'Could not fetch skills. Please try again later.' }}</p>
+      <div v-else-if="error" class="glass-card glass-card-dark mx-auto" style="max-width: 800px;">
+        <div class="card-body text-center p-5">
+          <i class="bi bi-exclamation-triangle-fill text-warning mb-3" style="font-size: 3rem;"></i>
+          <h5 class="card-title text-white mb-3">Unable to Load Skills</h5>
+          <p class="card-text text-light opacity-75">
+            Could not load skills data. Please try again later.
+          </p>
+          <button @click="retryLoad" class="btn btn-outline-light glass-btn mt-3">
+            <i class="bi bi-arrow-clockwise me-2"></i>Retry
+          </button>
+        </div>
       </div>
 
       <!-- The final content is shown once loading is complete and successful -->
       <div v-else-if="groupedSkills.length > 0">
         <div v-for="(group, groupIndex) in groupedSkills" :key="group.level" class="mb-5">
-          <h2 class="display-6 mb-4 fw-light text-center animate-fade-in-up"
+          <h2 class="display-6 mb-4 fw-light text-center animate-fade-in-up glass-text"
               :style="{ 'animation-delay': (groupIndex * 0.2) + 's' }">
             {{ group.level }}
           </h2>
@@ -42,7 +52,7 @@
             <div v-for="(skill, skillIndex) in group.skills" :key="skill.id"
                  class="col animate-fade-in-up"
                  :style="{ 'animation-delay': (groupIndex * 0.2 + skillIndex * 0.05) + 0.2 + 's' }">
-              <div class="card glass-card shimmering h-100 text-center shadow-sm interactive-card-lift interactive-card-shadow-primary">
+              <div class="card glass-card glass-card-floating h-100 text-center shadow-sm interactive-card-lift interactive-card-shadow-primary">
                 <div class="card-body d-flex flex-column justify-content-center align-items-center">
                   <div class="skill-icon mb-3">
                     <i :class="iconForLevel(skill.level)"/>
@@ -59,10 +69,16 @@
       </div>
 
       <!-- The empty state is shown if loading is complete but there's no data -->
-      <div v-else class="text-center py-5">
-        <i class="bi bi-tags-fill display-1 text-muted mb-3"></i>
-        <h2 class="display-6">No Skills Yet</h2>
-        <p class="lead text-muted">Come back soon — my toolbox grows weekly.</p>
+      <div v-else class="glass-card mx-auto" style="max-width: 800px;">
+        <div class="card-body text-center p-5">
+          <div class="empty-state-icon mb-4">
+            <i class="bi bi-tools"></i>
+          </div>
+          <h4 class="card-title glass-title mb-3">No Skills Yet</h4>
+          <p class="card-text glass-subtitle mb-4">
+            The toolbox is being organized. Please check back later for a list of skills.
+          </p>
+        </div>
       </div>
     </div>
   </div>
@@ -71,7 +87,7 @@
 <script setup>
 import {onMounted, ref, computed} from 'vue';
 import {getPublicSkills, ApiError} from '@/services/api/index.js';
-import LoadingModal from '@/components/common/LoadingModal.vue';
+import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 
 const skills = ref([]);
 const isLoading = ref(true);
@@ -120,7 +136,11 @@ const fetchSkills = async () => {
   }
 };
 
-onMounted(fetchSkills);
+const retryLoad = () => {
+  fetchSkills();
+};
+
+onMounted(retryLoad);
 </script>
 
 <style scoped>
@@ -131,9 +151,8 @@ onMounted(fetchSkills);
 
 .display-6 {
   border-bottom: 1px solid var(--bs-border-color);
-  padding-bottom: 1rem;
+  padding-bottom: 0.75rem;
   margin-bottom: 2rem !important;
-  color: var(--bs-emphasis-color);
 }
 
 /* --- Skill Card Styling --- */
@@ -143,11 +162,6 @@ onMounted(fetchSkills);
 }
 .card:hover .skill-icon {
   transform: scale(1.2);
-}
-.card-title {
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: var(--bs-emphasis-color);
 }
 
 /* --- Proficiency Bar --- */
@@ -180,33 +194,6 @@ onMounted(fetchSkills);
   --target-width: 33%;
   background: linear-gradient(90deg, var(--bs-warning), #ffc107);
 }
-
-/* --- Skeleton Placeholder Styles --- */
-/* THIS IS THE FIX: These styles now only apply to the placeholder elements themselves, not the card. */
-.skeleton-icon, .skeleton-text, .skeleton-bar {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-}
-
-.skeleton-icon {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  margin-bottom: 1rem;
-}
-
-.skeleton-text {
-  width: 70%;
-  height: 20px;
-  margin-bottom: 1rem;
-}
-
-.skeleton-bar {
-  width: 80%;
-  height: 8px;
-}
-
-/* THIS IS THE FIX: The custom shimmer animation and skeleton card styles are removed, as they are now handled by the global .shimmering and .glass-card classes. */
 
 /* --- General Animations --- */
 @keyframes fadeInUp {

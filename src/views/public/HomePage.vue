@@ -1,92 +1,33 @@
 <template>
   <div class="home-page py-5 animated-gradient-background">
-    <LoadingModal :visible="isLoading"/>
+    <LoadingModal :visible="isLoading" class="glass-modal"/>
 
-    <!-- Skeleton Loader: Shown ONLY during the initial load -->
+    <!-- Skeleton Loader: Updated with new glass styles -->
     <div v-if="isLoading" class="container">
-      <div class="card glass-card shimmering p-4 p-md-5 animate-fade-in-up">
-        <div class="card-body">
-          <div class="row align-items-center">
-            <div class="col-md-4 text-center mb-4 mb-md-0">
-              <div class="skeleton-image rounded-circle shadow-lg mx-auto"></div>
-            </div>
-            <div class="col-md-8">
-              <div class="skeleton-line skeleton-main-title"></div>
-              <div class="skeleton-line skeleton-subtitle mb-4"></div>
-              <div class="skeleton-line skeleton-text"></div>
-              <div class="skeleton-line skeleton-text"></div>
-              <div class="skeleton-line skeleton-text-short mb-4"></div>
-              <div class="d-flex flex-wrap align-items-center mb-3">
-                <div class="skeleton-button me-3 mb-2"></div>
-                <div class="skeleton-button mb-2"></div>
-              </div>
-              <div class="d-flex flex-wrap">
-                <div class="skeleton-social-icon"></div>
-                <div class="skeleton-social-icon"></div>
-                <div class="skeleton-social-icon"></div>
-                <div class="skeleton-social-icon"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Error State: Shown if loading fails -->
-    <div v-else-if="error" class="container py-5">
-      <div class="alert alert-danger">
-        Could not load profile data. Please try again later.
-      </div>
-    </div>
-
-    <!-- Profile Display State: Shown if profile data is successfully loaded -->
-    <div v-else-if="profile" class="hero-section">
-      <div class="container">
-        <div class="card glass-card shimmering p-4 p-md-5 animate-fade-in-up interactive-card-lift interactive-card-shadow-primary">
+      <!-- THIS IS THE FIX: The entrance animation is now on a dedicated wrapper div. -->
+      <div class="animate-fade-in-up">
+        <div class="card glass-card glass-card-floating p-4 p-md-5">
           <div class="card-body">
             <div class="row align-items-center">
               <div class="col-md-4 text-center mb-4 mb-md-0">
-                <a :href="profile.resumeUrl || '#'" target="_blank" class="profile-image-link">
-                  <img v-if="profile.resumeImageUrl" :src="profile.resumeImageUrl"
-                       alt="Resume Preview"
-                       class="profile-image img-fluid rounded-circle shadow-lg"/>
-                  <div v-else
-                       class="profile-image-placeholder rounded-circle shadow-lg d-flex align-items-center justify-content-center">
-                    <i class="bi bi-file-earmark-text-fill"></i>
-                  </div>
-                </a>
+                <div class="skeleton-line rounded-circle shadow-lg mx-auto" style="width: 250px; height: 250px;"></div>
               </div>
               <div class="col-md-8">
-                <h1 class="display-4 fw-light text-gradient">{{ fullName }}</h1>
-                <p class="lead text-primary">{{ profile.headline }}</p>
-                <p class="summary-text">{{ profile.summary }}</p>
-
-                <div class="mt-4">
-                  <div class="d-flex flex-wrap align-items-center mb-3">
-                    <a v-if="profile.resumeUrl"
-                       :href="profile.resumeUrl"
-                       class="btn btn-primary me-3 mb-2 interactive-lift interactive-shadow-primary"
-                       target="_blank">
-                      <i class="bi bi-file-earmark-arrow-down-fill me-2"></i>View Resume
-                    </a>
-                    <button v-if="profile.coverLetterTemplate"
-                            class="btn btn-secondary me-3 mb-2 interactive-lift"
-                            @click="showCoverLetterModal = true">
-                      <i class="bi bi-envelope-paper-fill me-2"></i>View Cover Letter
-                    </button>
-                  </div>
-                  <div class="social-links d-flex flex-wrap">
-                    <a v-if="profile.linkedinUrl" :href="profile.linkedinUrl" class="social-icon" target="_blank"
-                       title="LinkedIn"><i class="bi bi-linkedin"></i></a>
-                    <a v-if="profile.githubUrl" :href="profile.githubUrl" class="social-icon" target="_blank"
-                       title="GitHub"><i class="bi bi-github"></i></a>
-                    <a v-if="profile.websiteUrl" :href="profile.websiteUrl" class="social-icon" target="_blank"
-                       title="Personal Website"><i class="bi bi-globe"></i></a>
-                    <a v-if="profile.publicEmail" :href="`mailto:${profile.publicEmail}`" class="social-icon"
-                       title="Email Me"><i class="bi bi-envelope-fill"></i></a>
-                  </div>
+                <div class="skeleton-line skeleton-title" style="width: 70%; height: 48px;"></div>
+                <div class="skeleton-line skeleton-subtitle" style="width: 50%; height: 28px;"></div>
+                <div class="skeleton-line skeleton-grade" style="width: 100%;"></div>
+                <div class="skeleton-line skeleton-grade" style="width: 90%;"></div>
+                <div class="skeleton-line skeleton-grade" style="width: 80%; margin-bottom: 2rem;"></div>
+                <div class="d-flex flex-wrap align-items-center mb-3">
+                  <div class="skeleton-line me-3 mb-2" style="width: 180px; height: 48px; border-radius: 0.75rem;"></div>
+                  <div class="skeleton-line mb-2" style="width: 180px; height: 48px; border-radius: 0.75rem;"></div>
                 </div>
-
+                <div class="d-flex flex-wrap">
+                  <div class="skeleton-icon me-3"></div>
+                  <div class="skeleton-icon me-3"></div>
+                  <div class="skeleton-icon me-3"></div>
+                  <div class="skeleton-icon"></div>
+                </div>
               </div>
             </div>
           </div>
@@ -94,46 +35,124 @@
       </div>
     </div>
 
-    <!-- Profile Missing / Empty State: Shown if loading is done but no profile was found -->
-    <div v-else class="container py-5 text-center">
-      <div class="py-5">
-        <i class="bi bi-person-workspace display-1 text-muted mb-3"></i>
-        <h1 class="display-4">Portfolio Coming Soon!</h1>
-        <p class="lead text-muted">The owner is currently setting things up. Please check back later.</p>
-        <div v-if="isAdmin" class="alert alert-info mt-4 col-md-8 mx-auto">
-          <p class="mb-1"><strong>Admin Tip:</strong> Your public profile is live but appears empty.</p>
-          <p class="mb-0">
-            <router-link to="/admin/portfolio-profile">Go to the Profile Editor</router-link>
-            to add your headline, summary, and more.
+    <!-- Error State: Updated with new glass styles -->
+    <div v-else-if="error" class="container py-5">
+      <div class="glass-card glass-card-dark mx-auto" style="max-width: 800px;">
+        <div class="card-body text-center p-5">
+          <i class="bi bi-exclamation-triangle-fill text-warning mb-3" style="font-size: 3rem;"></i>
+          <h5 class="card-title text-white mb-3">Unable to Load Profile</h5>
+          <p class="card-text text-light opacity-75">
+            Could not load profile data. Please try again later.
           </p>
         </div>
       </div>
     </div>
 
-    <!-- Cover Letter Modal with Glassmorphic styling -->
+    <!-- Profile Display State: Updated with new glass styles -->
+    <div v-else-if="profile" class="hero-section">
+      <div class="container">
+        <!-- THIS IS THE FIX: The entrance animation is moved to this new wrapper div. -->
+        <div class="animate-fade-in-up">
+          <div class="card glass-card glass-card-floating p-4 p-md-5 interactive-card-lift interactive-card-shadow-primary">
+            <div class="card-body">
+              <div class="row align-items-center">
+                <div class="col-md-4 text-center mb-4 mb-md-0">
+                  <a :href="profile.resumeUrl || '#'" target="_blank" class="profile-image-link">
+                    <img v-if="profile.resumeImageUrl" :src="profile.resumeImageUrl"
+                         alt="Resume Preview"
+                         class="profile-image img-fluid rounded-circle shadow-lg"/>
+                    <div v-else
+                         class="profile-image-placeholder rounded-circle shadow-lg d-flex align-items-center justify-content-center">
+                      <i class="bi bi-file-earmark-text-fill"></i>
+                    </div>
+                  </a>
+                </div>
+                <div class="col-md-8">
+                  <h1 class="display-4 fw-light text-gradient">{{ fullName }}</h1>
+                  <p class="lead text-primary glass-subtitle">{{ profile.headline }}</p>
+                  <p class="summary-text glass-description">{{ profile.summary }}</p>
+
+                  <div class="mt-4">
+                    <div class="d-flex flex-wrap align-items-center mb-3">
+                      <a v-if="profile.resumeUrl"
+                         :href="profile.resumeUrl"
+                         class="btn glass-btn-primary me-3 mb-2 interactive-lift"
+                         target="_blank">
+                        <i class="bi bi-file-earmark-arrow-down-fill me-2"></i>View Resume
+                      </a>
+                      <!-- THIS IS THE FIX: Changed class from glass-btn to glass-btn-primary -->
+                      <button v-if="profile.coverLetterTemplate"
+                              class="btn glass-btn-primary me-3 mb-2 interactive-lift"
+                              @click="showCoverLetterModal = true">
+                        <i class="bi bi-envelope-paper-fill me-2"></i>View Cover Letter
+                      </button>
+                    </div>
+                    <div class="social-links d-flex flex-wrap">
+                      <a v-if="profile.linkedinUrl" :href="profile.linkedinUrl" class="social-icon" target="_blank"
+                         title="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                      <a v-if="profile.githubUrl" :href="profile.githubUrl" class="social-icon" target="_blank"
+                         title="GitHub"><i class="bi bi-github"></i></a>
+                      <a v-if="profile.websiteUrl" :href="profile.websiteUrl" class="social-icon" target="_blank"
+                         title="Personal Website"><i class="bi bi-globe"></i></a>
+                      <a v-if="profile.publicEmail" :href="`mailto:${profile.publicEmail}`" class="social-icon"
+                         title="Email Me"><i class="bi bi-envelope-fill"></i></a>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile Missing / Empty State: Updated with new glass styles -->
+    <div v-else class="container py-5">
+      <div class="glass-card mx-auto" style="max-width: 800px;">
+        <div class="card-body text-center p-5">
+          <div class="empty-state-icon mb-4">
+            <i class="bi bi-person-workspace"></i>
+          </div>
+          <h4 class="card-title glass-title mb-3">Portfolio Coming Soon!</h4>
+          <p class="card-text glass-subtitle mb-4">
+            The owner is currently setting things up. Please check back later.
+          </p>
+          <div v-if="isAdmin" class="alert alert-info mt-4">
+            <p class="mb-1"><strong>Admin Tip:</strong> Your public profile is live but appears empty.</p>
+            <p class="mb-0">
+              <router-link to="/admin/portfolio-profile">Go to the Profile Editor</router-link>
+              to add your headline, summary, and more.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cover Letter Modal with enhanced glassmorphic styling -->
     <div v-if="showCoverLetterModal" class="modal fade show" style="display: block;" tabindex="-1">
       <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content glass-card">
+        <div class="modal-content glass-modal">
           <div class="modal-header">
-            <h5 class="modal-title">Cover Letter Template</h5>
+            <h5 class="modal-title glass-title">Cover Letter Template</h5>
             <button
               type="button"
-              :class="['btn-close', { 'btn-close-white': currentTheme === 'dark' }]"
+              class="btn-close btn-close-white"
               aria-label="Close"
               @click="showCoverLetterModal = false"
             ></button>
           </div>
           <div class="modal-body">
-            <pre class="cover-letter-text">{{ profile.coverLetterTemplate }}</pre>
+            <pre class="cover-letter-text glass-description">{{ profile.coverLetterTemplate }}</pre>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-outline-secondary" @click="showCoverLetterModal = false">Close</button>
+            <button type="button" class="btn glass-btn" @click="showCoverLetterModal = false">Close</button>
           </div>
         </div>
       </div>
     </div>
     <!-- The backdrop for the modal -->
-    <div v-if="showCoverLetterModal" class="modal-backdrop fade show"></div>
+    <div v-if="showCoverLetterModal" class="modal-backdrop fade show" style="backdrop-filter: blur(5px);"></div>
 
     <!-- PDF Download Error Alert -->
     <div v-if="pdfDownloadError" class="pdf-error-toast alert alert-danger show" role="alert">
@@ -159,8 +178,8 @@
 import {onMounted, ref, computed} from 'vue';
 import {getPublicProfile, downloadPortfolioAsPdf, ApiError} from '@/services/api/index.js';
 import {authService} from '@/services/authService.js';
-import LoadingModal from '@/components/common/LoadingModal.vue';
-import { useTheme } from '@/services/themeService.js';
+import { settingsService } from '@/services/settingsService.js';
+import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 
 const profile = ref(null);
 const isLoading = ref(true);
@@ -168,8 +187,6 @@ const error = ref(null);
 const showCoverLetterModal = ref(false);
 const isDownloadingPdf = ref(false);
 const pdfDownloadError = ref(null);
-
-const { currentTheme } = useTheme();
 
 const fullName = computed(() => {
   if (!profile.value) return '';
@@ -179,10 +196,19 @@ const fullName = computed(() => {
 const isAdmin = computed(() => authService.isAuthenticated.value && authService.user.value?.roles?.includes('ADMIN'));
 
 const handleDownloadPdf = async () => {
+  const templateName = settingsService.settings.value['DEFAULT_PDF_TEMPLATE'];
+
+  if (!templateName) {
+    pdfDownloadError.value = 'Default PDF template is not configured by the owner.';
+    setTimeout(() => { pdfDownloadError.value = null; }, 5000);
+    return;
+  }
+
   isDownloadingPdf.value = true;
   pdfDownloadError.value = null;
   try {
-    const pdfBlob = await downloadPortfolioAsPdf();
+    const pdfBlob = await downloadPortfolioAsPdf(templateName);
+
     const url = window.URL.createObjectURL(pdfBlob);
     const a = document.createElement('a');
     a.style.display = 'none';
@@ -192,6 +218,7 @@ const handleDownloadPdf = async () => {
     a.download = `${userName}-Resume-${today}.pdf`;
     document.body.appendChild(a);
     a.click();
+
     window.requestAnimationFrame(() => {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
@@ -210,7 +237,11 @@ const handleDownloadPdf = async () => {
 onMounted(async () => {
   isLoading.value = true;
   try {
-    const fetchedProfile = await getPublicProfile();
+    const [fetchedProfile] = await Promise.all([
+      getPublicProfile(),
+      settingsService.fetchSettings()
+    ]);
+
     if (fetchedProfile && (fetchedProfile.headline || fetchedProfile.summary)) {
       profile.value = fetchedProfile;
     } else {
@@ -240,27 +271,6 @@ onMounted(async () => {
   width: 100%;
 }
 
-.card-body {
-  position: relative;
-  z-index: 1;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in-up {
-  opacity: 0;
-  animation: fadeInUp 0.8s ease-out forwards;
-}
-
 .profile-image-link {
   display: inline-block;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -275,12 +285,12 @@ onMounted(async () => {
   width: 250px;
   height: 250px;
   object-fit: cover;
-  border: 5px solid var(--bs-body-bg);
+  border: 5px solid var(--glass-bg);
 }
 
 .profile-image-placeholder .bi {
   font-size: 6rem;
-  color: #adb5bd;
+  color: var(--glass-text-secondary);
 }
 
 .text-gradient {
@@ -297,7 +307,6 @@ onMounted(async () => {
   font-size: 1.1rem;
   line-height: 1.7;
   white-space: pre-wrap;
-  color: var(--bs-secondary-color);
 }
 
 .social-links {
@@ -307,7 +316,7 @@ onMounted(async () => {
 .social-links a {
   margin-right: 0;
   font-size: 2.2rem;
-  color: var(--bs-secondary-color);
+  color: var(--glass-text-secondary);
   transition: all 0.3s ease;
 }
 
@@ -352,83 +361,8 @@ onMounted(async () => {
   line-height: 1.6;
 }
 
-/* Cover Letter Modal Styling */
-.modal-content.glass-card {
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.modal-content.glass-card .modal-header {
-  background-color: rgba(var(--bs-body-color-rgb), 0.1);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  color: var(--bs-emphasis-color);
-}
-
-.modal-content.glass-card .modal-body {
-  color: var(--bs-body-color);
-}
-
-.modal-content.glass-card .modal-footer {
-  background-color: rgba(var(--bs-body-color-rgb), 0.05);
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-}
-
 /*
-  THIS IS THE FIX: Lifts the modal's content above the shimmering
-  pseudo-element, making all buttons inside clickable.
+  All skeleton, modal, and animation styles are now handled by global classes
+  in common.css, so local styles can be removed for a cleaner component.
 */
-.modal-content.glass-card .modal-header,
-.modal-content.glass-card .modal-body,
-.modal-content.glass-card .modal-footer {
-  position: relative;
-  z-index: 1;
-}
-
-
-/* --- Skeleton Placeholder Styles --- */
-.skeleton-image {
-  width: 250px;
-  height: 250px;
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.skeleton-line {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  margin-bottom: 1rem;
-}
-
-.skeleton-main-title {
-  width: 70%;
-  height: 48px;
-}
-
-.skeleton-subtitle {
-  width: 50%;
-  height: 28px;
-}
-
-.skeleton-text {
-  width: 100%;
-  height: 18px;
-}
-
-.skeleton-text-short {
-  width: 80%;
-  height: 18px;
-}
-
-.skeleton-button {
-  width: 180px;
-  height: 48px;
-  border-radius: var(--bs-btn-border-radius);
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.skeleton-social-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.1);
-  margin-right: 20px;
-}
 </style>

@@ -100,8 +100,8 @@ import {reactive, ref} from 'vue';
 import {useRouter} from 'vue-router';
 import {authService} from '@/services/authService.js';
 import {ApiError} from '@/services/api/index.js';
-import SuccessModal from '@/components/common/SuccessModal.vue';
-import ErrorModal from '@/components/common/ErrorModal.vue';
+import SuccessModal from '@/components/common/modals/SuccessModal.vue';
+import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 
 /**
  * @file src/views/SignupPage.vue

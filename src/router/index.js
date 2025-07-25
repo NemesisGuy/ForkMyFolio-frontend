@@ -122,6 +122,16 @@ const routes = [
     }
   },
   {
+    path: '/admin/pdf-settings',
+    name: 'admin-pdf-settings',
+    component: () => import('@/views/admin/AdminPdfSettings.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+      title: 'PDF Settings'
+    }
+  },
+  {
     path: '/admin/settings',
     name: 'admin-settings',
     component: AdminSettingsPage,

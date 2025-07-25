@@ -74,10 +74,10 @@ import { ref } from 'vue';
 // --- THIS IS THE CHANGE ---
 // Import from the new, dedicated backup service file.
 import { downloadBackup, ingestBackup } from '@/services/api/backup.api.js';
-import LoadingModal from '@/components/common/LoadingModal.vue';
-import SuccessModal from '@/components/common/SuccessModal.vue';
-import ErrorModal from '@/components/common/ErrorModal.vue';
-import ConfirmModal from '@/components/common/ConfirmModal.vue';
+import LoadingModal from '@/components/common/modals/LoadingModal.vue';
+import SuccessModal from '@/components/common/modals/SuccessModal.vue';
+import ErrorModal from '@/components/common/modals/ErrorModal.vue';
+import ConfirmModal from '@/components/common/modals/ConfirmModal.vue';
 
 // --- Component State ---
 const isDownloading = ref(false);

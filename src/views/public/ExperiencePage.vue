@@ -3,45 +3,54 @@
     <div class="container">
       <!-- Centered and animated hero section -->
       <div class="text-center mb-5">
-        <h1 class="display-4 fw-bold animate-fade-in-up">💼 Work Experience</h1>
-        <p class="lead text-muted animate-fade-in-up" style="animation-delay: 0.1s;">
+        <h1 class="display-4 fw-bold animate-fade-in-up glass-text">💼 Work Experience</h1>
+        <p class="lead animate-fade-in-up glass-subtitle" style="animation-delay: 0.1s;">
           A timeline of my professional journey and accomplishments.
         </p>
       </div>
 
       <!-- The glassmorphic modal will overlay everything while loading -->
-      <LoadingModal :visible="isLoading"/>
+      <LoadingModal :visible="isLoading" class="glass-modal"/>
 
-      <!-- A shimmering skeleton loader that mimics the timeline -->
+      <!-- A skeleton loader that mimics the new timeline style -->
       <div v-if="isLoading" class="timeline">
         <div v-for="n in 3" :key="n" class="timeline-item">
-          <div class="timeline-content card glass-card shimmering h-100">
+          <div class="timeline-content card glass-card glass-card-floating h-100">
             <div class="card-body">
               <div class="skeleton-line skeleton-title"></div>
               <div class="skeleton-line skeleton-subtitle"></div>
-              <div class="skeleton-line skeleton-date"></div>
-              <div class="skeleton-line skeleton-text"></div>
-              <div class="skeleton-line skeleton-text-short"></div>
+              <div class="skeleton-line skeleton-grade" style="width: 50%; margin-top: 1rem; margin-bottom: 1rem;"></div>
+              <div class="skeleton-line skeleton-subtitle" style="width: 90%;"></div>
+              <div class="skeleton-line skeleton-subtitle" style="width: 75%;"></div>
             </div>
           </div>
         </div>
       </div>
 
-      <div v-else-if="error" class="alert alert-danger shadow-sm" role="alert">
-        <h4 class="alert-heading">🚫 Error Loading Experience</h4>
-        <p>{{ error.message || 'Could not load experience data. Please try again later.' }}</p>
+      <!-- Error state with glassmorphic styling -->
+      <div v-else-if="error" class="glass-card glass-card-dark">
+        <div class="card-body text-center p-5">
+          <i class="bi bi-exclamation-triangle-fill text-warning mb-3" style="font-size: 3rem;"></i>
+          <h5 class="card-title text-white mb-3">Unable to Load Experience</h5>
+          <p class="card-text text-light opacity-75">
+            Could not load work experience data. Please try again later.
+          </p>
+          <button @click="retryLoad" class="btn btn-outline-light glass-btn mt-3">
+            <i class="bi bi-arrow-clockwise me-2"></i>Retry
+          </button>
+        </div>
       </div>
 
       <div v-else-if="experiences.length > 0" class="timeline">
         <div v-for="(exp, index) in experiences" :key="exp.id"
              class="timeline-item animate-fade-in-up"
              :style="{ 'animation-delay': (index * 0.15) + 0.2 + 's' }">
-          <!-- The real timeline card -->
-          <div class="timeline-content card shadow-sm glass-card shimmering interactive-card-lift interactive-card-shadow-primary">
+          <!-- The real timeline card with new glass styles -->
+          <div class="timeline-content card glass-card glass-card-floating h-100 interactive-card-lift interactive-card-shadow-primary">
             <div class="card-body">
-              <h5 class="card-title">{{ exp.jobTitle }}</h5>
-              <h6 class="card-subtitle mb-2 text-primary">{{ exp.companyName }}</h6>
-              <p class="card-text text-muted small">
+              <h5 class="card-title glass-title">{{ exp.jobTitle }}</h5>
+              <h6 class="card-subtitle mb-2 glass-subtitle">{{ exp.companyName }}</h6>
+              <p class="card-text glass-text-secondary small mb-3">
                 <i class="bi bi-calendar-event me-1"></i>
                 {{ formatDate(exp.startDate) }} -
                 {{ exp.endDate ? formatDate(exp.endDate) : 'Present' }}
@@ -49,17 +58,23 @@
                 <i class="bi bi-geo-alt-fill me-1"></i>
                 {{ exp.location }}
               </p>
-              <!-- THIS IS THE FIX: Added a class to enable text formatting -->
-              <p class="card-text experience-description">{{ exp.description }}</p>
+              <p class="card-text glass-description experience-description">{{ exp.description }}</p>
             </div>
           </div>
         </div>
       </div>
 
-      <div v-else class="text-center py-5">
-        <i class="bi bi-briefcase display-1 text-muted mb-3"></i>
-        <h2 class="display-6">Experience Coming Soon!</h2>
-        <p class="lead text-muted">Work history has not been added yet. Please check back later.</p>
+      <!-- Enhanced empty state with glassmorphic styling -->
+      <div v-else class="glass-card">
+        <div class="card-body text-center p-5">
+          <div class="empty-state-icon mb-4">
+            <i class="bi bi-briefcase"></i>
+          </div>
+          <h4 class="card-title glass-title mb-3">No Work Experience Yet</h4>
+          <p class="card-text glass-subtitle mb-4">
+            Work history has not been added yet. Please check back later.
+          </p>
+        </div>
       </div>
     </div>
   </div>
@@ -68,7 +83,7 @@
 <script setup>
 import {onMounted, ref} from 'vue';
 import {getPublicExperience, ApiError} from '@/services/api/index.js';
-import LoadingModal from '@/components/common/LoadingModal.vue';
+import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 
 const experiences = ref([]);
 const isLoading = ref(true);
@@ -80,17 +95,29 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString(undefined, options);
 };
 
-onMounted(async () => {
+const loadExperience = async () => {
   try {
     const data = await getPublicExperience() || [];
     // Sort by end date descending (most recent first)
     experiences.value = data.sort((a, b) => new Date(b.endDate || new Date()) - new Date(a.endDate || new Date()));
   } catch (err) {
     console.error("Failed to fetch experience data:", err);
-    error.value = err instanceof ApiError ? err : { message: 'An unexpected error occurred.' };
+    if (!(err instanceof ApiError && err.httpStatus === 404)) {
+      error.value = err;
+    }
   } finally {
     isLoading.value = false;
   }
+};
+
+const retryLoad = async () => {
+  isLoading.value = true;
+  error.value = null;
+  await loadExperience();
+};
+
+onMounted(() => {
+  loadExperience();
 });
 </script>
 
@@ -100,37 +127,12 @@ onMounted(async () => {
   overflow-x: hidden;
 }
 
-.experience-page h1, .experience-page .display-5, .experience-page .display-6 {
-  font-weight: 300;
-}
-
-.card-body {
-  position: relative;
-  z-index: 1;
-}
-
-/*
-  THIS IS THE FIX: This CSS rule tells the browser to respect newlines
-  and spaces in the description text, allowing for paragraphs.
-*/
 .experience-description {
   white-space: pre-wrap;
   word-wrap: break-word;
 }
 
-
 /* --- Animations --- */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 .animate-fade-in-up {
   opacity: 0;
   animation: fadeInUp 0.8s ease-out forwards;
@@ -151,7 +153,7 @@ onMounted(async () => {
   bottom: 0;
   left: 50%;
   width: 3px;
-  background-color: var(--bs-border-color-translucent);
+  background-image: linear-gradient(to bottom, transparent, var(--glass-border-hover), transparent);
   transform: translateX(-50%);
   border-radius: 3px;
 }
@@ -177,12 +179,18 @@ onMounted(async () => {
   width: 25px;
   height: 25px;
   right: -12.5px;
-  background-color: var(--bs-body-bg);
+  background-color: var(--glass-bg);
   border: 4px solid var(--bs-primary);
   top: 15px;
   border-radius: 50%;
   z-index: 1;
-  box-shadow: 0 0 10px rgba(var(--bs-primary-rgb), 0.5);
+  box-shadow: 0 0 15px rgba(var(--bs-primary-rgb), 0.5);
+  transition: all 0.3s ease;
+}
+
+.timeline-item:hover::after {
+  transform: scale(1.1);
+  box-shadow: 0 0 25px rgba(var(--bs-primary-rgb), 0.7);
 }
 
 .timeline-item:nth-child(even)::after {
@@ -191,62 +199,37 @@ onMounted(async () => {
 
 .timeline-content {
   position: relative;
-  border-radius: var(--bs-card-border-radius);
 }
 
+/* The little arrow pointing from the card to the timeline */
 .timeline-item::before {
   content: '';
   position: absolute;
   top: 28px;
   width: 15px;
   height: 15px;
-  background: rgba(var(--bs-tertiary-bg-rgb), 0.4);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: var(--glass-bg); /* Use the glass background for consistency */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   transform: translateY(-50%) rotate(45deg);
   z-index: 0;
 }
 
 .timeline-item:nth-child(odd)::before {
   right: 32.5px;
+  border-top: 1px solid var(--glass-border);
+  border-right: 1px solid var(--glass-border);
+  border-left: none;
+  border-bottom: none;
 }
 
 .timeline-item:nth-child(even)::before {
   left: 32.5px;
+  border-left: 1px solid var(--glass-border);
+  border-bottom: 1px solid var(--glass-border);
+  border-top: none;
+  border-right: none;
 }
-
-/* --- Skeleton Placeholder Styles --- */
-.skeleton-line {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  margin-bottom: 0.75rem;
-}
-.skeleton-line:last-child {
-  margin-bottom: 0;
-}
-.skeleton-title {
-  width: 60%;
-  height: 24px;
-}
-.skeleton-subtitle {
-  width: 40%;
-  height: 20px;
-}
-.skeleton-date {
-  width: 50%;
-  height: 16px;
-  margin-top: 1rem;
-  margin-bottom: 1rem;
-}
-.skeleton-text {
-  width: 90%;
-  height: 16px;
-}
-.skeleton-text-short {
-  width: 75%;
-  height: 16px;
-}
-
 
 /* --- Responsive Adjustments --- */
 @media (max-width: 767.98px) {
@@ -272,6 +255,10 @@ onMounted(async () => {
   .timeline-item::before {
     left: 62.5px;
     right: auto;
+    border-left: 1px solid var(--glass-border);
+    border-bottom: 1px solid var(--glass-border);
+    border-top: none;
+    border-right: none;
   }
 }
 </style>

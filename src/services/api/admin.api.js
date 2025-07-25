@@ -212,20 +212,33 @@ export const deleteContactMessage = (uuid) => fetchWithAuth(`/admin/contact-mess
 // --- Application Settings ---
 
 /**
- * Fetches all application feature settings.
- * @returns {Promise<Array<{uuid: string, name: string, enabled: boolean, description: string}>>} The full list of setting objects.
+ * Fetches all application settings from the backend.
+ * @returns {Promise<Array<{uuid: string, name: string, value: string, description: string}>>} The full list of setting objects.
  */
 export const getAdminSettings = () => fetchWithAuth('/admin/settings', { method: 'GET' });
 
 /**
  * Updates multiple application settings at once.
- * @param {Array<{uuid: string, name: string, enabled: boolean}>} settings - An array of settings to update.
- * @returns {Promise<Array<{uuid: string, name: string, enabled: boolean, description: string}>>} The full, updated list of all settings.
+ * The payload MUST be an array of objects, each with a UUID and a new value.
+ * @param {Array<{uuid: string, value: string}>} settings - An array of settings to update.
+ * @returns {Promise<Array<{uuid: string, name: string, value: string, description: string}>>} The full, updated list of all settings.
  */
-export const updateAdminSettings = (settings) => fetchWithAuth('/admin/settings', {
-  method: 'PUT',
-  body: settings
-});
+export const updateAdminSettings = (settings) => {
+  // The 'settings' parameter is expected to be the correctly formatted array.
+  // e.g., [ { uuid: '...', value: 'true' }, { uuid: '...', value: 'modern' } ]
+  return fetchWithAuth('/admin/settings', {
+    method: 'PUT',
+    body: settings
+  });
+};
+
+/**
+ * Fetches the list of available PDF template names from the backend.
+ * This is a public endpoint but is used by the admin panel.
+ * @returns {Promise<string[]>} A promise that resolves to an array of template names.
+ */
+export const getAvailablePdfTemplates = () => fetchWithAuth('/pdf/templates', { method: 'GET' }, false);
+
 
 // --- Statistics ---
 
@@ -234,7 +247,3 @@ export const updateAdminSettings = (settings) => fetchWithAuth('/admin/settings'
  * @returns {Promise<object>} A promise that resolves to the stats object.
  */
 export const getAdminStats = () => fetchWithAuth('/admin/stats', { method: 'GET' });
-
-
-
-

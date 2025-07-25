@@ -19,14 +19,22 @@
               </div>
 
               <form v-else @submit.prevent="handleSave">
-                <div v-for="setting in settings" :key="setting.name"
+                <!-- The v-for loop now correctly handles the 'value' property -->
+                <div v-for="setting in settings" :key="setting.uuid"
                      class="form-check form-switch form-switch-lg mb-3">
+                  <!--
+                    --- KEY CHANGE #1: The v-model now binds to `setting.value` ---
+                    We use `true-value` and `false-value` to tell Vue to treat
+                    the string values "true" and "false" as the checked/unchecked states.
+                  -->
                   <input
                     :id="`switch-${setting.name}`"
-                    v-model="setting.enabled"
+                    v-model="setting.value"
                     class="form-check-input"
                     role="switch"
                     type="checkbox"
+                    true-value="true"
+                    false-value="false"
                     @change="markAsDirty"
                   >
                   <label :for="`switch-${setting.name}`" class="form-check-label">
@@ -43,7 +51,8 @@
                     Reset
                   </button>
                   <button class="btn btn-primary" :disabled="!isDirty || isSaving" type="submit">
-                    Save Changes
+                    <span v-if="isSaving" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    {{ isSaving ? 'Saving...' : 'Save Changes' }}
                   </button>
                 </div>
               </form>
@@ -72,31 +81,26 @@
 
 <script setup>
 import {onMounted, ref} from 'vue';
-import {getAdminSettings, updateAdminSettings} from '@/services/api/admin.api.js';
+// Import from the main barrel file for consistency
+import {getAdminSettings, updateAdminSettings, ApiError} from '@/services/api/index.js';
 import {settingsService} from '@/services/settingsService.js';
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue';
-import LoadingModal from '@/components/common/LoadingModal.vue';
-import SuccessModal from '@/components/common/SuccessModal.vue';
-import ErrorModal from '@/components/common/ErrorModal.vue';
+import LoadingModal from '@/components/common/modals/LoadingModal.vue';
+import SuccessModal from '@/components/common/modals/SuccessModal.vue';
+import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 
 const settings = ref([]);
-const originalSettings = ref([]); // To store the initial state for reset functionality
+const originalSettings = ref([]);
 const isLoading = ref(true);
 const isSaving = ref(false);
 const error = ref(null);
-const isDirty = ref(false); // Tracks if changes have been made
+const isDirty = ref(false);
 
-// State for the feedback modals
 const showSuccessModal = ref(false);
 const successMessage = ref('');
 const showErrorModal = ref(false);
 const errorMessage = ref('');
 
-/**
- * Creates a clean, shallow copy of the settings array.
- * @param {Array} source - The source settings array.
- * @returns {Array} A new, independent copy of the array.
- */
 const copySettings = (source) => {
   if (!Array.isArray(source)) return [];
   return source.map(setting => ({ ...setting }));
@@ -104,12 +108,13 @@ const copySettings = (source) => {
 
 onMounted(async () => {
   try {
+    // This correctly fetches settings with a `value` property
     const fetchedSettings = await getAdminSettings() || [];
     settings.value = copySettings(fetchedSettings);
     originalSettings.value = copySettings(fetchedSettings);
   } catch (err) {
     console.error('Failed to fetch settings:', err);
-    error.value = err;
+    error.value = err instanceof ApiError ? err : { message: 'An unexpected error occurred.' };
   } finally {
     isLoading.value = false;
   }
@@ -124,29 +129,25 @@ const handleSave = async () => {
   isSaving.value = true;
 
   try {
-    // The backend DTO requires the name property for validation, so we must include it.
-    // We only map the properties needed for the update to avoid sending unnecessary data.
-    const payload = settings.value.map((s) => ({ uuid: s.uuid, name: s.name, enabled: s.enabled }));
+    // --- KEY CHANGE #2: The payload now sends a `value` property ---
+    // This creates the exact JSON array the backend is expecting.
+    const payload = settings.value.map((s) => ({ uuid: s.uuid, value: s.value }));
     const updatedSettings = await updateAdminSettings(payload);
 
-    // Update the global settings service with the new values so the navbar updates instantly.
     settingsService.updateSettings(updatedSettings);
 
     settings.value = copySettings(updatedSettings);
     originalSettings.value = copySettings(updatedSettings);
     isDirty.value = false;
 
-    // Show success modal
     successMessage.value = 'Your site visibility settings have been updated successfully.';
     showSuccessModal.value = true;
-    // Auto-close after a short delay for better UX
     setTimeout(() => {
       showSuccessModal.value = false;
     }, 2000);
 
   } catch (err) {
     console.error('Failed to save settings:', err);
-    // Show error modal
     errorMessage.value = err.message || 'An unexpected error occurred. Please try again.';
     showErrorModal.value = true;
   } finally {
@@ -157,10 +158,8 @@ const handleSave = async () => {
 const resetChanges = () => {
   settings.value = copySettings(originalSettings.value);
   isDirty.value = false;
-  showErrorModal.value = false;
 };
 
-// Helper function to make setting names more readable
 const formatSettingName = (name) => {
   if (!name) return '';
   return name
@@ -178,11 +177,11 @@ const formatSettingName = (name) => {
 }
 
 .btn .spinner-border {
-  vertical-align: -0.125em; /* Aligns spinner nicely with text */
+  vertical-align: -0.125em;
 }
 
 .form-switch-lg {
-  padding-left: 3.5rem; /* More space for the larger switch */
+  padding-left: 3.5rem;
 }
 
 .form-switch-lg .form-check-input {

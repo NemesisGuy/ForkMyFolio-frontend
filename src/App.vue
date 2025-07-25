@@ -3,8 +3,8 @@
 // No specific lang attribute means JavaScript by default.
 import {RouterView} from 'vue-router';
 import Navbar from '@/components/common/Navbar.vue';
-import Footer from '@/components/common/Footer.vue'; // <-- 1. IMPORT THE NEW COMPONENT
-import { useTheme } from '@/services/themeService.js'; // <-- ADD THIS IMPORT
+import Footer from '@/components/common/Footer.vue';
+import { useTheme } from '@/services/themeService.js';
 
 /**
  * @file src/App.vue
@@ -18,11 +18,17 @@ useTheme();
   <div id="app-layout" class="d-flex flex-column min-vh-100">
     <Navbar/>
 
-    <main class="flex-shrink-0 container-fluid py-4">
+    <!--
+      THIS IS THE FIX:
+      Removed `container-fluid` and `py-4`. This makes the <main> element a simple
+      flex container, allowing the child component from RouterView to control
+      the entire content area's background and padding. This eliminates the
+      "border" effect and ensures a consistent background color.
+    -->
+    <main class="main-content flex-shrink-0">
       <RouterView/>
     </main>
 
-    <!-- 2. USE THE NEW COMPONENT -->
     <Footer/>
   </div>
 </template>
@@ -36,9 +42,13 @@ useTheme();
   min-height: 100vh;
 }
 
-main.container-fluid { /* Adjusted to match your main element */
+/*
+  THIS IS THE FIX:
+  The selector is updated from `main.container-fluid` to `main.main-content`
+  to match the change in the template. This preserves the essential flex behavior
+  that pushes the footer to the bottom of the page.
+*/
+main.main-content {
   flex: 1; /* Allows main content to grow and push footer down */
 }
-
-/* 3. REMOVED old .footer style, as it's now in Footer.vue */
 </style>

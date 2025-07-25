@@ -3,40 +3,50 @@
     <div class="container-fluid">
       <!-- Centered and restyled hero section -->
       <div class="text-center mb-5">
-        <h1 class="display-4 fw-bold animate-fade-in-up">💻 Projects Showcase</h1>
-        <p class="lead text-muted animate-fade-in-up" style="animation-delay: 0.1s;">
+        <h1 class="display-4 fw-bold animate-fade-in-up glass-text">
+          <i class="bi bi-kanban" aria-hidden="true"></i> Projects Showcase
+        </h1>
+        <p class="lead animate-fade-in-up glass-subtitle" style="animation-delay: 0.1s;">
           A curated collection of my work, from professional applications to personal experiments.
         </p>
       </div>
 
-      <LoadingModal :visible="isLoading"/>
+      <LoadingModal :visible="isLoading" class="glass-modal"/>
 
-      <!-- THIS IS THE FIX: A shimmering skeleton loader that mimics the project cards -->
+      <!-- Skeleton loader with new glass styles -->
       <div v-if="isLoading" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         <div v-for="n in 6"
              :key="n"
              class="col animate-fade-in-up"
              :style="{ 'animation-delay': (n * 0.05) + 's' }">
-          <div class="card h-100 glass-card shimmering">
-            <div class="skeleton-image-container"></div>
+          <div class="card h-100 glass-card glass-card-floating">
+            <div class="card-img-top skeleton-line" style="height: 200px; border-radius: 1.5rem 1.5rem 0 0;"></div>
             <div class="card-body d-flex flex-column">
-              <div class="skeleton-line skeleton-title mb-3"></div>
-              <div class="skeleton-line skeleton-text"></div>
-              <div class="skeleton-line skeleton-text"></div>
-              <div class="skeleton-line skeleton-text-short"></div>
+              <div class="skeleton-line skeleton-title" style="width: 60%;"></div>
+              <div class="skeleton-line skeleton-subtitle"></div>
+              <div class="skeleton-line skeleton-subtitle" style="width: 80%;"></div>
               <div class="d-flex flex-wrap mt-auto pt-3">
-                <div class="skeleton-badge me-1 mb-1"></div>
-                <div class="skeleton-badge me-1 mb-1"></div>
-                <div class="skeleton-badge me-1 mb-1"></div>
+                <div class="skeleton-line me-1 mb-1" style="width: 50px; height: 24px; border-radius: 0.25rem;"></div>
+                <div class="skeleton-line me-1 mb-1" style="width: 70px; height: 24px; border-radius: 0.25rem;"></div>
+                <div class="skeleton-line me-1 mb-1" style="width: 60px; height: 24px; border-radius: 0.25rem;"></div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div v-else-if="error" class="alert alert-danger shadow-sm" role="alert">
-        <h4 class="alert-heading">🚫 Error Loading Projects</h4>
-        <p>{{ error.message || 'Could not fetch projects. Please try again later.' }}</p>
+      <!-- Error state with glassmorphic styling -->
+      <div v-else-if="error" class="glass-card glass-card-dark mx-auto" style="max-width: 800px;">
+        <div class="card-body text-center p-5">
+          <i class="bi bi-exclamation-triangle-fill text-warning mb-3" style="font-size: 3rem;"></i>
+          <h5 class="card-title text-white mb-3">Unable to Load Projects</h5>
+          <p class="card-text text-light opacity-75">
+            Could not load projects data. Please try again later.
+          </p>
+          <button @click="retryLoad" class="btn btn-outline-light glass-btn mt-3">
+            <i class="bi bi-arrow-clockwise me-2"></i>Retry
+          </button>
+        </div>
       </div>
 
       <div v-else-if="projects && projects.length > 0"
@@ -44,10 +54,9 @@
         <div v-for="(project, index) in projects" :key="project.uuid"
              class="col animate-fade-in-up"
              :style="{ 'animation-delay': (index * 0.1) + 0.2 + 's' }">
-          <!-- The interactive classes are on the link wrapper -->
           <router-link :to="{ name: 'project-details', params: { uuid: project.uuid } }"
                        class="project-card-link interactive-card-lift interactive-card-shadow-primary">
-            <div class="card h-100 shadow-sm glass-card shimmering">
+            <div class="card h-100 glass-card glass-card-floating">
               <div class="card-img-container">
                 <img
                   v-if="project.imageUrl"
@@ -64,8 +73,8 @@
                 </div>
               </div>
               <div class="card-body d-flex flex-column">
-                <h5 class="card-title">{{ project.title }}</h5>
-                <p class="card-text text-muted small">
+                <h5 class="card-title glass-title">{{ project.title }}</h5>
+                <p class="card-text small glass-description">
                   {{
                     project.description?.substring(0, 180)
                   }}{{ project.description?.length > 180 ? '...' : '' }}
@@ -73,7 +82,7 @@
 
                 <div v-if="project.techStack && project.techStack.length" class="mt-auto pt-2">
                   <span v-for="tech in project.techStack" :key="tech"
-                        class="badge me-1 mb-1">{{ tech }}</span>
+                        class="badge tech-badge me-1 mb-1">{{ tech }}</span>
                 </div>
               </div>
             </div>
@@ -81,10 +90,17 @@
         </div>
       </div>
 
-      <div v-else class="text-center py-5">
-        <i class="bi bi-kanban display-1 text-muted mb-3"></i>
-        <h2 class="display-6">No Projects Yet</h2>
-        <p class="lead text-muted">Check back later to see new projects!</p>
+      <!-- Enhanced empty state with glassmorphic styling -->
+      <div v-else class="glass-card mx-auto" style="max-width: 800px;">
+        <div class="card-body text-center p-5">
+          <div class="empty-state-icon mb-4">
+            <i class="bi bi-kanban"></i>
+          </div>
+          <h4 class="card-title glass-title mb-3">No Projects Yet</h4>
+          <p class="card-text glass-subtitle mb-4">
+            New projects are in the pipeline. Please check back later to see the showcase.
+          </p>
+        </div>
       </div>
     </div>
   </div>
@@ -93,13 +109,14 @@
 <script setup>
 import {onMounted, ref} from 'vue';
 import {ApiError, getPublicProjects} from '@/services/api/index.js';
-import LoadingModal from '@/components/common/LoadingModal.vue';
+import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 
 const projects = ref([]);
 const isLoading = ref(true);
 const error = ref(null);
 
 const fetchProjects = async () => {
+  // Reset state for retry logic
   isLoading.value = true;
   error.value = null;
   try {
@@ -118,17 +135,17 @@ const fetchProjects = async () => {
   }
 };
 
-onMounted(fetchProjects);
+const retryLoad = () => {
+  fetchProjects();
+};
+
+onMounted(retryLoad);
 </script>
 
 <style scoped>
 /* --- Page Styling --- */
 .projects-page {
   overflow-x: hidden;
-}
-
-.projects-page h1, .projects-page .display-5, .projects-page .display-6 {
-  font-weight: 300;
 }
 
 /* --- Animations --- */
@@ -143,11 +160,6 @@ onMounted(fetchProjects);
   }
 }
 
-.animate-fade-in-up {
-  opacity: 0;
-  animation: fadeInUp 0.8s ease-out forwards;
-}
-
 /* --- Link Wrapper for Card --- */
 .project-card-link {
   display: block;
@@ -155,19 +167,11 @@ onMounted(fetchProjects);
   text-decoration: none;
   color: inherit;
   border-radius: 1rem;
+  /* The interactive classes will apply their transitions */
 }
 
 .project-card-link:hover {
   color: inherit;
-}
-
-.card-body {
-  position: relative;
-  z-index: 1;
-}
-
-.project-card-link:hover .card {
-  border-color: rgba(var(--bs-primary-rgb), 0.4);
 }
 
 .card-img-container {
@@ -193,10 +197,10 @@ onMounted(fetchProjects);
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--bs-tertiary-bg);
-  color: var(--bs-secondary-color);
+  background-color: var(--glass-bg);
+  color: var(--glass-text-secondary);
   font-size: 3rem;
-  opacity: 0.5;
+  opacity: 0.8;
 }
 
 /* --- Image Overlay Styling --- */
@@ -237,47 +241,12 @@ onMounted(fetchProjects);
 
 
 /* --- Badge Styling --- */
-.badge {
+.tech-badge {
   font-weight: 500;
   padding: 0.4em 0.7em;
-  background-color: rgba(var(--bs-body-color-rgb), 0.1) !important;
-  color: var(--bs-emphasis-color) !important;
-  border: 1px solid transparent;
+  background-color: rgba(var(--bs-primary-rgb), 0.1) !important;
+  color: var(--bs-primary) !important;
+  border: 1px solid rgba(var(--bs-primary-rgb), 0.2);
 }
 
-/* --- THIS IS THE FIX: Skeleton Placeholder Styles --- */
-.skeleton-image-container {
-  height: 200px;
-  background-color: rgba(255, 255, 255, 0.1);
-  border-top-left-radius: 1rem;
-  border-top-right-radius: 1rem;
-}
-
-.skeleton-line, .skeleton-badge {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-}
-
-.skeleton-line {
-  height: 16px;
-  margin-bottom: 0.75rem;
-}
-
-.skeleton-title {
-  height: 24px;
-  width: 60%;
-}
-
-.skeleton-text {
-  width: 95%;
-}
-
-.skeleton-text-short {
-  width: 70%;
-}
-
-.skeleton-badge {
-  width: 60px;
-  height: 24px;
-}
 </style>

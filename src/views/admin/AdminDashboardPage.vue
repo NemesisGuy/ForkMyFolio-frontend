@@ -143,20 +143,21 @@
           </div>
         </div>
 
-        <!-- Card for Backup & Restore -->
+        <!-- Card for PDF Settings -->
         <div class="col-md-6 col-lg-4">
           <div class="card h-100 shadow-sm">
             <div class="card-body d-flex flex-column">
-              <h5 class="card-title"><i class="bi bi-database-down me-2"></i>Backup & Restore</h5>
+              <h5 class="card-title"><i class="bi bi-file-earmark-pdf-fill me-2"></i>Manage PDF Settings</h5>
               <p class="card-text small text-muted">
-                Download a full backup of your portfolio data or restore it from a file.
+                Select the default PDF template for the public download button.
               </p>
-              <router-link :to="{ name: 'admin-backup-restore' }" class="btn btn-outline-primary mt-auto align-self-start">
-                Go to Backup & Restore
+              <router-link :to="{ name: 'admin-pdf-settings' }" class="btn btn-outline-primary mt-auto align-self-start">
+                Configure PDF
               </router-link>
             </div>
           </div>
         </div>
+
 
         <!-- Card for Settings -->
         <div class="col-md-6 col-lg-4">
@@ -172,6 +173,23 @@
             </div>
           </div>
         </div>
+
+        <!-- Card for Backup & Restore -->
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title"><i class="bi bi-database-down me-2"></i>Backup & Restore</h5>
+              <p class="card-text small text-muted">
+                Download a full backup of your portfolio data or restore it from a file.
+              </p>
+              <router-link :to="{ name: 'admin-backup-restore' }" class="btn btn-outline-primary mt-auto align-self-start">
+                Go to Backup & Restore
+              </router-link>
+            </div>
+          </div>
+        </div>
+
+
 
 
       </div>

@@ -128,9 +128,9 @@ import {
   updatePortfolioProfile,
   ApiError
 } from '@/services/api';
-import LoadingModal from '@/components/common/LoadingModal.vue';
-import ErrorModal from '@/components/common/ErrorModal.vue';
-import SuccessModal from '@/components/common/SuccessModal.vue';
+import LoadingModal from '@/components/common/modals/LoadingModal.vue';
+import ErrorModal from '@/components/common/modals/ErrorModal.vue';
+import SuccessModal from '@/components/common/modals/SuccessModal.vue';
 
 const isLoading = ref(true);
 const isSaving = ref(false);

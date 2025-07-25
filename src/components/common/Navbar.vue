@@ -146,7 +146,7 @@ import {authService} from '../../services/authService.js';
 // KEY CHANGE: Import the new useTheme composable
 import { useTheme } from '@/services/themeService.js';
 import { settingsService } from '../../services/settingsService.js';
-import ConfirmModal from './ConfirmModal.vue';
+import ConfirmModal from './modals/ConfirmModal.vue';
 import ThemeToggle from './ThemeToggle.vue';
 
 // KEY CHANGE: Get the reactive theme value from our new service

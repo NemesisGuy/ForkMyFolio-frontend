@@ -68,9 +68,9 @@
 
 <script setup>
 import {ref} from 'vue';
-import SuccessModal from '@/components/common/SuccessModal.vue';
-import ErrorModal from '@/components/common/ErrorModal.vue';
-import ConfirmModal from '@/components/common/ConfirmModal.vue';
+import SuccessModal from '@/components/common/modals/SuccessModal.vue';
+import ErrorModal from '@/components/common/modals/ErrorModal.vue';
+import ConfirmModal from '@/components/common/modals/ConfirmModal.vue';
 
 /**
  * @file src/views/dev/ModalTestPage.vue

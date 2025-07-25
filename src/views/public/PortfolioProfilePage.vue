@@ -60,8 +60,8 @@
 import { ref, onMounted } from 'vue';
 // 1. Import the function to get account data from the API.
 import { getAccount } from '@/services/api/index.js';
-import LoadingModal from '@/components/common/LoadingModal.vue';
-import ErrorModal from '@/components/common/ErrorModal.vue';
+import LoadingModal from '@/components/common/modals/LoadingModal.vue';
+import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 
 // 2. Create local state to hold the fetched user data.
 const user = ref(null);

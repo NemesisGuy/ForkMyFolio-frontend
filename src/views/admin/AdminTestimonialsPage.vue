@@ -92,12 +92,12 @@
 import { ref, reactive, onMounted } from 'vue';
 // UPDATED: Import admin-specific functions
 import { getPublicTestimonials, createTestimonial, updateTestimonial, deleteTestimonial, ApiError } from '@/services/api';
-import LoadingModal from '@/components/common/LoadingModal.vue';
-import ErrorModal from '@/components/common/ErrorModal.vue';
-import ConfirmModal from '@/components/common/ConfirmModal.vue';
+import LoadingModal from '@/components/common/modals/LoadingModal.vue';
+import ErrorModal from '@/components/common/modals/ErrorModal.vue';
+import ConfirmModal from '@/components/common/modals/ConfirmModal.vue';
 import EmptyState from '@/components/common/EmptyState.vue';
 // ADDED: Import SuccessModal
-import SuccessModal from '@/components/common/SuccessModal.vue';
+import SuccessModal from '@/components/common/modals/SuccessModal.vue';
 
 const testimonials = ref([]);
 const isLoading = ref(true);
