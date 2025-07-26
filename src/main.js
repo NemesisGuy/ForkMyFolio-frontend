@@ -12,6 +12,8 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 
 // src/main.js
 import '@/assets/common.css';
+import '@/assets/glass.css';
+
 
 
 // The async logic is now handled by the top-level await in `initAuth.js`.

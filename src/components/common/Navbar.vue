@@ -1,18 +1,18 @@
 <template>
-  <!-- KEY CHANGE: The class now uses `currentTheme` from our new service -->
   <nav :class="[
     'navbar',
     'navbar-expand-lg',
-    'border-bottom',
-    'shadow-sm',
+    'glass-nav', // This class provides the glassmorphic effect
     'sticky-top',
-    currentTheme === 'dark' ? 'navbar-dark bg-dark' : 'navbar-light bg-light'
+    currentTheme === 'dark' ? 'navbar-dark' : 'navbar-light' // For correct text/icon colors
   ]">
     <div class="container-fluid">
       <router-link class="navbar-brand d-flex align-items-center" to="/">
         <img src="../../assets/forkmyfolio_logo_icon.png" alt="ForkMyFolio Logo" width="45" height="45" class="d-inline-block align-text-top me-2 rounded-circle">
         ForkMyFolio
       </router-link>
+
+      <!-- The ref on this button is the key to the new solution -->
       <button
         ref="navbarToggler"
         class="navbar-toggler"
@@ -22,10 +22,11 @@
         aria-controls="navbarNav"
         aria-expanded="false"
         aria-label="Toggle navigation"
-        @click="toggleNavbar"
       >
         <span class="navbar-toggler-icon"></span>
       </button>
+
+      <!-- The ref on this div is used to check if the menu is open -->
       <div id="navbarNav" ref="navbarNavCollapsible" class="collapse navbar-collapse">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
           <li class="nav-item">
@@ -78,7 +79,6 @@
                 Admin
               </router-link>
             </li>
-            <!-- KEY CHANGE: User dropdown updated -->
             <li class="nav-item dropdown">
               <a id="navbarUserDropdown" class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button"
                  data-bs-toggle="dropdown" aria-expanded="false">
@@ -86,7 +86,7 @@
                 <i v-else class="bi bi-person-circle navbar-avatar-placeholder me-2"></i>
                 {{ authService.user.value?.firstName || 'User' }}
               </a>
-              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarUserDropdown">
+              <ul class="dropdown-menu dropdown-menu-end glass-dropdown" aria-labelledby="navbarUserDropdown">
                 <li>
                   <router-link class="dropdown-item" to="/account" @click="collapseNavbar">
                     <i class="bi bi-person-fill me-2"></i>My Account
@@ -114,11 +114,6 @@
                 Login
               </router-link>
             </li>
-<!--            <li class="nav-item">
-              <router-link class="btn btn-primary btn-sm ms-lg-2" to="/signup" @click="collapseNavbar">
-                Sign Up
-              </router-link>
-            </li>-->
           </template>
         </ul>
       </div>
@@ -138,55 +133,35 @@
 </template>
 
 <script setup>
-import {ref, computed, onMounted, onBeforeUnmount} from 'vue';
-import {useRouter} from 'vue-router';
-import {authService} from '../../services/authService.js';
-// KEY CHANGE: Remove the old theme service
-// import {themeService} from '../services/themeService';
-// KEY CHANGE: Import the new useTheme composable
+import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
+import { authService } from '../../services/authService.js';
 import { useTheme } from '@/services/themeService.js';
 import { settingsService } from '../../services/settingsService.js';
 import ConfirmModal from './modals/ConfirmModal.vue';
 import ThemeToggle from './ThemeToggle.vue';
 
-// KEY CHANGE: Get the reactive theme value from our new service
 const { currentTheme } = useTheme();
-
 const router = useRouter();
+
+// --- THIS IS THE FIX ---
+// We only need refs to the toggler button and the collapsible content area.
 const navbarToggler = ref(null);
 const navbarNavCollapsible = ref(null);
-const bsCollapse = ref(null);
 
-onMounted(() => {
-  const navbarCollapseEl = document.getElementById('navbarNav');
-  if (navbarCollapseEl && window.bootstrap) {
-    bsCollapse.value = new window.bootstrap.Collapse(navbarCollapseEl, {
-      toggle: false,
-    });
-  }
-});
-
-onBeforeUnmount(() => {
-  if (bsCollapse.value) {
-    bsCollapse.value.dispose();
-  }
-});
-
-const toggleNavbar = () => {
-  if (bsCollapse.value) {
-    bsCollapse.value.toggle();
-  }
-};
-
+/**
+ * Collapses the mobile navbar if it's currently open.
+ * This function now programmatically clicks the toggler button, which is the
+ * most robust way to ensure Bootstrap's own JS handles the state change.
+ */
 const collapseNavbar = () => {
-  if (
-    bsCollapse.value &&
-    navbarNavCollapsible.value &&
-    navbarNavCollapsible.value.classList.contains('show')
-  ) {
-    bsCollapse.value.hide();
+  // Check if the collapsible element exists and is currently visible (has the 'show' class)
+  if (navbarNavCollapsible.value && navbarNavCollapsible.value.classList.contains('show')) {
+    // Programmatically click the toggler button to close the menu.
+    navbarToggler.value.click();
   }
 };
+// --- END OF FIX ---
 
 const isAdmin = computed(() => {
   return (
@@ -201,7 +176,7 @@ const logoutConfirmTitle = 'Confirm Logout';
 const logoutConfirmMessage = 'Are you sure you want to logout?';
 
 const requestLogoutConfirmation = () => {
-  collapseNavbar();
+  collapseNavbar(); // Also collapse the menu if the dropdown is used
   showLogoutConfirmModal.value = true;
 };
 
@@ -229,7 +204,6 @@ const cancelLogout = () => {
   font-weight: 500;
 }
 
-/* ADDED: Styles for the user avatar in the navbar */
 .navbar-avatar {
   width: 28px;
   height: 28px;

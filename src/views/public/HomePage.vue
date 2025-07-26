@@ -2,30 +2,29 @@
   <div class="home-page py-5 animated-gradient-background">
     <LoadingModal :visible="isLoading" class="glass-modal"/>
 
-    <!-- Skeleton Loader: Updated with new glass styles -->
+    <!-- Skeleton Loader: Responsive glass-styled placeholder -->
     <div v-if="isLoading" class="container">
-      <!-- THIS IS THE FIX: The entrance animation is now on a dedicated wrapper div. -->
       <div class="animate-fade-in-up">
-        <div class="card glass-card glass-card-floating p-4 p-md-5">
+        <div class="card glass-card glass-card-floating p-2 p-md-5">
           <div class="card-body">
             <div class="row align-items-center">
-              <div class="col-md-4 text-center mb-4 mb-md-0">
-                <div class="skeleton-line rounded-circle shadow-lg mx-auto" style="width: 250px; height: 250px;"></div>
+              <div class="col-md-4 text-center mb-3 mb-md-0">
+                <div class="skeleton-line rounded-circle shadow-lg mx-auto" style="width: 100%; max-width: 200px; aspect-ratio: 1/1;"></div>
               </div>
               <div class="col-md-8">
-                <div class="skeleton-line skeleton-title" style="width: 70%; height: 48px;"></div>
-                <div class="skeleton-line skeleton-subtitle" style="width: 50%; height: 28px;"></div>
+                <div class="skeleton-line skeleton-title" style="width: 70%; height: 36px;"></div>
+                <div class="skeleton-line skeleton-subtitle" style="width: 50%; height: 24px;"></div>
                 <div class="skeleton-line skeleton-grade" style="width: 100%;"></div>
                 <div class="skeleton-line skeleton-grade" style="width: 90%;"></div>
-                <div class="skeleton-line skeleton-grade" style="width: 80%; margin-bottom: 2rem;"></div>
-                <div class="d-flex flex-wrap align-items-center mb-3">
-                  <div class="skeleton-line me-3 mb-2" style="width: 180px; height: 48px; border-radius: 0.75rem;"></div>
-                  <div class="skeleton-line mb-2" style="width: 180px; height: 48px; border-radius: 0.75rem;"></div>
+                <div class="skeleton-line skeleton-grade" style="width: 80%; margin-bottom: 1.5rem;"></div>
+                <div class="d-flex flex-wrap align-items-center mb-3 justify-content-center">
+                  <div class="skeleton-line me-2 mb-2" style="width: 140px; height: 36px; border-radius: 0.75rem;"></div>
+                  <div class="skeleton-line mb-2" style="width: 140px; height: 36px; border-radius: 0.75rem;"></div>
                 </div>
-                <div class="d-flex flex-wrap">
-                  <div class="skeleton-icon me-3"></div>
-                  <div class="skeleton-icon me-3"></div>
-                  <div class="skeleton-icon me-3"></div>
+                <div class="d-flex flex-wrap justify-content-center">
+                  <div class="skeleton-icon me-2"></div>
+                  <div class="skeleton-icon me-2"></div>
+                  <div class="skeleton-icon me-2"></div>
                   <div class="skeleton-icon"></div>
                 </div>
               </div>
@@ -35,12 +34,12 @@
       </div>
     </div>
 
-    <!-- Error State: Updated with new glass styles -->
-    <div v-else-if="error" class="container py-5">
-      <div class="glass-card glass-card-dark mx-auto" style="max-width: 800px;">
-        <div class="card-body text-center p-5">
-          <i class="bi bi-exclamation-triangle-fill text-warning mb-3" style="font-size: 3rem;"></i>
-          <h5 class="card-title text-white mb-3">Unable to Load Profile</h5>
+    <!-- Error State: Glass-styled error display -->
+    <div v-else-if="error" class="container py-4">
+      <div class="glass-card glass-card-dark mx-auto" style="max-width: 90%;">
+        <div class="card-body text-center p-3">
+          <i class="bi bi-exclamation-triangle-fill text-warning mb-2" style="font-size: 2rem;"></i>
+          <h5 class="card-title text-white mb-2">Unable to Load Profile</h5>
           <p class="card-text text-light opacity-75">
             Could not load profile data. Please try again later.
           </p>
@@ -48,21 +47,20 @@
       </div>
     </div>
 
-    <!-- Profile Display State: Updated with new glass styles -->
+    <!-- Profile Display State: Responsive profile card -->
     <div v-else-if="profile" class="hero-section">
       <div class="container">
-        <!-- THIS IS THE FIX: The entrance animation is moved to this new wrapper div. -->
         <div class="animate-fade-in-up">
-          <div class="card glass-card glass-card-floating p-4 p-md-5 interactive-card-lift interactive-card-shadow-primary">
+          <div class="card glass-card glass-card-floating p-2 p-md-5 interactive-card-lift interactive-card-shadow-primary">
             <div class="card-body">
               <div class="row align-items-center">
-                <div class="col-md-4 text-center mb-4 mb-md-0">
-                  <a :href="profile.resumeUrl || '#'" target="_blank" class="profile-image-link">
+                <div class="col-md-4 text-center mb-3 mb-md-0">
+                  <a :href="profile.resumeUrl || '#'" target="_blank" class="profile-image-link shadow-lg">
                     <img v-if="profile.resumeImageUrl" :src="profile.resumeImageUrl"
                          alt="Resume Preview"
-                         class="profile-image img-fluid rounded-circle shadow-lg"/>
+                         class="profile-image"/>
                     <div v-else
-                         class="profile-image-placeholder rounded-circle shadow-lg d-flex align-items-center justify-content-center">
+                         class="profile-image-placeholder d-flex align-items-center justify-content-center">
                       <i class="bi bi-file-earmark-text-fill"></i>
                     </div>
                   </a>
@@ -72,22 +70,21 @@
                   <p class="lead text-primary glass-subtitle">{{ profile.headline }}</p>
                   <p class="summary-text glass-description">{{ profile.summary }}</p>
 
-                  <div class="mt-4">
-                    <div class="d-flex flex-wrap align-items-center mb-3">
+                  <div class="mt-3">
+                    <div class="d-flex flex-wrap align-items-center mb-3 justify-content-center">
                       <a v-if="profile.resumeUrl"
                          :href="profile.resumeUrl"
-                         class="btn glass-btn-primary me-3 mb-2 interactive-lift"
+                         class="btn glass-btn-primary me-2 mb-2 interactive-lift"
                          target="_blank">
-                        <i class="bi bi-file-earmark-arrow-down-fill me-2"></i>View Resume
+                        <i class="bi bi-file-earmark-arrow-down-fill me-1"></i>View Resume
                       </a>
-                      <!-- THIS IS THE FIX: Changed class from glass-btn to glass-btn-primary -->
                       <button v-if="profile.coverLetterTemplate"
-                              class="btn glass-btn-primary me-3 mb-2 interactive-lift"
+                              class="btn glass-btn-primary me-2 mb-2 interactive-lift"
                               @click="showCoverLetterModal = true">
-                        <i class="bi bi-envelope-paper-fill me-2"></i>View Cover Letter
+                        <i class="bi bi-envelope-paper-fill me-1"></i>View Cover Letter
                       </button>
                     </div>
-                    <div class="social-links d-flex flex-wrap">
+                    <div class="social-links d-flex flex-wrap justify-content-center">
                       <a v-if="profile.linkedinUrl" :href="profile.linkedinUrl" class="social-icon" target="_blank"
                          title="LinkedIn"><i class="bi bi-linkedin"></i></a>
                       <a v-if="profile.githubUrl" :href="profile.githubUrl" class="social-icon" target="_blank"
@@ -98,7 +95,6 @@
                          title="Email Me"><i class="bi bi-envelope-fill"></i></a>
                     </div>
                   </div>
-
                 </div>
               </div>
             </div>
@@ -107,18 +103,18 @@
       </div>
     </div>
 
-    <!-- Profile Missing / Empty State: Updated with new glass styles -->
-    <div v-else class="container py-5">
-      <div class="glass-card mx-auto" style="max-width: 800px;">
-        <div class="card-body text-center p-5">
-          <div class="empty-state-icon mb-4">
+    <!-- Profile Missing / Empty State: Glass-styled placeholder -->
+    <div v-else class="container py-4">
+      <div class="glass-card mx-auto" style="max-width: 90%;">
+        <div class="card-body text-center p-3">
+          <div class="empty-state-icon mb-3">
             <i class="bi bi-person-workspace"></i>
           </div>
-          <h4 class="card-title glass-title mb-3">Portfolio Coming Soon!</h4>
-          <p class="card-text glass-subtitle mb-4">
+          <h4 class="card-title glass-title mb-2">Portfolio Coming Soon!</h4>
+          <p class="card-text glass-subtitle mb-3">
             The owner is currently setting things up. Please check back later.
           </p>
-          <div v-if="isAdmin" class="alert alert-info mt-4">
+          <div v-if="isAdmin" class="alert alert-info mt-3">
             <p class="mb-1"><strong>Admin Tip:</strong> Your public profile is live but appears empty.</p>
             <p class="mb-0">
               <router-link to="/admin/portfolio-profile">Go to the Profile Editor</router-link>
@@ -129,7 +125,7 @@
       </div>
     </div>
 
-    <!-- Cover Letter Modal with enhanced glassmorphic styling -->
+    <!-- Cover Letter Modal: Glassmorphic modal with responsive behavior -->
     <div v-if="showCoverLetterModal" class="modal fade show" style="display: block;" tabindex="-1">
       <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content glass-modal">
@@ -151,19 +147,32 @@
         </div>
       </div>
     </div>
-    <!-- The backdrop for the modal -->
-    <div v-if="showCoverLetterModal" class="modal-backdrop fade show" style="backdrop-filter: blur(5px);"></div>
+    <!-- Modal backdrop: Clickable to close modal -->
+    <div
+      v-if="showCoverLetterModal"
+      class="modal-backdrop fade show"
+      style="backdrop-filter: blur(5px);"
+      @click="showCoverLetterModal = false"
+    ></div>
 
-    <!-- PDF Download Error Alert -->
-    <div v-if="pdfDownloadError" class="pdf-error-toast alert alert-danger show" role="alert">
-      <strong>Download Failed:</strong> {{ pdfDownloadError }}
-      <button type="button" class="btn-close" @click="pdfDownloadError = null"></button>
-    </div>
+    <!-- Success and Error Modals: Reusable modals for feedback -->
+    <SuccessModal
+      :visible="showSuccessModal"
+      title="Download Started"
+      :message="successModalMessage"
+      @close="showSuccessModal = false"
+    />
+    <ErrorModal
+      :visible="showErrorModal"
+      title="Download Failed"
+      :message="errorModalMessage"
+      @close="showErrorModal = false"
+    />
 
-    <!-- Floating Action Button for PDF Download -->
+    <!-- Floating Action Button: PDF download button -->
     <button
       v-if="profile"
-      class="btn btn-primary btn-lg rounded-circle shadow-lg pdf-download-button"
+      class="btn glass-btn-primary btn-lg rounded-circle shadow-lg pdf-download-button"
       title="Download Portfolio as PDF"
       :disabled="isDownloadingPdf"
       @click="handleDownloadPdf"
@@ -175,65 +184,70 @@
 </template>
 
 <script setup>
-import {onMounted, ref, computed} from 'vue';
-import {getPublicProfile, downloadPortfolioAsPdf, ApiError} from '@/services/api/index.js';
-import {authService} from '@/services/authService.js';
+import { onMounted, ref, computed } from 'vue';
+import { getPublicProfile, ApiError } from '@/services/api/index.js';
+import { authService } from '@/services/authService.js';
 import { settingsService } from '@/services/settingsService.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
+import SuccessModal from '@/components/common/modals/SuccessModal.vue';
+import ErrorModal from '@/components/common/modals/ErrorModal.vue';
+import { usePortfolioDownloader } from '@/composables/usePortfolioDownloader.js';
 
+/**
+ * Reactive state for profile data
+ * @type {Ref<Object|null>}
+ */
 const profile = ref(null);
-const isLoading = ref(true);
-const error = ref(null);
-const showCoverLetterModal = ref(false);
-const isDownloadingPdf = ref(false);
-const pdfDownloadError = ref(null);
 
+/**
+ * Reactive state for loading status
+ * @type {Ref<boolean>}
+ */
+const isLoading = ref(true);
+
+/**
+ * Reactive state for error handling
+ * @type {Ref<Object|null>}
+ */
+const error = ref(null);
+
+/**
+ * Reactive state for cover letter modal visibility
+ * @type {Ref<boolean>}
+ */
+const showCoverLetterModal = ref(false);
+
+/**
+ * Computed property for full name
+ * @returns {string} Concatenated first and last name
+ */
 const fullName = computed(() => {
   if (!profile.value) return '';
   return `${profile.value.firstName || ''} ${profile.value.lastName || ''}`.trim();
 });
 
+/**
+ * Encapsulated PDF download logic and state from our new composable.
+ */
+const {
+  isDownloadingPdf,
+  showSuccessModal,
+  successModalMessage,
+  showErrorModal,
+  errorModalMessage,
+  handleDownloadPdf
+} = usePortfolioDownloader(fullName);
+
+/**
+ * Computed property to check if user is admin
+ * @returns {boolean} True if user is authenticated and has ADMIN role
+ */
 const isAdmin = computed(() => authService.isAuthenticated.value && authService.user.value?.roles?.includes('ADMIN'));
 
-const handleDownloadPdf = async () => {
-  const templateName = settingsService.settings.value['DEFAULT_PDF_TEMPLATE'];
-
-  if (!templateName) {
-    pdfDownloadError.value = 'Default PDF template is not configured by the owner.';
-    setTimeout(() => { pdfDownloadError.value = null; }, 5000);
-    return;
-  }
-
-  isDownloadingPdf.value = true;
-  pdfDownloadError.value = null;
-  try {
-    const pdfBlob = await downloadPortfolioAsPdf(templateName);
-
-    const url = window.URL.createObjectURL(pdfBlob);
-    const a = document.createElement('a');
-    a.style.display = 'none';
-    a.href = url;
-    const userName = fullName.value ? fullName.value.replace(/\s/g, '') : 'Portfolio';
-    const today = new Date().toISOString().slice(0, 10);
-    a.download = `${userName}-Resume-${today}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-
-    window.requestAnimationFrame(() => {
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    });
-  } catch (err) {
-    console.error("Failed to download portfolio PDF:", err);
-    pdfDownloadError.value = err.message || 'An unknown error occurred. Please try again.';
-    setTimeout(() => {
-      pdfDownloadError.value = null;
-    }, 5000);
-  } finally {
-    isDownloadingPdf.value = false;
-  }
-};
-
+/**
+ * Lifecycle hook to fetch profile and settings on component mount
+ * @async
+ */
 onMounted(async () => {
   isLoading.value = true;
   try {
@@ -263,106 +277,230 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/**
+ * Styles for the home page container
+ */
 .home-page {
   overflow-x: hidden;
 }
 
+/**
+ * Styles for the hero section
+ */
 .hero-section {
   width: 100%;
 }
 
+/**
+ * Styles for the profile image link container
+ */
 .profile-image-link {
   display: inline-block;
+  position: relative;
+  width: 100%;
+  max-width: 200px;
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
+  border-radius: 50%;
+  border: 4px solid var(--glass-bg);
+  overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
+/**
+ * Hover effect for profile image link
+ */
 .profile-image-link:hover {
   transform: scale(1.05);
-  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175) !important;
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15) !important;
 }
 
-.profile-image, .profile-image-placeholder {
-  width: 250px;
-  height: 250px;
+/**
+ * Styles for profile image and placeholder
+ */
+.profile-image,
+.profile-image-placeholder {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  border: 5px solid var(--glass-bg);
 }
 
+/**
+ * Styles for profile image placeholder
+ */
+.profile-image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/**
+ * Icon styles within profile image placeholder
+ */
 .profile-image-placeholder .bi {
-  font-size: 6rem;
+  font-size: 4rem;
   color: var(--glass-text-secondary);
 }
 
+/**
+ * Gradient text effect for headings
+ */
 .text-gradient {
   background: linear-gradient(45deg, var(--bs-primary), var(--bs-info));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   text-fill-color: transparent;
-  color: var(--bs-primary); /* fallback */
-  padding-bottom: 0.2em;
+  color: var(--bs-primary);
+  padding-bottom: 0.15em;
 }
 
+/**
+ * Styles for summary text
+ */
 .summary-text {
-  font-size: 1.1rem;
-  line-height: 1.7;
+  font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+  line-height: 1.6;
   white-space: pre-wrap;
+  overflow-wrap: break-word;
 }
 
+/**
+ * Styles for social links container
+ */
 .social-links {
-  gap: 20px;
+  gap: 15px;
 }
 
+/**
+ * Styles for social link icons
+ */
 .social-links a {
   margin-right: 0;
-  font-size: 2.2rem;
+  font-size: 1.8rem;
   color: var(--glass-text-secondary);
   transition: all 0.3s ease;
 }
 
+/**
+ * Hover effect for social links
+ */
 .social-links a:hover {
   color: var(--bs-primary);
-  transform: translateY(-3px);
+  transform: translateY(-2px);
 }
 
+/**
+ * Hover effect for PDF download button
+ */
+.pdf-download-button:hover {
+  transform: scale(1.1);
+  animation-play-state: paused;
+}
+
+/**
+ * Pulse animation for PDF download button
+ */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(var(--bs-primary-rgb), 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(var(--bs-primary-rgb), 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(var(--bs-primary-rgb), 0);
+  }
+}
+
+/**
+ * Styles for PDF download button
+ */
 .pdf-download-button {
   position: fixed;
-  bottom: 2rem;
-  right: 2rem;
+  bottom: 1.5rem;
+  right: 1.5rem;
   z-index: 1030;
-  width: 60px;
-  height: 60px;
+  width: 48px;
+  height: 48px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 1.5rem;
-  transition: transform 0.2s ease-in-out;
+  font-size: 1.2rem;
+  transition: transform 0.3s ease;
+  animation: pulse 2.5s infinite cubic-bezier(0.66, 0, 0, 1);
 }
 
-.pdf-download-button:hover {
-  transform: scale(1.1);
-}
-
-.pdf-error-toast {
-  position: fixed;
-  bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1051;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
+/**
+ * Styles for cover letter text in modal
+ */
 .cover-letter-text {
   white-space: pre-wrap;
   font-family: var(--bs-font-sans-serif);
-  font-size: 1rem;
-  line-height: 1.6;
+  font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+  line-height: 1.5;
 }
 
-/*
-  All skeleton, modal, and animation styles are now handled by global classes
-  in common.css, so local styles can be removed for a cleaner component.
-*/
+/**
+ * Responsive styles for small devices (e.g., iPhone SE)
+ */
+@media (max-width: 576px) {
+  .col-md-8 {
+    text-align: center;
+  }
+
+  .profile-image-link {
+    width: 70%;
+    max-width: 160px;
+  }
+
+  .skeleton-line.rounded-circle {
+    width: 70%;
+    max-width: 140px;
+    aspect-ratio: 1 / 1;
+  }
+
+  h1.display-4 {
+    font-size: clamp(1.2rem, 4.5vw, 1.8rem);
+  }
+
+  p.lead {
+    font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+  }
+
+  .d-flex.flex-wrap {
+    justify-content: center !important;
+    gap: 8px;
+  }
+
+  .pdf-download-button {
+    bottom: 1rem;
+    right: 1rem;
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+
+  .modal-dialog.modal-lg {
+    margin: 0.5rem;
+    max-width: 98%;
+  }
+
+  .card-body {
+    padding: 1rem;
+  }
+
+  .glass-card {
+    max-width: 95%;
+  }
+
+  .social-links a {
+    font-size: 1.5rem;
+  }
+
+  .btn.glass-btn-primary {
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+  }
+}
 </style>
