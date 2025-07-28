@@ -1,95 +1,101 @@
-import {fetchWithAuth} from './apiClient';
+import { fetchWithAuth } from './apiClient';
+import { authService } from '@/services/authService';
 
 /**
- * Fetches the public portfolio profile of the owner.
- * @returns {Promise<object>} PortfolioProfileDto
+ * @file src/services/api/public.api.js
+ * @description API functions for publicly accessible data and portfolio-related actions.
  */
-// KEY CHANGE: The endpoint is updated from '/profile' to '/portfolio-profile'
-export const getPublicProfile = () => fetchWithAuth('/portfolio-profile', {method: 'GET'}, false);
+
+// --- Named Exports for use with the barrel file (index.js) ---
+
+export const getPortfolioBySlug = (slug) => {
+  return fetchWithAuth(`/portfolios/${slug}`, { method: 'GET' }, false);
+};
+
+export const getPortfolioSettings = (slug) => {
+  return fetchWithAuth(`/portfolios/${slug}/settings`, { method: 'GET' }, false);
+};
+
+export const getGlobalSettings = () => {
+  return fetchWithAuth('/settings', { method: 'GET' }, false);
+};
+
+export const sendContactMessage = (slug, messageData) => {
+  return fetchWithAuth(`/portfolios/${slug}/contact-messages`, { method: 'POST', body: messageData }, false);
+};
+
+export const getAvailablePdfTemplates = () => {
+  return fetchWithAuth('/settings/pdf-templates', { method: 'GET' }, false);
+};
 
 /**
- * Fetches all public projects for the portfolio.
- * @returns {Promise<Array<object>>} List of ProjectDto
+ * Fetches the profile data for the homepage.
+ * This is now dynamic:
+ * - If a user is logged in, it fetches their own portfolio.
+ * - If no user is logged in, it returns null, allowing the UI to show a generic state.
+ * @returns {Promise<Object|null>} The profile data or null.
  */
-export const getPublicProjects = () => fetchWithAuth('/projects', {method: 'GET'}, false);
+export const getPublicProfile = async () => {
+  // --- DYNAMIC LOGIC ---
+  if (authService.isAuthenticated.value && authService.user.value?.slug) {
+    const userSlug = authService.user.value.slug;
+    console.log(`[Public Profile] Authenticated user detected. Fetching profile for slug: ${userSlug}`);
+    try {
+      const portfolioData = await getPortfolioBySlug(userSlug);
+
+      // --- THIS IS THE FIX ---
+      // The API returns nested `user` and `profile` objects. We need to merge them
+      // to create a single, flat object for the UI to use easily.
+      if (portfolioData && portfolioData.user && portfolioData.profile) {
+        // Merge the base data, user details, and profile details.
+        // The order is important: profile details should override user details if there are conflicts (e.g., firstName).
+        const flatProfile = { ...portfolioData, ...portfolioData.user, ...portfolioData.profile };
+
+        // Clean up the now-redundant nested objects.
+        delete flatProfile.user;
+        delete flatProfile.profile;
+
+        return flatProfile;
+      }
+      return null; // User exists but has no portfolio data.
+    } catch (error) {
+      console.error(`[Public Profile] Failed to fetch portfolio for authenticated user slug '${userSlug}'.`, error);
+      throw error;
+    }
+  } else {
+    console.log("[Public Profile] No authenticated user. Homepage will show a generic state.");
+    return null;
+  }
+};
 
 /**
- * Fetches a single public project by its UUID.
- * @param {string} uuid - The UUID of the project.
- * @returns {Promise<object>} ProjectDto
- */
-export const getPublicProjectById = (uuid) => fetchWithAuth(`/projects/${uuid}`, {method: 'GET'}, false);
-
-/**
- * Fetches the list of all skills.
- * @returns {Promise<Array<object>>} List of SkillDto
- */
-export const getPublicSkills = () => fetchWithAuth('/skills', {method: 'GET'}, false);
-
-/**
- * Fetches the list of all work experiences.
- * @returns {Promise<Array<object>>} List of ExperienceDto
- */
-export const getPublicExperience = () => fetchWithAuth('/experience', {method: 'GET'}, false);
-
-/**
- * Fetches the list of all testimonials.
- * @returns {Promise<Array<object>>} List of TestimonialDto
- */
-export const getPublicTestimonials = () => fetchWithAuth('/testimonials', {method: 'GET'}, false);
-
-/**
- * Fetches the list of all qualifications.
- * @returns {Promise<Array<object>>} List of QualificationDto
- */
-export const getPublicQualifications = () => fetchWithAuth('/qualifications', {method: 'GET'}, false);
-
-/**
- * Submits a contact form message.
- * @param {object} messageData - Data for the contact message.
- * @returns {Promise<object>} Confirmation message
- */
-export const submitContactMessage = (messageData) => fetchWithAuth('/contact-messages', {
-  method: 'POST',
-  body: messageData
-}, false);
-
-/**
- * Gets the map of public settings.
- * @returns {Promise<Object<string, boolean>>} A map of feature names to their enabled state.
- */
-export const getPublicSettings = () => fetchWithAuth('/settings', { method: 'GET' }, false);
-
-
-
-/**
- * Requests a PDF version of the portfolio from the backend.
- * @param {string} templateName The name of the template to use for generation.
- * @returns {Promise<Blob>} A promise that resolves with the PDF file as a Blob.
+ * Downloads the authenticated user's portfolio as a PDF.
+ * This is an authenticated action.
+ * @param {string} templateName - The name of the PDF template to use.
+ * @returns {Promise<Blob>} The PDF file as a blob.
  */
 export const downloadPortfolioAsPdf = (templateName) => {
-  if (!templateName) {
-    // This provides a clear error if the setting isn't configured.
-    return Promise.reject(new Error("A template name must be provided."));
-  }
-  // The endpoint is public, so requiresAuth is false.
-  const endpoint = `/pdf/download?template=${encodeURIComponent(templateName)}`;
-  return fetchWithAuth(endpoint, { method: 'GET' }, false, false, 'blob');
+  // This is an authenticated call to a user-specific endpoint.
+  return fetchWithAuth(`/me/portfolio/download?template=${encodeURIComponent(templateName)}`, {
+    method: 'GET',
+    responseType: 'blob' // Crucial for handling file downloads
+  }, true); // `true` indicates this is an authenticated request
 };
 
-/**
- * Records a total visit count. This is a fire-and-forget call.
- * @returns {Promise<void>}
- */
-export const recordTotalVisit = () => {
-  return fetchWithAuth('/stats/increment/total-visit', { method: 'POST' }, false);
-};
+
+// --- Object Export for backward compatibility with existing components ---
 
 /**
- * Records a view for a specific project. This is a fire-and-forget call.
- * @param {string} projectId The UUID of the project.
- * @returns {Promise<void>}
+ * An object containing all public API functions. This provides an alternative
+ * way to import and use the functions, maintaining compatibility with components
+ * that import `publicApi` directly.
  */
-export const recordProjectView = (projectId) => {
-  return fetchWithAuth(`/stats/increment/project-view/${projectId}`, { method: 'POST' }, false);
+export const publicApi = {
+  getPortfolioBySlug,
+  getPortfolioSettings,
+  getGlobalSettings,
+  sendContactMessage,
+  getAvailablePdfTemplates,
+  getPublicProfile,
+  downloadPortfolioAsPdf,
 };

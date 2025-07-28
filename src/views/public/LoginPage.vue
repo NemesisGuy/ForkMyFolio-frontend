@@ -40,10 +40,10 @@
               {{ isLoading ? 'Logging in...' : 'Login' }}
             </button>
           </form>
-<!--          <p class="mt-4 text-center">
-            Don't have an account?
-            <router-link to="/signup">Sign Up</router-link>
-          </p>-->
+          <!--          <p class="mt-4 text-center">
+                      Don't have an account?
+                      <router-link to="/signup">Sign Up</router-link>
+                    </p>-->
         </div>
       </div>
 
@@ -95,11 +95,11 @@ const showLoginErrorModal = ref(false);
 const loginErrorTitle = ref('Error');
 const loginErrorMessage = ref('');
 
-let redirectPathOnSuccess = '/account';
+let redirectPathOnSuccess = { name: 'dashboard' }; // Default to dashboard
 
 onMounted(() => {
   if (authService.isAuthenticated.value) {
-    router.replace(route.query.redirect || '/');
+    router.replace(route.query.redirect || { name: 'dashboard' });
   }
 });
 
@@ -156,8 +156,11 @@ const handleLogin = async () => {
 
   try {
     await authService.login(credentials);
-    redirectPathOnSuccess = route.query.redirect || '/account';
-    loginSuccessMessage.value = "Login successful! Redirecting...";
+    // --- THIS IS THE FIX ---
+    // The default redirect is now the user's dashboard.
+    // If the user was trying to access a protected page, we'll send them there instead.
+    redirectPathOnSuccess = route.query.redirect || { name: 'dashboard' };
+    loginSuccessMessage.value = "Login successful! Redirecting to your dashboard...";
     showLoginSuccessModal.value = true;
   } catch (error) {
     console.error("Login error:", error);

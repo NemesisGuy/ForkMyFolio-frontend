@@ -232,14 +232,6 @@ export const updateAdminSettings = (settings) => {
   });
 };
 
-/**
- * Fetches the list of available PDF template names from the backend.
- * This is a public endpoint but is used by the admin panel.
- * @returns {Promise<string[]>} A promise that resolves to an array of template names.
- */
-export const getAvailablePdfTemplates = () => fetchWithAuth('/pdf/templates', { method: 'GET' }, false);
-
-
 // --- Statistics ---
 
 /**

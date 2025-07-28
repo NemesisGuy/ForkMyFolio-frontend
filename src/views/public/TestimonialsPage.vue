@@ -40,7 +40,8 @@
         <p>{{ error.message || 'Could not load testimonials. Please try again later.' }}</p>
       </div>
 
-      <div v-else-if="testimonials.length > 0" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      <!-- State for when a portfolio is loaded and has testimonials -->
+      <div v-else-if="portfolio && testimonials.length > 0" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         <div v-for="(testimonial, index) in testimonials"
              :key="testimonial.id"
              class="col animate-fade-in-up"
@@ -62,7 +63,21 @@
         </div>
       </div>
 
-      <!-- Updated empty state with new glass style -->
+      <!-- State for when no portfolio has been loaded (e.g., direct navigation) -->
+      <div v-else-if="!portfolio" class="glass-card">
+        <div class="card-body text-center p-5">
+          <div class="empty-state-icon mb-4">
+            <i class="bi bi-person-bounding-box"></i>
+          </div>
+          <h4 class="card-title glass-title mb-3">No Portfolio Selected</h4>
+          <p class="card-text glass-subtitle mb-4">
+            Please navigate to a user's main portfolio page first to load their data.
+          </p>
+          <router-link to="/" class="btn btn-primary">Go to Home</router-link>
+        </div>
+      </div>
+
+      <!-- State for when a portfolio is loaded but has no testimonials -->
       <div v-else class="glass-card">
         <div class="card-body text-center p-5">
           <div class="empty-state-icon mb-4">
@@ -70,7 +85,7 @@
           </div>
           <h4 class="card-title glass-title mb-3">No Testimonials Yet</h4>
           <p class="card-text glass-subtitle mb-4">
-            Testimonials have not been added yet. Please check back later.
+            This user has not added any testimonials yet.
           </p>
         </div>
       </div>
@@ -80,27 +95,21 @@
 
 <script setup>
 /**
- * @file src/views/TestimonialsPage.vue
- * @description A page to display testimonials with a premium glassmorphic design.
+ * @file src/views/public/TestimonialsPage.vue
+ * @description A page to display testimonials. It now consumes data from a central store.
  */
-import { onMounted, ref } from 'vue';
-import { getPublicTestimonials, ApiError } from '@/services/api/index.js';
+import { computed } from 'vue';
+import { usePublicPortfolioStore } from '@/stores/publicPortfolioStore.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 
-const testimonials = ref([]);
-const isLoading = ref(true);
-const error = ref(null);
+// Use the store to get reactive state.
+const { portfolio, isLoading, error } = usePublicPortfolioStore();
 
-onMounted(async () => {
-  try {
-    testimonials.value = await getPublicTestimonials() || [];
-  } catch (err) {
-    console.error('Failed to fetch testimonials:', err);
-    error.value = err instanceof ApiError ? err : { message: 'An unexpected error occurred.' };
-  } finally {
-    isLoading.value = false;
-  }
-});
+// The testimonials are now a computed property derived from the central store.
+const testimonials = computed(() => portfolio.value?.testimonials || []);
+
+// The onMounted hook that was making the bad API call is now completely removed.
+// The data is expected to be fetched by the main PortfolioPage.vue.
 </script>
 
 <style scoped>
@@ -142,9 +151,9 @@ onMounted(async () => {
   font-size: 0.9rem;
 }
 
-.blockquote-footer strong {
-  font-weight: 600;
+.empty-state-icon {
+  font-size: 4rem;
+  color: var(--bs-primary);
+  opacity: 0.6;
 }
-
-/* Skeleton styles are now handled by global classes in common.css */
 </style>

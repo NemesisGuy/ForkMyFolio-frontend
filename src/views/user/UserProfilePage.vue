@@ -1,0 +1,197 @@
+<template>
+  <div class="user-account-page py-5 animated-gradient-background">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-8">
+          <LoadingModal :visible="isLoading"/>
+          <ErrorModal v-if="error" :visible="true" title="Error Loading Account" :message="error" @close="error = null" />
+
+          <div v-if="!isLoading && user">
+            <div class="card glass-card shimmering p-0 animate-fade-in-up interactive-card-lift interactive-card-shadow-primary">
+              <div class="card-body p-4 p-md-5">
+                <div class="text-center mb-4">
+                  <img v-if="fullProfileImageUrl" :src="fullProfileImageUrl"
+                       alt="Profile Picture" class="profile-image img-fluid rounded-circle shadow-lg">
+                  <div v-else
+                       class="profile-image-placeholder rounded-circle shadow-lg d-flex align-items-center justify-content-center">
+                    <i class="bi bi-person-fill"></i>
+                  </div>
+                </div>
+
+                <h1 class="card-title mb-4 text-center display-6">My Account</h1>
+
+                <div class="account-details">
+                  <div class="detail-item">
+                    <strong>Name:</strong>
+                    <span>{{ user.firstName }} {{ user.lastName }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <strong>Email:</strong>
+                    <span>{{ user.email }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <strong>Public Slug:</strong>
+                    <span>/{{ user.slug }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <strong>Roles:</strong>
+                    <div>
+                      <span v-for="role in user.roles" :key="role"
+                            class="badge me-1">
+                        {{ role.replace('ROLE_', '') }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="d-flex flex-wrap justify-content-center mt-4 pt-4 border-top border-white border-opacity-10">
+                  <button class="btn btn-primary me-2 mb-2 interactive-lift interactive-shadow-primary" @click="editAccount">
+                    <i class="bi bi-person-gear me-1"></i> Edit Account Details
+                  </button>
+                  <button class="btn btn-outline-secondary mb-2 interactive-lift" @click="editPublicProfile">
+                    <i class="bi bi-layout-text-sidebar-reverse me-1"></i> Edit Public Profile
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted, computed } from 'vue';
+import { useRouter } from 'vue-router';
+import { getMyAccount } from '@/services/api/user.api.js'; // Use the correct user-specific API
+import LoadingModal from '@/components/common/modals/LoadingModal.vue';
+import ErrorModal from '@/components/common/modals/ErrorModal.vue';
+
+const router = useRouter();
+const user = ref(null);
+const isLoading = ref(true);
+const error = ref(null);
+
+const fullProfileImageUrl = computed(() => {
+  const imageUrl = user.value?.profileImageUrl;
+  if (!imageUrl) return null;
+  if (/^(https?:\/\/|\/\/)/.test(imageUrl)) return imageUrl;
+
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+  if (!apiBaseUrl) return imageUrl;
+
+  try {
+    const serverUrl = new URL(apiBaseUrl);
+    const serverRoot = `${serverUrl.protocol}//${serverUrl.host}`;
+    return `${serverRoot}${imageUrl.startsWith('/') ? imageUrl : '/' + imageUrl}`;
+  } catch (e) {
+    return imageUrl;
+  }
+});
+
+onMounted(async () => {
+  try {
+    isLoading.value = true;
+    user.value = await getMyAccount(); // Fetch data for the authenticated user
+  } catch (err) {
+    console.error("Failed to fetch user account data:", err);
+    error.value = err.message || 'An unexpected error occurred.';
+  } finally {
+    isLoading.value = false;
+  }
+});
+
+// --- UPDATED: Navigate to the new editor pages ---
+const editAccount = () => {
+  router.push({ name: 'edit-account' });
+};
+
+const editPublicProfile = () => {
+  router.push({ name: 'edit-public-profile' });
+};
+</script>
+
+<style scoped>
+.user-account-page {
+  min-height: calc(100vh - 56px - 1px);
+  overflow-x: hidden;
+}
+
+.user-account-page .display-6 {
+  font-weight: 300;
+}
+
+.card-body {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  opacity: 0;
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.profile-image,
+.profile-image-placeholder {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border: 4px solid var(--glass-bg);
+  transition: transform 0.3s ease;
+}
+
+.profile-image:hover,
+.profile-image-placeholder:hover {
+  transform: scale(1.05);
+}
+
+.profile-image-placeholder {
+  background-color: var(--bs-tertiary-bg);
+}
+
+.profile-image-placeholder .bi {
+  font-size: 5rem;
+  color: var(--bs-secondary-color);
+}
+
+.account-details {
+  max-width: 450px;
+  margin: 0 auto;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--bs-border-color-translucent);
+}
+
+.detail-item:last-child {
+  border-bottom: none;
+}
+
+.detail-item strong {
+  color: var(--bs-emphasis-color);
+}
+
+.detail-item .badge {
+  background-color: rgba(var(--bs-primary-rgb), 0.2) !important;
+  color: var(--bs-primary) !important;
+  font-weight: 500;
+  padding: 0.4em 0.7em;
+  text-transform: capitalize;
+}
+</style>

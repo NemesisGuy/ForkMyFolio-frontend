@@ -10,4 +10,4 @@ export * from './auth.api';
 export * from './user.api';
 
 // Also export the custom error class for convenience
-export { ApiError } from './apiClient';
+export { ApiError } from './ApiError';

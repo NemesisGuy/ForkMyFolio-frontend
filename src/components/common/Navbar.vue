@@ -12,7 +12,6 @@
         ForkMyFolio
       </router-link>
 
-      <!-- The ref on this button is the key to the new solution -->
       <button
         ref="navbarToggler"
         class="navbar-toggler"
@@ -26,10 +25,10 @@
         <span class="navbar-toggler-icon"></span>
       </button>
 
-      <!-- The ref on this div is used to check if the menu is open -->
       <div id="navbarNav" ref="navbarNavCollapsible" class="collapse navbar-collapse">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
           <li class="nav-item">
+            <!-- This link now consistently points to the main homepage -->
             <router-link class="nav-link" active-class="active" to="/" @click="collapseNavbar">
               Home
             </router-link>
@@ -86,20 +85,30 @@
                 <i v-else class="bi bi-person-circle navbar-avatar-placeholder me-2"></i>
                 {{ authService.user.value?.firstName || 'User' }}
               </a>
+              <!-- The dropdown menu is now cleaner and links to the correct routes. -->
               <ul class="dropdown-menu dropdown-menu-end glass-dropdown" aria-labelledby="navbarUserDropdown">
                 <li>
-                  <router-link class="dropdown-item" to="/account" @click="collapseNavbar">
-                    <i class="bi bi-person-fill me-2"></i>My Account
+                  <router-link class="dropdown-item" :to="{ name: 'dashboard' }" @click="collapseNavbar">
+                    <i class="bi bi-grid-1x2-fill me-2"></i>My Dashboard
                   </router-link>
                 </li>
                 <li>
-                  <router-link class="dropdown-item" to="/admin/portfolio-profile" @click="collapseNavbar">
-                    <i class="bi bi-layout-text-sidebar-reverse me-2"></i>Edit Public Profile
+                  <router-link class="dropdown-item" :to="{ name: 'profile' }" @click="collapseNavbar">
+                    <i class="bi bi-person-badge-fill me-2"></i>My Profile
+                  </router-link>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                  <router-link class="dropdown-item" :to="{ name: 'display-settings' }" @click="collapseNavbar">
+                    <i class="bi bi-toggles me-2"></i>Display Settings
                   </router-link>
                 </li>
                 <li>
-                  <hr class="dropdown-divider">
+                  <router-link class="dropdown-item" :to="{ name: 'pdf-settings' }" @click="collapseNavbar">
+                    <i class="bi bi-file-earmark-pdf-fill me-2"></i>PDF Settings
+                  </router-link>
                 </li>
+                <li><hr class="dropdown-divider"></li>
                 <li>
                   <a class="dropdown-item" href="#" @click.prevent="requestLogoutConfirmation">
                     <i class="bi bi-box-arrow-right me-2"></i>Logout
@@ -135,33 +144,26 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { authService } from '../../services/authService.js';
+import { authService } from '@/services/authService.js';
 import { useTheme } from '@/services/themeService.js';
-import { settingsService } from '../../services/settingsService.js';
+import { settingsService } from '@/services/settingsService.js';
 import ConfirmModal from './modals/ConfirmModal.vue';
 import ThemeToggle from './ThemeToggle.vue';
 
 const { currentTheme } = useTheme();
 const router = useRouter();
 
-// --- THIS IS THE FIX ---
-// We only need refs to the toggler button and the collapsible content area.
 const navbarToggler = ref(null);
 const navbarNavCollapsible = ref(null);
 
-/**
- * Collapses the mobile navbar if it's currently open.
- * This function now programmatically clicks the toggler button, which is the
- * most robust way to ensure Bootstrap's own JS handles the state change.
- */
 const collapseNavbar = () => {
-  // Check if the collapsible element exists and is currently visible (has the 'show' class)
   if (navbarNavCollapsible.value && navbarNavCollapsible.value.classList.contains('show')) {
-    // Programmatically click the toggler button to close the menu.
     navbarToggler.value.click();
   }
 };
-// --- END OF FIX ---
+
+// The dynamic homeLinkTarget computed property is no longer needed,
+// as the "Home" link now always points to the root path "/".
 
 const isAdmin = computed(() => {
   return (
@@ -176,7 +178,7 @@ const logoutConfirmTitle = 'Confirm Logout';
 const logoutConfirmMessage = 'Are you sure you want to logout?';
 
 const requestLogoutConfirmation = () => {
-  collapseNavbar(); // Also collapse the menu if the dropdown is used
+  collapseNavbar();
   showLogoutConfirmModal.value = true;
 };
 
@@ -184,7 +186,7 @@ const executeLogout = async () => {
   showLogoutConfirmModal.value = false;
   try {
     await authService.logout();
-    router.push('/login');
+    await router.push('/login');
   } catch (error) {
     console.error('Error during logout:', error);
   }

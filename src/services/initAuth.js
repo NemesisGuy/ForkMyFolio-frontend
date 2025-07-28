@@ -6,10 +6,13 @@ import { settingsService } from './settingsService';
 // First, inject the authService into the apiClient to resolve the circular dependency.
 setAuthService(authService);
 
-// Fetch public settings. We don't await this because the UI can render
-// while these are loading in the background. Components will be reactive to the service.
-settingsService.fetchSettings();
-
-// Then, initialize the auth state. Top-level await ensures this completes
-// before the rest of the app in main.js continues.
-await authService.initAuth();
+/**
+ * Orchestrates the application's startup sequence.
+ * It initializes settings and authentication state in parallel for a faster load time.
+ * This top-level await ensures that these critical setup tasks complete
+ * before the rest of the application in main.js continues.
+ */
+await Promise.all([
+  settingsService.initialize(), // Fetches global/user settings
+  authService.initAuth()        // Attempts to restore a user session
+]);

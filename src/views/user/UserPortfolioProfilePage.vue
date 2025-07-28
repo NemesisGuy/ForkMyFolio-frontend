@@ -127,7 +127,7 @@ import {
   createPortfolioProfile,
   updatePortfolioProfile,
   ApiError
-} from '@/services/api';
+} from '@/services/api/index.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';

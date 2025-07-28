@@ -1,20 +1,23 @@
 /**
  * @file src/services/authService.js
  * @description Manages authentication state, including login, logout, token storage, and session initialization.
- * This service acts as the central hub for authentication logic, using the low-level API functions.
+ * This service acts as the central hub for authentication logic.
  */
-import { ref, computed } from 'vue'; // Import 'computed'
+import { ref, computed } from 'vue';
 import { jwtDecode } from 'jwt-decode';
 
-// Import the specific API functions and the dependency injector
+// Import the specific API functions
 import { login as apiLogin, logout as apiLogout, register as apiRegister, refreshToken as apiRefreshToken } from './api/auth.api';
-// KEY CHANGE: We will use getAccount as it provides the full user DTO, including the profile image URL.
-import { getAccount } from './api/admin.api';
-import { setAuthService } from './api/apiClient';
+import { getMyAccount } from './api/user.api';
+// --- THIS IS THE FIX ---
+// We import the `publicApi` object, which contains the function we need.
+import { publicApi } from './api/public.api';
+import { ApiError } from './api/index.js';
 
 // --- Reactive State ---
 const isAuthenticated = ref(false);
 const user = ref(null);
+const settings = ref({}); // Reactive store for application settings
 const isLoading = ref(true);
 let accessToken = null;
 
@@ -23,33 +26,25 @@ let isRefreshing = false;
 let refreshPromise = null;
 
 // --- Private Functions ---
+
+/**
+ * Updates the authentication state.
+ * @param {string|null} token - The new access token.
+ * @param {object|null} userData - The user data object.
+ * @private
+ */
 function _updateAuthState(token, userData) {
-  console.log('[AuthService] Updating auth state. New access token:', token ? 'SET' : 'CLEARED', 'User data:', userData ? 'SET' : 'CLEARED');
   accessToken = token;
   isAuthenticated.value = !!token;
-
-  if (userData) {
-    user.value = userData;
-  } else if (token) {
-    try {
-      const decoded = jwtDecode(token);
-      user.value = {
-        id: decoded.sub,
-        email: decoded.email,
-        roles: decoded.roles || [],
-        firstName: decoded.firstName,
-        lastName: decoded.lastName,
-      };
-    } catch (e) {
-      console.error("[AuthService] Failed to decode token:", e);
-      _clearAuthState();
-    }
-  } else {
-    user.value = null;
-  }
-  isLoading.value = false;
+  user.value = userData;
+  // Note: isLoading is handled by initAuth to signal when the *entire* app is ready.
+  console.log('[AuthService] Auth state updated. Authenticated:', isAuthenticated.value);
 }
 
+/**
+ * Clears the authentication state.
+ * @private
+ */
 function _clearAuthState() {
   console.log('[AuthService] Clearing auth state.');
   accessToken = null;
@@ -59,13 +54,21 @@ function _clearAuthState() {
 }
 
 // --- Public API for the Service ---
+
+/**
+ * Logs in a user and establishes their session.
+ * @param {object} credentials - { email, password }
+ */
 async function login(credentials) {
   const response = await apiLogin(credentials);
-  // After login, fetch the full account data to get the image URL
-  const fullUser = await getAccount();
-  _updateAuthState(response.accessToken, fullUser);
+  // The user object is now part of the login response to be more efficient.
+  _updateAuthState(response.accessToken, response.user);
+  // Settings are already loaded by initAuth, so no need to fetch them again here.
 }
 
+/**
+ * Logs out the user from the backend and clears local state.
+ */
 async function logout() {
   try {
     await apiLogout();
@@ -76,13 +79,20 @@ async function logout() {
   }
 }
 
+/**
+ * Registers a new user and logs them in.
+ * @param {object} userData - { firstName, lastName, email, password }
+ */
 async function register(userData) {
   const response = await apiRegister(userData);
-  // After register, fetch the full account data
-  const fullUser = await getAccount();
-  _updateAuthState(response.accessToken, fullUser);
+  // The user object is now part of the register response.
+  _updateAuthState(response.accessToken, response.user);
 }
 
+/**
+ * Refreshes the access token using the HttpOnly refresh token cookie.
+ * @returns {Promise<boolean>}
+ */
 async function refreshToken() {
   if (isRefreshing) {
     return refreshPromise;
@@ -92,7 +102,8 @@ async function refreshToken() {
   refreshPromise = new Promise(async (resolve, reject) => {
     try {
       const response = await apiRefreshToken();
-      _updateAuthState(response.accessToken, response.user);
+      accessToken = response.accessToken;
+      isAuthenticated.value = true; // We have a new token
       console.log('[AuthService] Token refresh successful.');
       resolve(true);
     } catch (e) {
@@ -108,75 +119,56 @@ async function refreshToken() {
   return refreshPromise;
 }
 
-function updateLocalUser(updatedUser) {
-  if (user.value) {
-    user.value = { ...user.value, ...updatedUser };
-  }
-}
-
-async function initAuth() {
-  console.log('[AuthService] Initializing auth state...');
-  try {
-    // This is the call that is likely failing in production due to an incorrect API_BASE_URL.
-    // When this throws an error, the catch block below logs you out.
-    await refreshToken();
-
-    if (isAuthenticated.value) {
-      // KEY CHANGE: Fetch the full account data to ensure the profile image URL is present.
-      const freshUserAccount = await getAccount();
-      updateLocalUser(freshUserAccount);
-      console.log('[AuthService] User profile updated with latest data from server.');
-    }
-  } catch (error) {
-    console.log('[AuthService] Initial token refresh failed (user is likely not logged in or API_BASE_URL is misconfigured in production).');
-  } finally {
-    console.log(`[AuthService] Auth state initialized. User is ${isAuthenticated.value ? 'authenticated' : 'not authenticated'}.`);
-  }
-}
-
-// --- KEY CHANGE: Centralized Computed Property for User ---
 /**
- * A computed property that provides the user object with a guaranteed
- * absolute URL for the profile image. Use this in all components.
+ * Initializes the auth service on app startup.
+ * This now includes fetching critical application settings.
  */
-const computedUser = computed(() => {
-  const currentUser = user.value;
-  if (!currentUser) {
-    return null;
-  }
+async function initAuth() {
+  console.log('[AuthService] Initializing session...');
+  try {
+    // Fetch settings and attempt to refresh the token in parallel.
+    // The UI needs settings regardless of auth state.
+    // --- THIS IS THE FIX ---
+    // We now call the correct function from the imported `publicApi` object.
+    const settingsPromise = publicApi.getGlobalSettings().then(fetchedSettings => {
+      // Normalize settings from an array of {name, value} to an object {name: value}
+      const normalized = fetchedSettings.reduce((acc, setting) => {
+        acc[setting.name] = setting.value;
+        return acc;
+      }, {});
+      settings.value = normalized;
+      console.log('[AuthService] Application settings loaded.');
+    });
 
-  const imageUrl = currentUser.profileImageUrl;
-  let fullProfileImageUrl = null;
-
-  if (imageUrl) {
-    if (/^(https?:\/\/|\/\/)/.test(imageUrl)) {
-      fullProfileImageUrl = imageUrl;
-    } else {
-      const apiBaseUrl = window.runtimeConfig.API_BASE_URL.startsWith('##')
-        ? 'http://localhost:8080/api/v1'
-        : window.runtimeConfig.API_BASE_URL;
-      try {
-        const serverUrl = new URL(apiBaseUrl);
-        const serverRoot = `${serverUrl.protocol}//${serverUrl.host}`;
-        fullProfileImageUrl = `${serverRoot}${imageUrl.startsWith('/') ? imageUrl : '/' + imageUrl}`;
-      } catch (e) {
-        console.error('Invalid VITE_API_BASE_URL:', apiBaseUrl);
-        fullProfileImageUrl = imageUrl; // Fallback
+    const authPromise = refreshToken().then(async () => {
+      if (isAuthenticated.value) {
+        // If session is valid, fetch the latest user data to ensure it's fresh
+        const freshUserAccount = await getMyAccount();
+        _updateAuthState(accessToken, freshUserAccount);
+        console.log('[AuthService] Session restored and user data refreshed.');
       }
-    }
+    }).catch(() => {
+      console.log('[AuthService] No active session found or refresh failed.');
+      _clearAuthState(); // Ensure clean state if auth part fails
+    });
+
+    // Wait for both initialization tasks to complete.
+    await Promise.all([settingsPromise, authPromise]);
+
+  } catch (error) {
+    console.error('[AuthService] A critical error occurred during initialization.', error);
+    _clearAuthState(); // Ensure clean state if anything fails
+  } finally {
+    isLoading.value = false;
+    console.log(`[AuthService] Session initialized. User is ${isAuthenticated.value ? 'authenticated' : 'not authenticated'}.`);
   }
-
-  return {
-    ...currentUser,
-    fullProfileImageUrl, // Add the fully resolved URL to the user object
-  };
-});
-
+}
 
 export const authService = {
   // State
   isAuthenticated,
-  user: computedUser, // <-- Expose the computed user object
+  user,
+  settings: computed(() => settings.value), // Expose settings as a readonly computed property
   isLoading,
   // Getters
   getAccessToken: () => accessToken,
@@ -185,9 +177,5 @@ export const authService = {
   logout,
   register,
   refreshToken,
-  updateLocalUser,
   initAuth,
 };
-
-// Inject this service into the apiClient so it can handle token refreshes
-setAuthService(authService);

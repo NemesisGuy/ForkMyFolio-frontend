@@ -1,9 +1,14 @@
 import { fetchWithAuth } from './apiClient';
 
 /**
+ * @file src/services/api/auth.api.js
+ * @description API functions for authentication-related endpoints.
+ */
+
+/**
  * Register a new user.
  * @param {Object} userData - The registration data.
- * @returns {Promise} API response.
+ * @returns {Promise<object>} API response with user and accessToken.
  */
 export const register = (userData) =>
   fetchWithAuth('/auth/register', {
@@ -14,7 +19,7 @@ export const register = (userData) =>
 /**
  * Login an existing user.
  * @param {Object} credentials - The login credentials.
- * @returns {Promise} API response.
+ * @returns {Promise<object>} API response with user and accessToken.
  */
 export const login = (credentials) =>
   fetchWithAuth('/auth/login', {
@@ -24,8 +29,7 @@ export const login = (credentials) =>
 
 /**
  * Refresh the access token using the refresh token cookie.
- * Must include credentials to send cookies.
- * @returns {Promise} API response.
+ * @returns {Promise<object>} API response with a new accessToken.
  */
 export const refreshToken = () =>
   fetchWithAuth('/auth/refresh-token', {
@@ -34,8 +38,7 @@ export const refreshToken = () =>
 
 /**
  * Logout the current user.
- * Must include credentials to send cookies.
- * @returns {Promise} API response.
+ * @returns {Promise<void>}
  */
 export const logout = () =>
   fetchWithAuth('/auth/logout', {

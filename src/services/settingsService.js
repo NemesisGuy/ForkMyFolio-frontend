@@ -1,56 +1,52 @@
 /**
  * @file src/services/settingsService.js
- * @description A reactive service to manage and provide access to application settings.
- * It initializes itself with public settings on application load and can be updated
- * on-the-fly by admin actions.
+ * @description A reactive, centralized service for managing application and user settings.
+ * This acts as a single source of truth, ensuring that when settings are updated
+ * in one part of the app (e.g., UserSettingsPage), other parts (e.g., Navbar)
+ * react to the changes instantly.
  */
 import { ref, computed } from 'vue';
-import { getPublicSettings } from '@/services/api/public.api.js';
+import { publicApi } from '@/services/api/public.api.js';
+import { settingsApi } from '@/services/api/user.api.js';
+import { authService } from './authService';
 
 // --- Reactive State ---
-// The internal state will consistently be a map of setting names to their string values.
-// e.g., { "SHOW_PROJECTS": "true", "DEFAULT_PDF_TEMPLATE": "modern" }
+// The internal state is a key-value map: { "SHOW_PROJECTS": "true", ... }
 const settings = ref({});
 const isLoading = ref(true);
 
-let hasFetched = false; // Prevents re-fetching on hot-reloads during development
-
-// --- Service Functions ---
-
 /**
- * Fetches the public settings from the API and stores them in the reactive state.
- * It ensures the settings are only fetched once per application lifecycle.
+ * Initializes the settings from the backend based on the current context.
+ * This should be called when the application loads or the route changes.
+ * @param {string|null} slug - The user slug for a public portfolio page. If null, fetches for the current context.
  */
-async function fetchSettings() {
-  if (hasFetched) return;
+async function initializeSettings(slug = null) {
   isLoading.value = true;
-  hasFetched = true; // Mark as fetched immediately to prevent race conditions
   try {
-    // --- THIS IS THE FIX ---
-    // getPublicSettings now returns an array of objects: [{ name: '...', value: '...' }, ...]
-    const publicSettingsArray = await getPublicSettings() || [];
-
-    // Convert the array into the key-value map the service uses internally.
-    // This is more robust and handles any setting type (boolean or string).
-    const newSettingsMap = publicSettingsArray.reduce((map, setting) => {
-      map[setting.name] = setting.value;
-      return map;
-    }, {});
-
-    settings.value = newSettingsMap;
-    console.log('[SettingsService] Public settings loaded and normalized:', settings.value);
+    let settingsArray = [];
+    if (slug) {
+      // We are on a specific user's public portfolio page
+      settingsArray = await publicApi.getPortfolioSettings(slug);
+    } else if (authService.isAuthenticated.value) {
+      // The logged-in user is browsing their own dashboard area (/me/*)
+      settingsArray = await settingsApi.getAll();
+    } else {
+      // A generic public page (e.g., /login, /register)
+      settingsArray = await publicApi.getGlobalSettings();
+    }
+    // Normalize the array from the API into the service's internal map format.
+    updateSettings(settingsArray);
   } catch (err) {
-    console.error('Failed to fetch public settings:', err);
-    settings.value = {}; // Reset to a safe default on error
+    console.error('Failed to initialize settings:', err);
+    settings.value = {}; // Reset to a safe default
   } finally {
     isLoading.value = false;
   }
 }
 
 /**
- * Merges an array of updated settings into the existing reactive settings map.
- * This correctly handles partial updates (e.g., from the PDF settings page)
- * without wiping out the other settings (e.g., for site visibility).
+ * Updates the central reactive settings state from an array of setting objects.
+ * This is the key function that allows UserSettingsPage to broadcast changes.
  * @param {Array<{name: string, value: string}>} settingsArray - A list of setting objects to update.
  */
 function updateSettings(settingsArray) {
@@ -61,23 +57,21 @@ function updateSettings(settingsArray) {
   // Create a mutable copy of the current settings map.
   const newSettingsMap = { ...settings.value };
 
-  // Iterate over the incoming (potentially partial) list and update/add values.
+  // Iterate over the incoming list and update/add values.
   settingsArray.forEach(setting => {
     newSettingsMap[setting.name] = setting.value;
   });
 
-  // Assign the merged map back to the reactive ref.
+  // Assign the merged map back to the reactive ref to trigger updates across the app.
   settings.value = newSettingsMap;
-  console.log('[SettingsService] Settings merged and updated on-the-fly:', settings.value);
+  console.log('[SettingsService] Settings state updated:', settings.value);
 }
 
-
 // --- Exported Service ---
-// We export a single object that contains our reactive state and functions.
 export const settingsService = {
   isLoading,
   settings,
-  fetchSettings,
+  initialize: initializeSettings,
   updateSettings,
   /**
    * A computed property that returns a function to check if a feature is enabled.
@@ -85,7 +79,6 @@ export const settingsService = {
    * Usage in a component: `v-if="settingsService.isEnabled.value('SHOW_PROJECTS')"`
    */
   isEnabled: computed(() => (featureName) => {
-    // This is the robust check. It will correctly return false for "false", undefined, or any other string.
     return settings.value[featureName] === 'true';
   }),
 };

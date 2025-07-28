@@ -2,7 +2,7 @@
   <div class="home-page py-5 animated-gradient-background">
     <LoadingModal :visible="isLoading" class="glass-modal"/>
 
-    <!-- Skeleton Loader: Responsive glass-styled placeholder -->
+    <!-- Skeleton Loader: A placeholder for when the profile is loading -->
     <div v-if="isLoading" class="container">
       <div class="animate-fade-in-up">
         <div class="card glass-card glass-card-floating p-2 p-md-5">
@@ -34,7 +34,7 @@
       </div>
     </div>
 
-    <!-- Error State: Glass-styled error display -->
+    <!-- Error State -->
     <div v-else-if="error" class="container py-4">
       <div class="glass-card glass-card-dark mx-auto" style="max-width: 90%;">
         <div class="card-body text-center p-3">
@@ -47,7 +47,7 @@
       </div>
     </div>
 
-    <!-- Profile Display State: Responsive profile card -->
+    <!-- Profile Display State: The main cover page view -->
     <div v-else-if="profile" class="hero-section">
       <div class="container">
         <div class="animate-fade-in-up">
@@ -56,12 +56,12 @@
               <div class="row align-items-center">
                 <div class="col-md-4 text-center mb-3 mb-md-0">
                   <a :href="profile.resumeUrl || '#'" target="_blank" class="profile-image-link shadow-lg">
-                    <img v-if="profile.resumeImageUrl" :src="profile.resumeImageUrl"
-                         alt="Resume Preview"
+                    <img v-if="profile.resumeImageUrl || profile.profileImageUrl"
+                         :src="profile.resumeImageUrl || profile.profileImageUrl"
+                         :alt="profile.resumeImageUrl ? 'Resume Preview' : 'Profile Picture'"
                          class="profile-image"/>
-                    <div v-else
-                         class="profile-image-placeholder d-flex align-items-center justify-content-center">
-                      <i class="bi bi-file-earmark-text-fill"></i>
+                    <div v-else class="profile-image-placeholder d-flex align-items-center justify-content-center">
+                      <i class="bi bi-person-circle"></i>
                     </div>
                   </a>
                 </div>
@@ -103,7 +103,7 @@
       </div>
     </div>
 
-    <!-- Profile Missing / Empty State: Glass-styled placeholder -->
+    <!-- Profile Missing / Empty State -->
     <div v-else class="container py-4">
       <div class="glass-card mx-auto" style="max-width: 90%;">
         <div class="card-body text-center p-3">
@@ -117,7 +117,7 @@
           <div v-if="isAdmin" class="alert alert-info mt-3">
             <p class="mb-1"><strong>Admin Tip:</strong> Your public profile is live but appears empty.</p>
             <p class="mb-0">
-              <router-link to="/admin/portfolio-profile">Go to the Profile Editor</router-link>
+              <router-link :to="{ name: 'profile' }">Go to the Profile Editor</router-link>
               to add your headline, summary, and more.
             </p>
           </div>
@@ -125,7 +125,7 @@
       </div>
     </div>
 
-    <!-- Cover Letter Modal: Glassmorphic modal with responsive behavior -->
+    <!-- Cover Letter Modal -->
     <div v-if="showCoverLetterModal" class="modal fade show" style="display: block;" tabindex="-1">
       <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content glass-modal">
@@ -147,7 +147,6 @@
         </div>
       </div>
     </div>
-    <!-- Modal backdrop: Clickable to close modal -->
     <div
       v-if="showCoverLetterModal"
       class="modal-backdrop fade show"
@@ -155,7 +154,7 @@
       @click="showCoverLetterModal = false"
     ></div>
 
-    <!-- Success and Error Modals: Reusable modals for feedback -->
+    <!-- Success and Error Modals for PDF Download -->
     <SuccessModal
       :visible="showSuccessModal"
       title="Download Started"
@@ -187,48 +186,23 @@
 import { onMounted, ref, computed } from 'vue';
 import { getPublicProfile, ApiError } from '@/services/api/index.js';
 import { authService } from '@/services/authService.js';
-import { settingsService } from '@/services/settingsService.js';
+import { usePortfolioDownloader } from '@/composables/usePortfolioDownloader.js';
+
+// Modal components
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
-import { usePortfolioDownloader } from '@/composables/usePortfolioDownloader.js';
 
-/**
- * Reactive state for profile data
- * @type {Ref<Object|null>}
- */
 const profile = ref(null);
-
-/**
- * Reactive state for loading status
- * @type {Ref<boolean>}
- */
 const isLoading = ref(true);
-
-/**
- * Reactive state for error handling
- * @type {Ref<Object|null>}
- */
 const error = ref(null);
-
-/**
- * Reactive state for cover letter modal visibility
- * @type {Ref<boolean>}
- */
 const showCoverLetterModal = ref(false);
 
-/**
- * Computed property for full name
- * @returns {string} Concatenated first and last name
- */
 const fullName = computed(() => {
   if (!profile.value) return '';
   return `${profile.value.firstName || ''} ${profile.value.lastName || ''}`.trim();
 });
 
-/**
- * Encapsulated PDF download logic and state from our new composable.
- */
 const {
   isDownloadingPdf,
   showSuccessModal,
@@ -238,23 +212,12 @@ const {
   handleDownloadPdf
 } = usePortfolioDownloader(fullName);
 
-/**
- * Computed property to check if user is admin
- * @returns {boolean} True if user is authenticated and has ADMIN role
- */
 const isAdmin = computed(() => authService.isAuthenticated.value && authService.user.value?.roles?.includes('ADMIN'));
 
-/**
- * Lifecycle hook to fetch profile and settings on component mount
- * @async
- */
 onMounted(async () => {
   isLoading.value = true;
   try {
-    const [fetchedProfile] = await Promise.all([
-      getPublicProfile(),
-      settingsService.fetchSettings()
-    ]);
+    const fetchedProfile = await getPublicProfile();
 
     if (fetchedProfile && (fetchedProfile.headline || fetchedProfile.summary)) {
       profile.value = fetchedProfile;
@@ -277,23 +240,14 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/**
- * Styles for the home page container
- */
 .home-page {
   overflow-x: hidden;
 }
 
-/**
- * Styles for the hero section
- */
 .hero-section {
   width: 100%;
 }
 
-/**
- * Styles for the profile image link container
- */
 .profile-image-link {
   display: inline-block;
   position: relative;
@@ -307,17 +261,11 @@ onMounted(async () => {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-/**
- * Hover effect for profile image link
- */
 .profile-image-link:hover {
   transform: scale(1.05);
   box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15) !important;
 }
 
-/**
- * Styles for profile image and placeholder
- */
 .profile-image,
 .profile-image-placeholder {
   width: 100%;
@@ -325,26 +273,17 @@ onMounted(async () => {
   object-fit: cover;
 }
 
-/**
- * Styles for profile image placeholder
- */
 .profile-image-placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/**
- * Icon styles within profile image placeholder
- */
 .profile-image-placeholder .bi {
   font-size: 4rem;
   color: var(--glass-text-secondary);
 }
 
-/**
- * Gradient text effect for headings
- */
 .text-gradient {
   background: linear-gradient(45deg, var(--bs-primary), var(--bs-info));
   -webkit-background-clip: text;
@@ -355,9 +294,6 @@ onMounted(async () => {
   padding-bottom: 0.15em;
 }
 
-/**
- * Styles for summary text
- */
 .summary-text {
   font-size: clamp(0.85rem, 2.5vw, 0.95rem);
   line-height: 1.6;
@@ -365,16 +301,10 @@ onMounted(async () => {
   overflow-wrap: break-word;
 }
 
-/**
- * Styles for social links container
- */
 .social-links {
   gap: 15px;
 }
 
-/**
- * Styles for social link icons
- */
 .social-links a {
   margin-right: 0;
   font-size: 1.8rem;
@@ -382,25 +312,16 @@ onMounted(async () => {
   transition: all 0.3s ease;
 }
 
-/**
- * Hover effect for social links
- */
 .social-links a:hover {
   color: var(--bs-primary);
   transform: translateY(-2px);
 }
 
-/**
- * Hover effect for PDF download button
- */
 .pdf-download-button:hover {
   transform: scale(1.1);
   animation-play-state: paused;
 }
 
-/**
- * Pulse animation for PDF download button
- */
 @keyframes pulse {
   0% {
     box-shadow: 0 0 0 0 rgba(var(--bs-primary-rgb), 0.5);
@@ -413,9 +334,6 @@ onMounted(async () => {
   }
 }
 
-/**
- * Styles for PDF download button
- */
 .pdf-download-button {
   position: fixed;
   bottom: 1.5rem;
@@ -431,9 +349,6 @@ onMounted(async () => {
   animation: pulse 2.5s infinite cubic-bezier(0.66, 0, 0, 1);
 }
 
-/**
- * Styles for cover letter text in modal
- */
 .cover-letter-text {
   white-space: pre-wrap;
   font-family: var(--bs-font-sans-serif);
@@ -441,9 +356,11 @@ onMounted(async () => {
   line-height: 1.5;
 }
 
-/**
- * Responsive styles for small devices (e.g., iPhone SE)
- */
+.empty-state-icon {
+  font-size: 3rem;
+  color: var(--bs-primary);
+}
+
 @media (max-width: 576px) {
   .col-md-8 {
     text-align: center;
