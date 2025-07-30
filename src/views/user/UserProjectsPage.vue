@@ -1,9 +1,9 @@
 <template>
-  <div class="user-projects-page py-5">
+  <div class="user-projects-page py-5 animated-gradient-background">
     <div class="container">
       <!-- Header with Add Button -->
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0">My Projects</h2>
+      <div class="d-flex justify-content-between align-items-center mb-4 animate-fade-in-up">
+        <h2 class="mb-0 glass-text">My Projects</h2>
         <button class="btn btn-primary interactive-lift" @click="openAddModal">
           <i class="bi bi-plus-circle me-2"></i>Add Project
         </button>
@@ -11,8 +11,8 @@
 
       <!-- Modals -->
       <LoadingModal :visible="isLoading" />
-      <ErrorModal :visible="!!error" :message="error" @close="error = null" />
-      <SuccessModal :visible="!!successMessage" :message="successMessage" @close="successMessage = null" />
+      <ErrorModal :visible="!!error" :message="error" title="An Error Occurred" @close="error = null" />
+      <SuccessModal :visible="!!successMessage" :message="successMessage" title="Success" @close="successMessage = null" />
       <ProjectFormModal
         :visible="isFormModalVisible"
         :project="currentProject"
@@ -23,13 +23,14 @@
         :visible="isConfirmModalVisible"
         title="Confirm Deletion"
         message="Are you sure you want to delete this project? This action cannot be undone."
+        type="danger"
         @confirm="handleDeleteProject"
         @close="closeConfirmModal"
       />
 
       <!-- Projects Grid -->
       <div v-if="!isLoading && projects.length > 0" class="row g-4">
-        <div v-for="project in projects" :key="project.uuid" class="col-md-6 col-lg-4">
+        <div v-for="(project, index) in projects" :key="project.uuid" class="col-md-6 col-lg-4 animate-fade-in-up" :style="{ 'animation-delay': (index * 0.05) + 's' }">
           <div class="card h-100 glass-card interactive-lift">
             <!-- Project Image -->
             <div class="card-img-container">
@@ -41,11 +42,13 @@
             <!-- Project Details -->
             <div class="card-body d-flex flex-column">
               <h5 class="card-title glass-text">{{ project.title }}</h5>
-              <p class="card-text text-muted flex-grow-1">{{ project.description || 'No description provided.' }}</p>
+              <p class="card-text glass-description flex-grow-1">{{ project.description || 'No description provided.' }}</p>
               <!-- Tech Stack & Visibility -->
               <div class="mt-auto pt-3">
-                <div v-if="project.techStack && project.techStack.length" class="mb-2">
-                  <span v-for="tech in project.techStack" :key="tech" class="badge tech-badge me-1 mb-1">{{ tech }}</span>
+                <div v-if="project.skills && project.skills.length" class="mb-2">
+                  <span v-for="skill in project.skills" :key="skill.uuid" class="badge tech-badge me-1 mb-1">
+                    <i v-if="skill.icon" :class="skill.icon" class="me-1"></i>{{ skill.name }}
+                  </span>
                 </div>
                 <span :class="['badge', project.visible ? 'bg-success' : 'bg-secondary']">
                   {{ project.visible ? 'Visible' : 'Hidden' }}
@@ -55,8 +58,7 @@
             <!-- Actions & Links -->
             <div class="card-footer d-flex justify-content-between align-items-center">
               <div>
-                <!-- THIS IS THE FIX: Check for liveUrl OR projectUrl -->
-                <a v-if="project.liveUrl || project.projectUrl" :href="project.liveUrl || project.projectUrl" target="_blank" class="btn btn-sm btn-outline-light me-1" title="Live Demo">
+                <a v-if="project.liveUrl" :href="project.liveUrl" target="_blank" class="btn btn-sm btn-outline-light me-1" title="Live Demo">
                   <i class="bi bi-box-arrow-up-right"></i>
                 </a>
                 <a v-if="project.repoUrl" :href="project.repoUrl" target="_blank" class="btn btn-sm btn-outline-light" title="Source Code">
@@ -64,11 +66,11 @@
                 </a>
               </div>
               <div>
-                <button class="btn btn-sm btn-outline-secondary me-1" @click="openEditModal(project)" title="Edit Project">
-                  <i class="bi bi-pencil-square"></i>
+                <button class="btn btn-sm btn-outline-primary me-1" @click="openEditModal(project)" title="Edit Project">
+                  <i class="bi bi-pencil-fill"></i>
                 </button>
                 <button class="btn btn-sm btn-outline-danger" @click="openDeleteConfirm(project)" title="Delete Project">
-                  <i class="bi bi-trash"></i>
+                  <i class="bi bi-trash-fill"></i>
                 </button>
               </div>
             </div>
@@ -77,11 +79,11 @@
       </div>
 
       <!-- Empty State -->
-      <div v-else-if="!isLoading" class="text-center p-5 border rounded glass-card-empty">
+      <div v-else-if="!isLoading" class="text-center p-5 glass-card animate-fade-in-up">
         <div class="empty-state-icon mb-4"><i class="bi bi-kanban"></i></div>
         <h4 class="glass-title">No Projects Yet</h4>
         <p class="glass-subtitle">Click the "Add Project" button to get started.</p>
-        <button class="btn btn-success mt-3" @click="openAddModal">Add Your First Project</button>
+        <button class="btn btn-primary mt-3 interactive-lift" @click="openAddModal">Add Your First Project</button>
       </div>
     </div>
   </div>
@@ -90,6 +92,8 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { projectsApi } from '@/services/api/user.api.js';
+import { usePublicPortfolioStore } from '@/stores/publicPortfolioStore.js';
+import { authService } from '@/services/authService.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';
@@ -107,6 +111,9 @@ const isConfirmModalVisible = ref(false);
 const currentProject = ref(null); // For editing or adding
 const projectToDelete = ref(null); // For deletion confirmation
 
+// --- Store and Services ---
+const portfolioStore = usePublicPortfolioStore();
+
 // --- Lifecycle Hooks ---
 onMounted(async () => {
   await fetchProjects();
@@ -116,12 +123,26 @@ onMounted(async () => {
 const fetchProjects = async () => {
   try {
     isLoading.value = true;
-    projects.value = await projectsApi.getAll();
+    const fetchedProjects = await projectsApi.getAll();
+    projects.value = fetchedProjects.sort((a, b) => (a.displayOrder || 999) - (b.displayOrder || 999));
   } catch (err) {
     console.error("Failed to fetch user projects:", err);
     error.value = err.message || 'An unexpected error occurred while fetching projects.';
   } finally {
     isLoading.value = false;
+  }
+};
+
+/**
+ * Forces a refresh of the public portfolio data in the store.
+ * This ensures that any changes made here (add, edit, delete) are
+ * immediately reflected on the public-facing pages.
+ */
+const refreshPublicData = async () => {
+  const userSlug = authService.user.value?.slug;
+  if (userSlug) {
+    // The 'true' forces a refetch, bypassing the cache.
+    await portfolioStore.fetchPortfolio(userSlug, true);
   }
 };
 
@@ -165,7 +186,8 @@ const handleSaveProject = async (projectData) => {
       await projectsApi.create(projectData);
       successMessage.value = 'Project created successfully!';
     }
-    await fetchProjects(); // Refresh the list
+    await fetchProjects(); // Refresh the list in the management view
+    await refreshPublicData(); // Refresh the public data store
   } catch (err) {
     console.error("Failed to save project:", err);
     error.value = err.message || 'An error occurred while saving the project.';
@@ -183,6 +205,7 @@ const handleDeleteProject = async () => {
     successMessage.value = 'Project deleted successfully.';
     // Optimistically remove from the local array for a faster UI response
     projects.value = projects.value.filter(p => p.uuid !== projectToDelete.value.uuid);
+    await refreshPublicData(); // Refresh the public data store
   } catch (err) {
     console.error("Failed to delete project:", err);
     error.value = err.message || 'An error occurred while deleting the project.';
@@ -193,11 +216,6 @@ const handleDeleteProject = async () => {
 </script>
 
 <style scoped>
-.glass-card-empty {
-  background-color: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.1) !important;
-}
-
 .empty-state-icon {
   font-size: 4rem;
   color: var(--glass-text);
@@ -232,5 +250,21 @@ const handleDeleteProject = async () => {
   background-color: rgba(var(--bs-primary-rgb), 0.1) !important;
   color: var(--bs-primary) !important;
   border: 1px solid rgba(var(--bs-primary-rgb), 0.2);
+}
+
+.animate-fade-in-up {
+  opacity: 0;
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

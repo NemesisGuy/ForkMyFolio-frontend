@@ -1,64 +1,86 @@
 <template>
-  <div>
-    <h1 class="h3 mb-4 text-gray-800">Portfolio Dashboard</h1>
-
-    <div v-if="isLoading" class="text-center">
-      <div class="spinner-border" role="status">
-        <span class="visually-hidden">Loading...</span>
-      </div>
-    </div>
-
-    <div v-if="error" class="alert alert-danger">
-      {{ error }}
-    </div>
-
-    <div v-if="stats && !isLoading">
-      <!-- Engagement Metrics -->
-      <h2 class="h5 mb-3">Site Engagement</h2>
-      <div class="row">
-        <StatCard title="Total Visits" :value="stats.totalVisits" icon="eye" />
-        <StatCard title="Project Section Views" :value="stats.projectsSectionViews" icon="folder-open" />
-        <StatCard title="Skills Section Views" :value="stats.skillsSectionViews" icon="cogs" />
-        <StatCard title="Experience Section Views" :value="stats.experienceSectionViews" icon="briefcase" />
-        <StatCard title="Qualifications Views" :value="stats.qualificationsSectionViews" icon="graduation-cap" />
-        <StatCard title="Testimonials Views" :value="stats.testimonialsSectionViews" icon="comments" />
-        <StatCard title="Contact Submissions" :value="stats.contactMessageSubmissions" icon="envelope" />
-        <StatCard title="PDF Downloads" :value="stats.pdfDownloads" icon="file-pdf" />
+  <div class="admin-stats-page py-5 animated-gradient-background">
+    <div class="container">
+      <!-- Header -->
+      <div class="text-center mb-5 animate-fade-in-up">
+        <h1 class="display-5 fw-light glass-text">Application Statistics</h1>
+        <p class="lead glass-subtitle" style="animation-delay: 0.1s;">
+          An overview of site engagement and user activity.
+        </p>
       </div>
 
-      <!-- Authentication Metrics -->
-      <h2 class="h5 my-3">Authentication Events</h2>
-      <div class="row">
-        <StatCard title="Successful Logins" :value="stats.loginSuccesses" icon="sign-in-alt" />
-        <StatCard title="Failed Logins" :value="stats.loginFailures" icon="exclamation-triangle" />
-        <StatCard title="Successful Logouts" :value="stats.logoutSuccesses" icon="sign-out-alt" />
-      </div>
+      <!-- Modals -->
+      <LoadingModal :visible="isLoading" />
+      <ErrorModal :visible="!!error" :message="error" title="An Error Occurred" @close="error = null" />
 
-      <!-- Project-specific Views -->
-      <h2 class="h5 my-3">Individual Project Views</h2>
-      <div class="card shadow mb-4">
-        <div class="card-header py-3">
-          <h6 class="m-0 font-weight-bold text-primary">Project View Counts</h6>
+      <!-- Main Content -->
+      <div v-if="stats && !isLoading" class="animate-fade-in-up" style="animation-delay: 0.2s;">
+        <!-- Engagement Metrics -->
+        <h2 class="h4 mb-3 glass-text">Site Engagement</h2>
+        <div class="row g-4">
+          <div class="col-xl-3 col-md-6">
+            <StatCard title="Total Visits" :value="stats.totalVisits" icon="bi-eye-fill" />
+          </div>
+          <div class="col-xl-3 col-md-6">
+            <StatCard title="Project Section Views" :value="stats.projectsSectionViews" icon="bi-folder2-open" />
+          </div>
+          <div class="col-xl-3 col-md-6">
+            <StatCard title="Skills Section Views" :value="stats.skillsSectionViews" icon="bi-tools" />
+          </div>
+          <div class="col-xl-3 col-md-6">
+            <StatCard title="Experience Section Views" :value="stats.experienceSectionViews" icon="bi-briefcase-fill" />
+          </div>
+          <div class="col-xl-3 col-md-6">
+            <StatCard title="Qualifications Views" :value="stats.qualificationsSectionViews" icon="bi-patch-check-fill" />
+          </div>
+          <div class="col-xl-3 col-md-6">
+            <StatCard title="Testimonials Views" :value="stats.testimonialsSectionViews" icon="bi-chat-quote-fill" />
+          </div>
+          <div class="col-xl-3 col-md-6">
+            <StatCard title="Contact Submissions" :value="stats.contactMessageSubmissions" icon="bi-envelope-fill" />
+          </div>
+          <div class="col-xl-3 col-md-6">
+            <StatCard title="PDF Downloads" :value="stats.pdfDownloads" icon="bi-file-earmark-pdf-fill" />
+          </div>
         </div>
-        <div class="card-body">
-          <div v-if="projectViewStats.length > 0" class="table-responsive">
-            <table class="table table-bordered" width="100%" cellspacing="0">
-              <thead>
+
+        <!-- Authentication Metrics -->
+        <h2 class="h4 my-4 pt-3 glass-text">Authentication Events</h2>
+        <div class="row g-4">
+          <div class="col-xl-3 col-md-6">
+            <StatCard title="Successful Logins" :value="stats.loginSuccesses" icon="bi-box-arrow-in-right" />
+          </div>
+          <div class="col-xl-3 col-md-6">
+            <StatCard title="Failed Logins" :value="stats.loginFailures" icon="bi-exclamation-triangle-fill" />
+          </div>
+          <div class="col-xl-3 col-md-6">
+            <StatCard title="Successful Logouts" :value="stats.logoutSuccesses" icon="bi-box-arrow-left" />
+          </div>
+        </div>
+
+        <!-- Project-specific Views -->
+        <h2 class="h4 my-4 pt-3 glass-text">Individual Project Views</h2>
+        <div class="card glass-card">
+          <div class="card-body p-0">
+            <div v-if="projectViewStats.length > 0" class="table-responsive">
+              <table class="table table-hover glass-table mb-0">
+                <thead>
                 <tr>
                   <th>Project Name</th>
                   <th class="text-center">Views</th>
                 </tr>
-              </thead>
-              <tbody>
+                </thead>
+                <tbody>
                 <tr v-for="project in projectViewStats" :key="project.uuid">
                   <td>{{ project.name }}</td>
                   <td class="text-center">{{ project.views }}</td>
                 </tr>
-              </tbody>
-            </table>
-          </div>
-          <div v-else class="text-center">
-            <p>No individual project views have been recorded yet.</p>
+                </tbody>
+              </table>
+            </div>
+            <div v-else class="text-center p-4">
+              <p class="glass-subtitle mb-0">No individual project views have been recorded yet.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -68,18 +90,16 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import { getAdminStats, getAdminProjects } from '@/services/api/admin.api'; // Import from unified file
+import { getAdminStats, getAdminProjects } from '@/services/api/admin.api.js';
 import StatCard from '@/components/admin/StatCard.vue';
+import LoadingModal from '@/components/common/modals/LoadingModal.vue';
+import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 
 const stats = ref(null);
 const projects = ref([]);
 const isLoading = ref(true);
 const error = ref(null);
 
-/**
- * Creates a computed property that merges project view counts from stats
- * with project names, and sorts them by the most viewed.
- */
 const projectViewStats = computed(() => {
   if (!stats.value || !stats.value.projects || !projects.value || projects.value.length === 0) {
     return [];
@@ -91,7 +111,7 @@ const projectViewStats = computed(() => {
       name: projectMap.get(uuid) || `Unknown Project (UUID: ${uuid.substring(0, 8)})`,
       views,
     }))
-    .sort((a, b) => b.views - a.views); // Sort by most views
+    .sort((a, b) => b.views - a.views);
 });
 
 onMounted(async () => {
@@ -99,10 +119,9 @@ onMounted(async () => {
     isLoading.value = true;
     error.value = null;
 
-    // Fetch stats and the list of all projects concurrently
     const [statsData, projectsData] = await Promise.all([
       getAdminStats(),
-      getAdminProjects(), // Used to map project UUIDs to names
+      getAdminProjects(),
     ]);
 
     stats.value = statsData;
@@ -116,3 +135,25 @@ onMounted(async () => {
   }
 });
 </script>
+
+<style scoped>
+.display-5 {
+  font-weight: 300;
+}
+
+.glass-table {
+  color: var(--glass-text);
+  --bs-table-hover-color: var(--glass-text);
+  --bs-table-hover-bg: var(--glass-bg-hover);
+}
+.glass-table thead th {
+  background-color: rgba(var(--bs-body-color-rgb), 0.05);
+  border-bottom: 2px solid var(--glass-border-hover);
+  color: var(--glass-text);
+  font-weight: 500;
+}
+.glass-table td, .glass-table th {
+  border-color: var(--glass-border);
+  vertical-align: middle;
+}
+</style>

@@ -95,10 +95,11 @@
 </template>
 
 <script setup>
-// The script section remains unchanged.
 import {reactive, ref} from 'vue';
 import {useRouter} from 'vue-router';
 import {authService} from '@/services/authService.js';
+import {settingsService} from '@/services/settingsService.js';
+import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore.js';
 import {ApiError} from '@/services/api/index.js';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
@@ -145,8 +146,8 @@ const signupErrorMessage = ref('');
 const closeSignupSuccessModal = () => {
   showSignupSuccessModal.value = false;
   signupSuccessMessage.value = null;
-  // Since authService.register logs the user in, we can go straight to their account.
-  router.push('/account');
+  const userSlug = authService.user.value?.slug;
+  router.push({ name: 'dashboard', params: { slug: userSlug } });
 };
 
 /**
@@ -229,6 +230,13 @@ const handleSignup = async () => {
       password: formData.password,
     };
     await authService.register(apiData);
+
+    // --- THIS IS THE FIX ---
+    // After registration, the user is automatically logged in. We must initialize
+    // their settings and set the public store's slug so the navbar is correct.
+    await settingsService.initialize();
+    usePublicPortfolioStore().currentSlug.value = authService.user.value?.slug;
+    // --- END OF FIX ---
 
     signupSuccessMessage.value = 'Registration successful! Redirecting to your account...';
     showSignupSuccessModal.value = true;

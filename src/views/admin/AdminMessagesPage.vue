@@ -1,22 +1,35 @@
 <template>
-  <div class="user-messages-page py-5 animated-gradient-background">
+  <div class="admin-messages-page py-5 animated-gradient-background">
     <div class="container">
+      <!-- Header -->
       <div class="d-flex justify-content-between align-items-center mb-4 animate-fade-in-up">
-        <h2 class="mb-0 glass-text">My Messages</h2>
+        <div>
+          <h1 class="display-5 mb-1 glass-text">All Contact Messages</h1>
+          <p class="lead glass-subtitle mb-0">View and manage messages sent to all users.</p>
+        </div>
       </div>
 
+      <!-- Modals -->
       <LoadingModal :visible="isLoading" />
+      <ErrorModal :visible="!!error" :message="error" title="An Error Occurred" @close="error = null" />
+      <SuccessModal :visible="!!successMessage" :message="successMessage" title="Success" @close="successMessage = null" />
+      <ConfirmModal
+        :visible="!!messageToDelete"
+        title="Confirm Deletion"
+        :message="`Are you sure you want to delete the message from ${messageToDelete?.senderName}? This action cannot be undone.`"
+        type="danger"
+        @confirm="handleDelete"
+        @close="messageToDelete = null"
+      />
 
-      <div v-if="error" class="alert alert-danger glass-card-dark animate-fade-in-up">
-        <strong>Error:</strong> {{ error.message || 'Could not load your messages.' }}
-      </div>
-
-      <div v-else-if="!isLoading && messages.length > 0" class="card glass-card animate-fade-in-up" style="animation-delay: 0.1s;">
+      <!-- Messages Table -->
+      <div v-if="!isLoading && messages.length > 0" class="card glass-card animate-fade-in-up" style="animation-delay: 0.1s;">
         <div class="card-body p-0">
           <div class="table-responsive">
             <table class="table table-hover glass-table mb-0">
               <thead>
               <tr>
+                <th>To User</th>
                 <th>From</th>
                 <th>Message Preview</th>
                 <th>Received</th>
@@ -25,6 +38,10 @@
               </thead>
               <tbody>
               <tr v-for="message in messages" :key="message.uuid">
+                <td>
+                  <div class="fw-bold">{{ message.portfolioOwnerName }}</div>
+                  <small class="text-muted">/{{ message.portfolioOwnerSlug }}</small>
+                </td>
                 <td>
                   <div class="fw-bold">{{ message.senderName }}</div>
                   <small class="text-muted">{{ message.senderEmail }}</small>
@@ -46,12 +63,13 @@
         </div>
       </div>
 
+      <!-- Empty State -->
       <div v-else-if="!isLoading" class="text-center p-5 glass-card animate-fade-in-up" style="animation-delay: 0.1s;">
         <div class="empty-state-icon mb-4">
           <i class="bi bi-envelope-open-fill"></i>
         </div>
         <h4 class="glass-title">No Messages Yet</h4>
-        <p class="glass-subtitle">Your inbox is currently empty. Messages from your public contact form will appear here.</p>
+        <p class="glass-subtitle">There are currently no messages in the system.</p>
       </div>
 
       <!-- View Message Modal -->
@@ -63,7 +81,8 @@
               <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" v-if="selectedMessage">
-              <p><strong>Email:</strong> {{ selectedMessage.senderEmail }}</p>
+              <p><strong>To:</strong> {{ selectedMessage.portfolioOwnerName }}</p>
+              <p><strong>From:</strong> {{ selectedMessage.senderName }} &lt;{{ selectedMessage.senderEmail }}&gt;</p>
               <hr>
               <p class="message-body-text">{{ selectedMessage.message }}</p>
             </div>
@@ -73,24 +92,13 @@
           </div>
         </div>
       </div>
-
-      <!-- Delete Confirmation Modal -->
-      <ConfirmModal
-        :visible="!!messageToDelete"
-        title="Confirm Deletion"
-        :message="`Are you sure you want to delete the message from ${messageToDelete?.senderName}? This action cannot be undone.`"
-        type="danger"
-        @confirm="handleDelete"
-        @close="messageToDelete = null"
-      />
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
-// CORRECTED: Import from the user-specific API, not the admin one.
-import { getMyContactMessages, deleteMyContactMessage } from '@/services/api/user.api.js';
+import { getContactMessages, deleteContactMessage } from '@/services/api/admin.api.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';
@@ -100,24 +108,28 @@ import { Modal } from 'bootstrap';
 const messages = ref([]);
 const isLoading = ref(true);
 const error = ref(null);
+const successMessage = ref(null);
 const selectedMessage = ref(null);
 const messageToDelete = ref(null);
 
+const viewModalRef = ref(null);
 let viewModalInstance = null;
 
-const viewModalRef = ref(null);
-
-onMounted(async () => {
+const fetchMessages = async () => {
   try {
-    // CORRECTED: Call the user-specific function.
-    messages.value = await getMyContactMessages() || [];
+    isLoading.value = true;
+    error.value = null;
+    messages.value = await getContactMessages() || [];
   } catch (err) {
     console.error("Failed to fetch contact messages:", err);
-    error.value = err;
+    error.value = err.message || 'An unexpected error occurred.';
   } finally {
     isLoading.value = false;
   }
+};
 
+onMounted(() => {
+  fetchMessages();
   if (viewModalRef.value) {
     viewModalInstance = new Modal(viewModalRef.value);
   }
@@ -142,21 +154,25 @@ const confirmDelete = (message) => {
 
 const handleDelete = async () => {
   if (!messageToDelete.value) return;
-
+  isLoading.value = true;
   try {
-    // CORRECTED: Call the user-specific delete function.
-    await deleteMyContactMessage(messageToDelete.value.uuid);
-    messages.value = messages.value.filter(m => m.uuid !== messageToDelete.value.uuid);
+    await deleteContactMessage(messageToDelete.value.uuid);
+    successMessage.value = 'Message deleted successfully.';
+    await fetchMessages(); // Refresh the list
   } catch (err) {
     console.error("Failed to delete message:", err);
-    error.value = { message: err.message || 'Could not delete the message.' };
+    error.value = err.message || 'Could not delete the message.';
   } finally {
+    isLoading.value = false;
     messageToDelete.value = null;
   }
 };
 </script>
 
 <style scoped>
+.display-5 {
+  font-weight: 300;
+}
 .glass-table {
   color: var(--glass-text);
   --bs-table-hover-color: var(--glass-text);

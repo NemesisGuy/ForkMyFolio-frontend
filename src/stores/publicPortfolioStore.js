@@ -14,10 +14,12 @@ export function usePublicPortfolioStore() {
 
   /**
    * Fetches the entire public portfolio for a given slug.
-   * It's smart enough to not re-fetch if the data for the current slug is already loaded.
+   * It's smart enough to not re-fetch if the data for the current slug is already loaded,
+   * unless a force refresh is requested.
    * @param {string} slug The user's public portfolio slug.
+   * @param {boolean} force - If true, bypasses the cache and re-fetches data.
    */
-  const fetchPortfolio = async (slug) => {
+  const fetchPortfolio = async (slug, force = false) => {
     if (!slug) {
       error.value = { message: 'No portfolio slug provided.' };
       portfolio.value = null;
@@ -25,18 +27,18 @@ export function usePublicPortfolioStore() {
       return;
     }
 
-    // Don't re-fetch if we already have the data for this user.
-    if (currentSlug.value === slug && portfolio.value) {
+    // If not forcing a refresh, and we already have the data for this slug, do nothing.
+    if (!force && currentSlug.value === slug && portfolio.value) {
       return;
     }
 
     isLoading.value = true;
     error.value = null;
     try {
-      // This single API call gets all portfolio data, including testimonials
+      // This single API call gets all portfolio data
       const data = await publicApi.getPortfolioBySlug(slug);
       portfolio.value = data;
-      currentSlug.value = slug;
+      currentSlug.value = slug; // Set the new slug after a successful fetch
     } catch (e) {
       console.error(`Failed to fetch portfolio for slug: ${slug}`, e);
       error.value = e;
@@ -51,6 +53,7 @@ export function usePublicPortfolioStore() {
     portfolio,
     isLoading,
     error,
+    currentSlug,
     fetchPortfolio,
   };
 }

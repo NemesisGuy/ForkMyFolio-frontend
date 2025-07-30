@@ -2,11 +2,13 @@
   <!--
     The footer remains theme-aware using Bootstrap's utility classes.
   -->
-  <footer class="footer mt-auto py-3 bg-body-tertiary border-top">
+  <!-- CORRECTED: Removed bg-body-tertiary and border-top, as styles are now handled in the <style> block -->
+  <footer class="footer mt-auto py-3">
     <div class="container-fluid text-center">
       <!-- REFACTORED: Using flexbox for better spacing and alignment -->
+      <!-- CORRECTED: Swapped text-body-secondary for a glass-compatible class -->
       <div
-        class="text-body-secondary d-flex flex-wrap justify-content-center align-items-center gap-1 gap-sm-3">
+        class="glass-subtitle d-flex flex-wrap justify-content-center align-items-center gap-1 gap-sm-3">
         <span>
           © {{ formatDate(new Date(), {month: 'long', year: 'numeric'}) }} ForkMyFolio
         </span>
@@ -16,7 +18,7 @@
         <span>
           Built by
           <a
-            class="text-body-secondary fw-semibold"
+            class="glass-subtitle fw-semibold"
             href="https://github.com/NemesisGuy"
             rel="noopener noreferrer"
             target="_blank"
@@ -30,7 +32,7 @@
         <span>
           Powered by
           <a
-            class="text-body-secondary fw-semibold"
+            class="glass-subtitle fw-semibold"
             href="https://nemesisnet.co.za"
             rel="noopener noreferrer"
             target="_blank"
@@ -56,7 +58,12 @@ import {formatDate} from '@/utils/index.js'; // <-- Import the utility
 </script>
 
 <style scoped>
+/* CORRECTED: Added glassmorphic styles directly to the footer class */
 .footer {
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px) saturate(180%);
+  -webkit-backdrop-filter: blur(15px) saturate(180%);
+  border-top: 1px solid var(--glass-border);
   font-size: 0.9rem;
   /* Add a subtle transition for the background color change */
   transition: background-color 0.3s ease-in-out, border-color 0.3s ease-in-out;

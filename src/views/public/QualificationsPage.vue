@@ -11,10 +11,9 @@
         </p>
       </div>
 
-      <!-- Enhanced glassmorphic modal with premium styling -->
-      <LoadingModal :visible="isLoading" class="glass-modal"/>
+      <LoadingModal :visible="isLoading" />
 
-      <!-- Enhanced skeleton loader with glassmorphic cards -->
+      <!-- Skeleton loader -->
       <div v-if="isLoading" class="row row-cols-1 row-cols-lg-2 g-4">
         <div v-for="n in 4"
              :key="n"
@@ -34,91 +33,67 @@
         </div>
       </div>
 
-      <!-- Error state with glassmorphic styling -->
-      <div v-else-if="error" class="glass-card glass-card-dark">
+      <!-- Error state -->
+      <div v-else-if="error" class="glass-card glass-card-dark mx-auto" style="max-width: 800px;">
         <div class="card-body text-center p-5">
           <i class="bi bi-exclamation-triangle-fill text-warning mb-3" style="font-size: 3rem;"></i>
           <h5 class="card-title text-white mb-3">Unable to Load Qualifications</h5>
           <p class="card-text text-light opacity-75">
             Could not load qualifications data. Please try again later.
           </p>
-          <button @click="retryLoad" class="btn btn-outline-light glass-btn mt-3">
-            <i class="bi bi-arrow-clockwise me-2"></i>Retry
-          </button>
         </div>
       </div>
 
-      <!-- Enhanced qualification cards with premium glassmorphic effects -->
+      <!-- Content -->
       <div v-else-if="qualifications.length > 0" class="row row-cols-1 row-cols-lg-2 g-4">
         <div v-for="(qual, index) in qualifications" :key="qual.uuid"
              class="col animate-fade-in-up"
              :style="{ 'animation-delay': (index * 0.1) + 0.2 + 's' }">
-          <div class="card glass-card glass-card-floating h-100 interactive-card-lift interactive-card-shadow-primary"
-               @click="selectQualification(qual)">
+          <div class="card glass-card glass-card-floating h-100 interactive-card-lift interactive-card-shadow-primary position-relative"
+               @click="selectQualification(qual)" role="button" tabindex="0" :aria-label="`View details for ${qual.qualificationName}`">
             <div class="card-body d-flex align-items-center p-4 position-relative">
-              <!-- Qualification icon with enhanced styling -->
               <div class="qual-icon me-4">
-                <i class="bi bi-patch-check-fill"></i>
+                <img v-if="qual.institutionLogoUrl" :src="qual.institutionLogoUrl" :alt="`${qual.institutionName} Logo`" class="institution-logo">
+                <i v-else class="bi bi-building"></i>
               </div>
-
-              <!-- Content section -->
               <div class="flex-grow-1">
                 <h5 class="card-title mb-2 glass-title">
                   {{ qual.qualificationName }}
                 </h5>
                 <h6 class="card-subtitle mb-2 glass-subtitle">
-                  {{ qual.institutionName }}
+                  <i class="bi bi-geo-alt-fill me-1"></i>{{ qual.institutionName }}
                 </h6>
-                <p v-if="qual.grade" class="card-text mt-2 mb-0 small glass-text">
-                  <i class="bi bi-star-fill me-1 text-warning"></i>
-                  <strong>Grade:</strong> {{ qual.grade }}
-                </p>
-                <p v-if="qual.description" class="card-text mt-2 mb-0 small glass-description">
-                  {{ qual.description }}
+                <p v-if="qual.fieldOfStudy" class="card-text mt-2 mb-0 small glass-text">
+                  <i class="bi bi-book-half me-1 text-info"></i>
+                  {{ qual.fieldOfStudy }}
                 </p>
               </div>
-
-              <!-- Year badge with enhanced glassmorphic styling -->
               <div class="year-badge ms-3">
-                {{ qual.completionYear }}
-              </div>
-
-              <!-- Hover indicator -->
-              <div class="position-absolute top-0 end-0 p-3 glass-hover-indicator">
-                <i class="bi bi-arrow-up-right text-primary opacity-50"></i>
+                <span v-if="qual.stillStudying">{{ qual.startYear }} - Present</span>
+                <span v-else>{{ qual.completionYear || qual.startYear }}</span>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Enhanced empty state with glassmorphic styling -->
-      <div v-else class="glass-card glass-card-dark">
+      <!-- Empty state -->
+      <div v-else class="glass-card mx-auto" style="max-width: 800px;">
         <div class="card-body text-center p-5">
           <div class="empty-state-icon mb-4">
             <i class="bi bi-patch-check-fill"></i>
           </div>
-          <h4 class="card-title text-white mb-3">Qualifications Coming Soon</h4>
-          <p class="card-text text-light opacity-75 mb-4">
+          <h4 class="card-title glass-title mb-3">Qualifications Coming Soon</h4>
+          <p class="card-text glass-subtitle mb-4">
             The owner is currently updating their degrees and certifications.
-            Please check back later for the latest information.
           </p>
-          <div class="d-flex justify-content-center gap-3">
-            <button @click="retryLoad" class="btn btn-outline-light glass-btn">
-              <i class="bi bi-arrow-clockwise me-2"></i>Refresh
-            </button>
-            <button class="btn btn-outline-primary glass-btn">
-              <i class="bi bi-bell me-2"></i>Notify Me
-            </button>
-          </div>
         </div>
       </div>
     </div>
 
-    <!-- Enhanced qualification detail modal -->
+    <!-- Detail modal -->
     <div v-if="selectedQualification"
          class="modal fade show d-block"
-         tabindex="-1"
          style="background: rgba(0,0,0,0.5);"
          @click.self="closeModal">
       <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -133,25 +108,43 @@
             </button>
           </div>
           <div class="modal-body">
-            <div class="row">
+            <div class="row align-items-center">
               <div class="col-md-8">
-                <h6 class="text-light opacity-75 mb-3">
+                <h6 class="text-light opacity-75 mb-1">
                   {{ selectedQualification.institutionName }}
                 </h6>
-                <p v-if="selectedQualification.description"
-                   class="text-light mb-3">
-                  {{ selectedQualification.description }}
+                <p v-if="selectedQualification.fieldOfStudy" class="text-info mb-3">
+                  {{ selectedQualification.fieldOfStudy }}
                 </p>
                 <p v-if="selectedQualification.grade"
                    class="text-light mb-2">
                   <strong>Grade:</strong> {{ selectedQualification.grade }}
                 </p>
+                <p v-if="selectedQualification.level" class="text-light mb-2">
+                  <strong>Level:</strong> {{ selectedQualification.level.replace('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()) }}
+                </p>
               </div>
-              <div class="col-md-4 text-end">
-                <div class="year-badge-large">
-                  {{ selectedQualification.completionYear }}
+              <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <div class="year-badge-large mb-3">
+                  <span v-if="selectedQualification.stillStudying">{{ selectedQualification.startYear }} - Present</span>
+                  <span v-else>{{ selectedQualification.startYear }} - {{ selectedQualification.completionYear }}</span>
                 </div>
               </div>
+            </div>
+            <!-- CORRECTED: This block was broken -->
+            <div class="mt-3 pt-3 border-top border-white border-opacity-10 d-flex justify-content-end gap-2 flex-wrap">
+              <a v-if="selectedQualification.institutionWebsite"
+                 :href="selectedQualification.institutionWebsite"
+                 target="_blank" rel="noopener noreferrer"
+                 class="btn btn-outline-secondary">
+                <i class="bi bi-globe me-2"></i> Institution Website
+              </a>
+              <a v-if="selectedQualification.credentialUrl"
+                 :href="selectedQualification.credentialUrl"
+                 target="_blank" rel="noopener noreferrer"
+                 class="btn btn-primary">
+                <i class="bi bi-patch-check-fill me-2"></i> View Credential
+              </a>
             </div>
           </div>
         </div>
@@ -161,20 +154,23 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { getPublicQualifications, ApiError } from '@/services/api/index.js';
+import { ref, computed } from 'vue';
+import { usePublicPortfolioStore } from '@/stores/publicPortfolioStore.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 
-const qualifications = ref([]);
-const isLoading = ref(true);
-const error = ref(null);
-const selectedQualification = ref(null);
+const { portfolio, isLoading, error } = usePublicPortfolioStore();
 
-const retryLoad = async () => {
-  isLoading.value = true;
-  error.value = null;
-  await loadQualifications();
-};
+const qualifications = computed(() => {
+  const quals = portfolio.value?.qualifications || [];
+  // CORRECTED: More robust sorting
+  return [...quals].sort((a, b) => {
+    const yearA = a.stillStudying ? Infinity : a.completionYear || a.startYear || 0;
+    const yearB = b.stillStudying ? Infinity : b.completionYear || b.startYear || 0;
+    return yearB - yearA;
+  });
+});
+
+const selectedQualification = ref(null);
 
 const selectQualification = (qual) => {
   selectedQualification.value = qual;
@@ -183,86 +179,43 @@ const selectQualification = (qual) => {
 const closeModal = () => {
   selectedQualification.value = null;
 };
-
-const loadQualifications = async () => {
-  try {
-    const data = await getPublicQualifications();
-    qualifications.value = data.sort((a, b) => b.completionYear - a.completionYear);
-  } catch (err) {
-    console.error("Failed to fetch qualifications data:", err);
-    if (!(err instanceof ApiError && err.httpStatus === 404)) {
-      error.value = err;
-    }
-  } finally {
-    isLoading.value = false;
-  }
-};
-
-onMounted(() => {
-  loadQualifications();
-});
 </script>
 
 <style scoped>
-/* ==========================================================================
-   Enhanced Glassmorphic Component Styles
-   ========================================================================== */
-
-/* Typography enhancements */
-.glass-text {
-  color: rgba(255, 255, 255, 0.95);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+/* --- Page Styling --- */
+.qualifications-page {
+  overflow-x: hidden;
 }
 
-.glass-title {
-  color: rgba(255, 255, 255, 0.98);
-  font-weight: 600;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+.card[role="button"] {
+  cursor: pointer;
 }
 
-.glass-subtitle {
-  color: rgba(255, 255, 255, 0.8);
-  font-weight: 500;
-}
-
-.glass-description {
-  color: rgba(255, 255, 255, 0.7);
-  font-style: italic;
-}
-
-/* Enhanced interactive elements */
-.glass-btn {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
-}
-
-.glass-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-}
-
-/* Hover indicator */
-.glass-hover-indicator {
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.glass-card:hover .glass-hover-indicator {
-  opacity: 1;
-}
-
-/* Empty state icon */
-.empty-state-icon {
-  font-size: 4rem;
+.qual-icon {
+  font-size: 2.5rem;
   color: var(--bs-primary);
-  opacity: 0.7;
-  animation: floatingGlow 4s ease-in-out infinite;
+  opacity: 0.8;
+  width: 40px; /* Ensure consistent width for icon/logo container */
+  text-align: center;
 }
 
-/* Enhanced year badge for modal */
+/* ADDED: Styles for the institution logo */
+.institution-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 0.25rem;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.year-badge {
+  font-weight: 700;
+  background-color: rgba(var(--bs-primary-rgb), 0.1);
+  color: var(--bs-primary);
+  padding: 0.5rem 1rem;
+  border-radius: 50rem;
+}
+
 .year-badge-large {
   font-size: 2rem;
   font-weight: 800;
@@ -276,38 +229,31 @@ onMounted(() => {
   box-shadow: 0 8px 30px rgba(var(--bs-primary-rgb), 0.2);
 }
 
-/* Modal enhancements */
 .modal.show {
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(10px);
 }
 
-/* Additional skeleton styles */
+.empty-state-icon {
+  font-size: 4rem;
+  color: var(--bs-primary);
+  opacity: 0.6;
+}
+
+.skeleton-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.skeleton-year-badge {
+  width: 60px;
+  height: 30px;
+  border-radius: 50rem;
+}
+
 .skeleton-grade {
   width: 40%;
   height: 14px;
-  margin-bottom: 0.25rem;
-}
-
-/* Card interaction cursor */
-.glass-card[role="button"],
-.glass-card[tabindex] {
-  cursor: pointer;
-}
-
-/* Focus states for accessibility */
-.glass-card:focus-visible {
-  outline: 2px solid var(--bs-primary);
-  outline-offset: 4px;
-}
-
-.glass-btn:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.5);
-  outline-offset: 2px;
-}
-
-/* Loading state refinements */
-.qualifications-page .container > * {
-  position: relative;
-  z-index: 1;
+  margin-top: 0.5rem;
 }
 </style>

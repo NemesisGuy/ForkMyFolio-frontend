@@ -1,241 +1,140 @@
 /**
  * @file src/services/api/admin.api.js
  * @description API functions for all admin-only operations.
- * All functions use UUIDs for resource identification as per the new API spec.
  */
-import {fetchWithAuth} from './apiClient';
+import { fetchWithAuth } from './apiClient';
+import { triggerDownload } from '@/utils/downloadUtils';
 
-// --- Account & Portfolio Profile ---
+// --- Helper to normalize user data from the backend ---
+const normalizeUser = (user) => {
+  if (user && user.roles && Array.isArray(user.roles)) {
+    // Ensure all roles are clean (e.g., "ADMIN" instead of "ROLE_ADMIN")
+    user.roles = user.roles.map(role => role.replace('ROLE_', ''));
+  }
+  return user;
+};
+
+
+// --- User Management (Admin) ---
 
 /**
- * Gets the authenticated admin's user account details.
- * @returns {Promise<object>} UserDto
+ * Fetches a list of all users.
+ * The backend returns a paginated object. This function extracts, normalizes,
+ * and returns the user array from the 'content' property.
+ * @param {object} [pageable={ page: 0, size: 20 }] - Pagination options.
+ * @returns {Promise<Array<object>>} A list of clean UserDto objects.
  */
-export const getAccount = () => fetchWithAuth('/admin/account', { method: 'GET' });
+export const getAdminUsers = async (pageable = { page: 0, size: 20 }) => {
+  const params = new URLSearchParams(pageable);
+  const page = await fetchWithAuth(`/admin/users?${params.toString()}`, { method: 'GET' });
+  if (page && page.content) {
+    // Normalize each user in the list before returning
+    return page.content.map(normalizeUser);
+  }
+  return []; // Return empty array if no content
+};
 
 /**
- * Updates the authenticated admin's user account details.
- * @param {object} accountData - The data for the user account (e.g., firstName, lastName, email).
- * @returns {Promise<object>} Updated UserDto
+ * Fetches a single user by their ID and normalizes the data.
+ * @param {string|number} userId - The UUID of the user.
+ * @returns {Promise<object>} A clean UserDto object.
  */
-export const updateAccount = (accountData) => fetchWithAuth('/admin/account', {
-  method: 'PUT',
-  body: accountData
-});
+export const getAdminUserById = async (userId) => {
+  const user = await fetchWithAuth(`/admin/users/${userId}`, { method: 'GET' });
+  return normalizeUser(user);
+};
 
 /**
- * Gets the portfolio profile content for the authenticated admin.
- * @returns {Promise<object>} PortfolioProfileDto
+ * Creates a new user via the admin panel.
+ * @param {object} userData - The data for the new user.
+ * @returns {Promise<object>} The created UserDto.
  */
-export const getPortfolioProfile = () => fetchWithAuth('/admin/portfolio-profile', { method: 'GET' });
+export const createAdminUser = (userData) => fetchWithAuth('/admin/users', { method: 'POST', body: userData });
 
 /**
- * Creates the portfolio profile for the authenticated admin for the first time.
- * @param {object} profileData - The data for the new portfolio profile.
- * @returns {Promise<object>} Created PortfolioProfileDto
+ * Updates an existing user's details as an admin.
+ * @param {string|number} userId - The UUID of the user to update.
+ * @param {object} userData - The new data for the user (e.g., roles, active status).
+ * @returns {Promise<object>} The updated UserDto.
  */
-export const createPortfolioProfile = (profileData) => fetchWithAuth('/admin/portfolio-profile', {
-  method: 'POST',
-  body: profileData
-});
+export const updateAdminUser = (userId, userData) => fetchWithAuth(`/admin/users/${userId}`, { method: 'PUT', body: userData });
 
 /**
- * Updates the public-facing portfolio profile content.
- * @param {object} profileData - The data for the portfolio profile.
+ * Deactivates (soft deletes) a user.
+ * @param {string|number} userId - The UUID of the user to deactivate.
  * @returns {Promise<void>}
  */
-export const updatePortfolioProfile = (profileData) => fetchWithAuth('/admin/portfolio-profile', {
-  method: 'PUT',
-  body: profileData
-});
-
-
-// --- Projects ---
-
-/**
- * Fetches all projects for the admin view.
- * @returns {Promise<Array<object>>} A list of ProjectDto objects.
- */
-export const getAdminProjects = () => fetchWithAuth('/admin/projects', { method: 'GET' });
-
-/**
- * Creates a new project.
- * @param {object} projectData - The data for the new project.
- * @returns {Promise<object>} The created ProjectDto.
- */
-export const createProject = (projectData) => fetchWithAuth('/admin/projects', {
-  method: 'POST',
-  body: projectData
-});
-
-/**
- * Updates an existing project.
- * @param {string} uuid - The UUID of the project to update.
- * @param {object} projectData - The new data for the project.
- * @returns {Promise<object>} The updated ProjectDto.
- */
-export const updateProject = (uuid, projectData) => fetchWithAuth(`/admin/projects/${uuid}`, {
-  method: 'PUT',
-  body: projectData
-});
-
-/**
- * Deletes a project.
- * @param {string} uuid - The UUID of the project to delete.
- * @returns {Promise<void>}
- */
-export const deleteProject = (uuid) => fetchWithAuth(`/admin/projects/${uuid}`, {method: 'DELETE'});
-
-// --- Skills ---
-
-/**
- * Creates a new skill.
- * @param {object} skillData - The data for the new skill.
- * @returns {Promise<object>} The created SkillDto.
- */
-export const createSkill = (skillData) => fetchWithAuth('/admin/skills', {
-  method: 'POST',
-  body: skillData
-});
-
-/**
- * Deletes a skill.
- * @param {string} uuid - The UUID of the skill to delete.
- * @returns {Promise<void>}
- */
-export const deleteSkill = (uuid) => fetchWithAuth(`/admin/skills/${uuid}`, {method: 'DELETE'});
-
-// --- Experience ---
-
-/**
- * Creates a new experience entry.
- * @param {object} expData - The data for the new experience.
- * @returns {Promise<object>} The created ExperienceDto.
- */
-export const createExperience = (expData) => fetchWithAuth('/admin/experience', {method: 'POST', body: expData});
-
-/**
- * Updates an existing experience entry.
- * @param {string} uuid - The UUID of the experience to update.
- * @param {object} expData - The new data for the experience.
- * @returns {Promise<object>} The updated ExperienceDto.
- */
-export const updateExperience = (uuid, expData) => fetchWithAuth(`/admin/experience/${uuid}`, {
-  method: 'PUT',
-  body: expData
-});
-
-/**
- * Deletes an experience entry.
- * @param {string} uuid - The UUID of the experience to delete.
- * @returns {Promise<void>}
- */
-export const deleteExperience = (uuid) => fetchWithAuth(`/admin/experience/${uuid}`, {method: 'DELETE'});
-
-// --- Testimonials ---
-
-/**
- * Creates a new testimonial.
- * @param {object} testData - The data for the new testimonial.
- * @returns {Promise<object>} The created TestimonialDto.
- */
-export const createTestimonial = (testData) => fetchWithAuth('/admin/testimonials', {
-  method: 'POST',
-  body: testData
-});
-
-/**
- * Updates an existing testimonial.
- * @param {string} uuid - The UUID of the testimonial to update.
- * @param {object} testData - The new data for the testimonial.
- * @returns {Promise<object>} The updated TestimonialDto.
- */
-export const updateTestimonial = (uuid, testData) => fetchWithAuth(`/admin/testimonials/${uuid}`, {
-  method: 'PUT',
-  body: testData
-});
-
-/**
- * Deletes a testimonial.
- * @param {string} uuid - The UUID of the testimonial to delete.
- * @returns {Promise<void>}
- */
-export const deleteTestimonial = (uuid) => fetchWithAuth(`/admin/testimonials/${uuid}`, {method: 'DELETE'});
-
-// --- Qualifications ---
-
-/**
- * Creates a new qualification.
- * @param {object} qualData - The data for the new qualification.
- * @returns {Promise<object>} The created QualificationDto.
- */
-export const createQualification = (qualData) => fetchWithAuth('/admin/qualifications', {
-  method: 'POST',
-  body: qualData
-});
-
-/**
- * Updates an existing qualification.
- * @param {string} uuid - The UUID of the qualification to update.
- * @param {object} qualData - The new data for the qualification.
- * @returns {Promise<object>} The updated QualificationDto.
- */
-export const updateQualification = (uuid, qualData) => fetchWithAuth(`/admin/qualifications/${uuid}`, {
-  method: 'PUT',
-  body: qualData
-});
-
-/**
- * Deletes a qualification.
- * @param {string} uuid - The UUID of the qualification to delete.
- * @returns {Promise<void>}
- */
-export const deleteQualification = (uuid) => fetchWithAuth(`/admin/qualifications/${uuid}`, {method: 'DELETE'});
-
-
-// --- Contact Messages ---
-
-/**
- * Fetches all received contact messages.
- * @returns {Promise<Array<object>>} List of ContactMessageDto
- */
-export const getContactMessages = () => fetchWithAuth('/admin/contact-messages', { method: 'GET' });
-
-/**
- * Deletes a specific contact message by its UUID.
- * @param {string} uuid - The UUID of the message.
- * @returns {Promise<void>}
- */
-export const deleteContactMessage = (uuid) => fetchWithAuth(`/admin/contact-messages/${uuid}`, { method: 'DELETE' });
+export const deleteAdminUser = (userId) => fetchWithAuth(`/admin/users/${userId}`, { method: 'DELETE' });
 
 
 // --- Application Settings ---
 
 /**
- * Fetches all application settings from the backend.
+ * Fetches all global application settings from the backend.
  * @returns {Promise<Array<{uuid: string, name: string, value: string, description: string}>>} The full list of setting objects.
  */
 export const getAdminSettings = () => fetchWithAuth('/admin/settings', { method: 'GET' });
 
 /**
  * Updates multiple application settings at once.
- * The payload MUST be an array of objects, each with a UUID and a new value.
  * @param {Array<{uuid: string, value: string}>} settings - An array of settings to update.
  * @returns {Promise<Array<{uuid: string, name: string, value: string, description: string}>>} The full, updated list of all settings.
  */
 export const updateAdminSettings = (settings) => {
-  // The 'settings' parameter is expected to be the correctly formatted array.
-  // e.g., [ { uuid: '...', value: 'true' }, { uuid: '...', value: 'modern' } ]
   return fetchWithAuth('/admin/settings', {
     method: 'PUT',
     body: settings
   });
 };
 
-// --- Statistics ---
+// --- Site-wide Statistics ---
 
 /**
  * Fetches the consolidated visitor and authentication statistics.
  * @returns {Promise<object>} A promise that resolves to the stats object.
  */
 export const getAdminStats = () => fetchWithAuth('/admin/stats', { method: 'GET' });
+
+
+// --- Site-wide Contact Messages ---
+
+/**
+ * Fetches all received contact messages from all users.
+ * @returns {Promise<Array<object>>} List of ContactMessageDto
+ */
+export const getAdminContactMessages = () => fetchWithAuth('/admin/contact-messages', { method: 'GET' });
+
+/**
+ * Deletes a specific contact message by its UUID.
+ * @param {string} uuid - The UUID of the message.
+ * @returns {Promise<void>}
+ */
+export const deleteAdminContactMessage = (uuid) => fetchWithAuth(`/admin/contact-messages/${uuid}`, { method: 'DELETE' });
+
+
+// --- System Backup & Restore ---
+
+/**
+ * Initiates a download of the full system backup JSON file.
+ * @returns {Promise<void>}
+ */
+export const downloadSystemBackup = async () => {
+  const blob = await fetchWithAuth('/admin/backup/system', {
+    method: 'GET',
+    responseType: 'blob'
+  });
+  const filename = `forkmyfolio-backup-${new Date().toISOString().split('T')[0]}.json`;
+  triggerDownload(blob, filename);
+};
+
+/**
+ * Uploads a backup file to restore the entire system.
+ * @param {FormData} formData The form data containing the backup file (key: 'file').
+ * @returns {Promise<void>}
+ */
+export const restoreSystemBackup = (formData) => {
+  return fetchWithAuth('/admin/restore/system', {
+    method: 'POST',
+    body: formData,
+  });
+};

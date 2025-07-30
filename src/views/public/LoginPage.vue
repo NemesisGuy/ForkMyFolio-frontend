@@ -66,10 +66,11 @@
 </template>
 
 <script setup>
-// The script section remains unchanged.
 import {onMounted, reactive, ref} from 'vue';
 import {useRoute, useRouter} from 'vue-router';
 import {authService} from '@/services/authService.js';
+import {settingsService} from '@/services/settingsService.js';
+import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore.js';
 import {ApiError} from '@/services/api/index.js';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
@@ -95,18 +96,21 @@ const showLoginErrorModal = ref(false);
 const loginErrorTitle = ref('Error');
 const loginErrorMessage = ref('');
 
-let redirectPathOnSuccess = { name: 'dashboard' }; // Default to dashboard
+let redirectPathOnSuccess = null;
 
 onMounted(() => {
   if (authService.isAuthenticated.value) {
-    router.replace(route.query.redirect || { name: 'dashboard' });
+    const userSlug = authService.user.value?.slug;
+    router.replace(route.query.redirect || { name: 'dashboard', params: { slug: userSlug } });
   }
 });
 
 const closeLoginSuccessModal = () => {
   showLoginSuccessModal.value = false;
   loginSuccessMessage.value = null;
-  router.replace(redirectPathOnSuccess);
+  if (redirectPathOnSuccess) {
+    router.replace(redirectPathOnSuccess);
+  }
 };
 
 const closeLoginErrorModal = () => {
@@ -156,11 +160,18 @@ const handleLogin = async () => {
 
   try {
     await authService.login(credentials);
+
     // --- THIS IS THE FIX ---
-    // The default redirect is now the user's dashboard.
-    // If the user was trying to access a protected page, we'll send them there instead.
-    redirectPathOnSuccess = route.query.redirect || { name: 'dashboard' };
-    loginSuccessMessage.value = "Login successful! Redirecting to your dashboard...";
+    // After a successful login, we must explicitly re-initialize the settings
+    // and update the public portfolio store's slug to reflect the new
+    // user's context. This ensures the navbar has the correct data before redirecting.
+    await settingsService.initialize();
+    usePublicPortfolioStore().currentSlug.value = authService.user.value?.slug;
+    // --- END OF FIX ---
+
+    const userSlug = authService.user.value?.slug;
+    redirectPathOnSuccess = route.query.redirect || { name: 'dashboard', params: { slug: userSlug } };
+    loginSuccessMessage.value = "Login successful! Redirecting...";
     showLoginSuccessModal.value = true;
   } catch (error) {
     console.error("Login error:", error);

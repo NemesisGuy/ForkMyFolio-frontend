@@ -10,7 +10,7 @@
       </div>
 
       <!-- The glassmorphic modal will overlay everything while loading -->
-      <LoadingModal :visible="isLoading" class="glass-modal"/>
+      <LoadingModal :visible="isLoading" />
 
       <!-- A skeleton loader that mimics the new timeline style -->
       <div v-if="isLoading" class="timeline">
@@ -28,52 +28,81 @@
       </div>
 
       <!-- Error state with glassmorphic styling -->
-      <div v-else-if="error" class="glass-card glass-card-dark">
+      <div v-else-if="error" class="glass-card glass-card-dark mx-auto" style="max-width: 800px;">
         <div class="card-body text-center p-5">
           <i class="bi bi-exclamation-triangle-fill text-warning mb-3" style="font-size: 3rem;"></i>
           <h5 class="card-title text-white mb-3">Unable to Load Experience</h5>
           <p class="card-text text-light opacity-75">
             Could not load work experience data. Please try again later.
           </p>
-          <button @click="retryLoad" class="btn btn-outline-light glass-btn mt-3">
-            <i class="bi bi-arrow-clockwise me-2"></i>Retry
-          </button>
         </div>
       </div>
 
       <div v-else-if="experiences.length > 0" class="timeline">
-        <div v-for="(exp, index) in experiences" :key="exp.id"
+        <div v-for="(exp, index) in experiences" :key="exp.uuid"
              class="timeline-item animate-fade-in-up"
              :style="{ 'animation-delay': (index * 0.15) + 0.2 + 's' }">
-          <!-- The real timeline card with new glass styles -->
           <div class="timeline-content card glass-card glass-card-floating h-100 interactive-card-lift interactive-card-shadow-primary">
             <div class="card-body">
-              <h5 class="card-title glass-title">{{ exp.jobTitle }}</h5>
-              <h6 class="card-subtitle mb-2 glass-subtitle">{{ exp.companyName }}</h6>
-              <p class="card-text glass-text-secondary small mb-3">
-                <i class="bi bi-calendar-event me-1"></i>
-                {{ formatDate(exp.startDate) }} -
-                {{ exp.endDate ? formatDate(exp.endDate) : 'Present' }}
-                <br>
-                <i class="bi bi-geo-alt-fill me-1"></i>
-                {{ exp.location }}
-              </p>
-              <p class="card-text glass-description experience-description">{{ exp.description }}</p>
+              <div class="d-flex align-items-start mb-3">
+                <a v-if="exp.companyUrl" :href="exp.companyUrl" target="_blank" rel="noopener noreferrer" class="company-logo-link">
+                  <img v-if="exp.companyLogoUrl" :src="exp.companyLogoUrl" :alt="`${exp.companyName} Logo`" class="company-logo me-3">
+                  <div v-else class="company-logo-placeholder me-3"><i class="bi bi-building"></i></div>
+                </a>
+                <div v-else class="company-logo-link">
+                  <img v-if="exp.companyLogoUrl" :src="exp.companyLogoUrl" :alt="`${exp.companyName} Logo`" class="company-logo me-3">
+                  <div v-else class="company-logo-placeholder me-3"><i class="bi bi-building"></i></div>
+                </div>
+
+                <div class="flex-grow-1">
+                  <h5 class="card-title glass-title">{{ exp.jobTitle }}</h5>
+                  <h6 class="card-subtitle mb-2 glass-subtitle">{{ exp.companyName }}</h6>
+                  <div class="small text-muted">
+                    <span><i class="bi bi-calendar-event me-1"></i>{{ formatDate(exp.startDate) }} - {{ exp.endDate ? formatDate(exp.endDate) : 'Present' }}</span>
+                    <span class="mx-2">|</span>
+                    <span><i class="bi bi-geo-alt-fill me-1"></i>{{ exp.location }} ({{ exp.locationType?.replace('_', ' ') }})</span>
+                  </div>
+                </div>
+              </div>
+
+              <p v-if="exp.description" class="card-text glass-description experience-description" v-html="exp.description"></p>
+
+              <div v-if="exp.achievements" class="mt-3">
+                <h6 class="achievements-title">Key Achievements</h6>
+                <div class="achievements-text" v-html="exp.achievements"></div>
+              </div>
+
+              <div v-if="exp.skills && exp.skills.length > 0" class="mt-4">
+                <h6 class="skills-title">Skills Used</h6>
+                <div class="d-flex flex-wrap gap-2">
+                  <span v-for="skill in exp.skills" :key="skill.uuid" class="badge skill-badge">{{ skill.name }}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Enhanced empty state with glassmorphic styling -->
-      <div v-else class="glass-card">
+      <!-- Enhanced empty state with a helpful tip for the owner -->
+      <div v-else class="glass-card mx-auto" style="max-width: 800px;">
         <div class="card-body text-center p-5">
           <div class="empty-state-icon mb-4">
             <i class="bi bi-briefcase"></i>
           </div>
           <h4 class="card-title glass-title mb-3">No Work Experience Yet</h4>
-          <p class="card-text glass-subtitle mb-4">
+
+          <!-- Generic message for public visitors -->
+          <p v-if="!isOwner" class="card-text glass-subtitle mb-4">
             Work history has not been added yet. Please check back later.
           </p>
+
+          <!-- Helpful tip for the portfolio owner -->
+          <div v-else class="alert alert-info mt-3">
+            <p class="mb-1"><strong>Hey there!</strong> It looks like you don't have any work experience visible on your public page.</p>
+            <p class="mb-0">
+              Go to your <router-link :to="{ name: 'my-experience', params: { slug: currentSlug } }">Experience Management</router-link> page to add new entries or make existing ones visible.
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -81,44 +110,35 @@
 </template>
 
 <script setup>
-import {onMounted, ref} from 'vue';
-import {getPublicExperience, ApiError} from '@/services/api/index.js';
+import { computed } from 'vue';
+import { usePublicPortfolioStore } from '@/stores/publicPortfolioStore.js';
+import { authService } from '@/services/authService.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 
-const experiences = ref([]);
-const isLoading = ref(true);
-const error = ref(null);
+// --- THIS IS THE FIX ---
+// Get all necessary reactive properties from the store.
+const { portfolio, isLoading, error, currentSlug } = usePublicPortfolioStore();
+
+// Experiences are a computed property from the store's portfolio.
+const experiences = computed(() => {
+  const exps = portfolio.value?.experiences || [];
+  // Sort by displayOrder ascending (lower number first)
+  return exps.sort((a, b) => (a.displayOrder || 999) - (b.displayOrder || 999));
+});
+
+// Check if the currently logged-in user is the owner of this portfolio.
+const isOwner = computed(() => {
+  return authService.isAuthenticated.value && authService.user.value?.slug === currentSlug.value;
+});
 
 const formatDate = (dateString) => {
   if (!dateString) return '';
-  const options = {year: 'numeric', month: 'long'};
-  return new Date(dateString).toLocaleDateString(undefined, options);
+  const options = { year: 'numeric', month: 'long' };
+  // Add a day to the date to avoid timezone issues where it might show the previous day.
+  const date = new Date(dateString);
+  date.setDate(date.getDate() + 1);
+  return date.toLocaleDateString(undefined, { ...options, timeZone: 'UTC' });
 };
-
-const loadExperience = async () => {
-  try {
-    const data = await getPublicExperience() || [];
-    // Sort by end date descending (most recent first)
-    experiences.value = data.sort((a, b) => new Date(b.endDate || new Date()) - new Date(a.endDate || new Date()));
-  } catch (err) {
-    console.error("Failed to fetch experience data:", err);
-    if (!(err instanceof ApiError && err.httpStatus === 404)) {
-      error.value = err;
-    }
-  } finally {
-    isLoading.value = false;
-  }
-};
-
-const retryLoad = async () => {
-  isLoading.value = true;
-  error.value = null;
-  await loadExperience();
-};
-
-onMounted(() => {
-  loadExperience();
-});
 </script>
 
 <style scoped>
@@ -131,11 +151,64 @@ onMounted(() => {
   white-space: pre-wrap;
   word-wrap: break-word;
 }
+.achievements-text {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-size: 0.9rem;
+  padding-left: 1rem;
+  border-left: 3px solid var(--bs-primary);
+  color: var(--glass-text-secondary);
+}
+.achievements-title, .skills-title {
+  font-weight: 600;
+  color: var(--glass-subtitle);
+  margin-bottom: 0.5rem;
+}
+.skill-badge {
+  background-color: rgba(var(--bs-primary-rgb), 0.15);
+  color: var(--bs-primary);
+  font-weight: 500;
+  padding: 0.4em 0.75em;
+}
+.company-logo, .company-logo-placeholder {
+  width: 50px;
+  height: 50px;
+  border-radius: 0.5rem;
+  object-fit: contain;
+  flex-shrink: 0;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+}
+.company-logo-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: var(--glass-subtitle);
+}
+.company-logo-link {
+  display: block;
+  transition: transform 0.2s ease;
+}
+.company-logo-link:hover {
+  transform: scale(1.05);
+}
 
 /* --- Animations --- */
 .animate-fade-in-up {
   opacity: 0;
   animation: fadeInUp 0.8s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* --- Timeline Styling --- */
@@ -260,5 +333,11 @@ onMounted(() => {
     border-top: none;
     border-right: none;
   }
+}
+
+.empty-state-icon {
+  font-size: 4rem;
+  color: var(--bs-primary);
+  opacity: 0.6;
 }
 </style>

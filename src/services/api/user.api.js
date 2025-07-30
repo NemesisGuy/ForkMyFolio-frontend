@@ -75,9 +75,14 @@ export const settingsApi = {
 
 // --- Backup & Restore (User-specific) ---
 export const downloadMyBackup = async () => {
-  const backupData = await fetchWithAuth('/me/backup', { method: 'GET' });
-  const jsonString = JSON.stringify(backupData, null, 2);
-  const blob = new Blob([jsonString], { type: 'application/json' });
+  // --- THIS IS THE FIX ---
+  // The backend sends a raw JSON file, not a standard API response.
+  // We must request it as a 'blob' to handle it as a file download.
+  const blob = await fetchWithAuth('/me/backup', {
+    method: 'GET',
+    responseType: 'blob'
+  });
+
   const url = window.URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;

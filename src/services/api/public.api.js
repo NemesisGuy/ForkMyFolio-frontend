@@ -29,6 +29,53 @@ export const getAvailablePdfTemplates = () => {
 };
 
 /**
+ * Fetches a single public project by its UUID.
+ * @param {string} uuid - The UUID of the project.
+ * @returns {Promise<Object>} The project data.
+ */
+export const getPublicProjectById = (uuid) => {
+  return fetchWithAuth(`/projects/${uuid}`, { method: 'GET' }, false);
+};
+
+/**
+ * Downloads a public portfolio as a PDF using its slug.
+ * This is an unauthenticated action.
+ * @param {string} slug - The slug of the portfolio to download.
+ * @returns {Promise<Response>} The raw response object containing the blob and headers.
+ */
+export const downloadPublicPortfolioBySlug = (slug) => {
+  return fetchWithAuth(`/portfolios/${slug}/pdf`, {
+    method: 'GET',
+    responseType: 'raw' // 'raw' gets the full Response object
+  }, false);
+};
+
+/**
+ * Downloads a public portfolio as a Markdown file.
+ * @param {string} slug - The slug of the portfolio.
+ * @returns {Promise<Response>} The raw response object containing the blob and headers.
+ */
+export const downloadMarkdownBySlug = (slug) => {
+  return fetchWithAuth(`/portfolios/${slug}/markdown`, {
+    method: 'GET',
+    responseType: 'raw'
+  }, false);
+};
+
+/**
+ * Downloads a public portfolio as a vCard file.
+ * @param {string} slug - The slug of the portfolio.
+ * @returns {Promise<Response>} The raw response object containing the blob and headers.
+ */
+export const downloadVCardBySlug = (slug) => {
+  return fetchWithAuth(`/portfolios/${slug}/vcard`, {
+    method: 'GET',
+    responseType: 'raw'
+  }, false);
+};
+
+
+/**
  * Fetches the profile data for the homepage.
  * This is now dynamic:
  * - If a user is logged in, it fetches their own portfolio.
@@ -98,4 +145,7 @@ export const publicApi = {
   getAvailablePdfTemplates,
   getPublicProfile,
   downloadPortfolioAsPdf,
+  downloadPublicPortfolioBySlug,
+  downloadMarkdownBySlug, // <-- ADDED
+  downloadVCardBySlug,    // <-- ADDED
 };

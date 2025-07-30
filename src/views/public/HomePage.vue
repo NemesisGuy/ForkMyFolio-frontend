@@ -1,6 +1,6 @@
 <template>
   <div class="home-page py-5 animated-gradient-background">
-    <LoadingModal :visible="isLoading" class="glass-modal"/>
+    <LoadingModal :visible="isLoading" />
 
     <!-- Skeleton Loader: A placeholder for when the profile is loading -->
     <div v-if="isLoading" class="container">
@@ -48,17 +48,17 @@
     </div>
 
     <!-- Profile Display State: The main cover page view -->
-    <div v-else-if="profile" class="hero-section">
+    <div v-else-if="portfolio && portfolio.profile" class="hero-section">
       <div class="container">
         <div class="animate-fade-in-up">
           <div class="card glass-card glass-card-floating p-2 p-md-5 interactive-card-lift interactive-card-shadow-primary">
             <div class="card-body">
               <div class="row align-items-center">
                 <div class="col-md-4 text-center mb-3 mb-md-0">
-                  <a :href="profile.resumeUrl || '#'" target="_blank" class="profile-image-link shadow-lg">
-                    <img v-if="profile.resumeImageUrl || profile.profileImageUrl"
-                         :src="profile.resumeImageUrl || profile.profileImageUrl"
-                         :alt="profile.resumeImageUrl ? 'Resume Preview' : 'Profile Picture'"
+                  <a :href="portfolio.profile.resumeUrl || '#'" target="_blank" class="profile-image-link shadow-lg">
+                    <img v-if="portfolio.profile.resumeImageUrl || portfolio.user.profileImageUrl"
+                         :src="portfolio.profile.resumeImageUrl || portfolio.user.profileImageUrl"
+                         :alt="portfolio.profile.resumeImageUrl ? 'Resume Preview' : 'Profile Picture'"
                          class="profile-image"/>
                     <div v-else class="profile-image-placeholder d-flex align-items-center justify-content-center">
                       <i class="bi bi-person-circle"></i>
@@ -67,31 +67,31 @@
                 </div>
                 <div class="col-md-8">
                   <h1 class="display-4 fw-light text-gradient">{{ fullName }}</h1>
-                  <p class="lead text-primary glass-subtitle">{{ profile.headline }}</p>
-                  <p class="summary-text glass-description">{{ profile.summary }}</p>
+                  <p class="lead text-primary glass-subtitle">{{ portfolio.profile.headline }}</p>
+                  <p class="summary-text glass-description">{{ portfolio.profile.summary }}</p>
 
                   <div class="mt-3">
                     <div class="d-flex flex-wrap align-items-center mb-3 justify-content-center">
-                      <a v-if="profile.resumeUrl"
-                         :href="profile.resumeUrl"
+                      <a v-if="portfolio.profile.resumeUrl"
+                         :href="portfolio.profile.resumeUrl"
                          class="btn glass-btn-primary me-2 mb-2 interactive-lift"
                          target="_blank">
                         <i class="bi bi-file-earmark-arrow-down-fill me-1"></i>View Resume
                       </a>
-                      <button v-if="profile.coverLetterTemplate"
+                      <button v-if="portfolio.profile.coverLetterTemplate"
                               class="btn glass-btn-primary me-2 mb-2 interactive-lift"
                               @click="showCoverLetterModal = true">
                         <i class="bi bi-envelope-paper-fill me-1"></i>View Cover Letter
                       </button>
                     </div>
                     <div class="social-links d-flex flex-wrap justify-content-center">
-                      <a v-if="profile.linkedinUrl" :href="profile.linkedinUrl" class="social-icon" target="_blank"
+                      <a v-if="portfolio.profile.linkedinUrl" :href="portfolio.profile.linkedinUrl" class="social-icon" target="_blank"
                          title="LinkedIn"><i class="bi bi-linkedin"></i></a>
-                      <a v-if="profile.githubUrl" :href="profile.githubUrl" class="social-icon" target="_blank"
+                      <a v-if="portfolio.profile.githubUrl" :href="portfolio.profile.githubUrl" class="social-icon" target="_blank"
                          title="GitHub"><i class="bi bi-github"></i></a>
-                      <a v-if="profile.websiteUrl" :href="profile.websiteUrl" class="social-icon" target="_blank"
+                      <a v-if="portfolio.profile.websiteUrl" :href="portfolio.profile.websiteUrl" class="social-icon" target="_blank"
                          title="Personal Website"><i class="bi bi-globe"></i></a>
-                      <a v-if="profile.publicEmail" :href="`mailto:${profile.publicEmail}`" class="social-icon"
+                      <a v-if="portfolio.profile.publicEmail" :href="`mailto:${portfolio.profile.publicEmail}`" class="social-icon"
                          title="Email Me"><i class="bi bi-envelope-fill"></i></a>
                     </div>
                   </div>
@@ -117,7 +117,7 @@
           <div v-if="isAdmin" class="alert alert-info mt-3">
             <p class="mb-1"><strong>Admin Tip:</strong> Your public profile is live but appears empty.</p>
             <p class="mb-0">
-              <router-link :to="{ name: 'profile' }">Go to the Profile Editor</router-link>
+              <router-link :to="{ name: 'profile', params: { slug: authService.user.value.slug } }">Go to the Profile Editor</router-link>
               to add your headline, summary, and more.
             </p>
           </div>
@@ -139,7 +139,7 @@
             ></button>
           </div>
           <div class="modal-body">
-            <pre class="cover-letter-text glass-description">{{ profile.coverLetterTemplate }}</pre>
+            <pre class="cover-letter-text glass-description">{{ portfolio.profile.coverLetterTemplate }}</pre>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn glass-btn" @click="showCoverLetterModal = false">Close</button>
@@ -154,7 +154,7 @@
       @click="showCoverLetterModal = false"
     ></div>
 
-    <!-- Success and Error Modals for PDF Download -->
+    <!-- Success and Error Modals for Downloads -->
     <SuccessModal
       :visible="showSuccessModal"
       title="Download Started"
@@ -168,41 +168,73 @@
       @close="showErrorModal = false"
     />
 
-    <!-- Floating Action Button: PDF download button -->
-    <button
-      v-if="profile"
-      class="btn glass-btn-primary btn-lg rounded-circle shadow-lg pdf-download-button"
-      title="Download Portfolio as PDF"
-      :disabled="isDownloadingPdf"
-      @click="handleDownloadPdf"
-    >
-      <span v-if="isDownloadingPdf" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-      <i v-else class="bi bi-download"></i>
-    </button>
+    <!-- Floating Action Buttons -->
+    <div v-if="portfolio && portfolio.profile" class="download-actions">
+      <!-- PDF Button -->
+      <button
+        class="btn glass-btn-primary btn-lg rounded-circle shadow-lg"
+        title="Download Resume as PDF"
+        :disabled="isDownloadingPdf"
+        @click="handleDownloadPdf"
+      >
+        <span v-if="isDownloadingPdf" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        <i v-else class="bi bi-file-earmark-pdf-fill"></i>
+      </button>
+      <!-- Markdown Button -->
+      <button
+        class="btn glass-btn-primary btn-lg rounded-circle shadow-lg"
+        title="Download as Markdown"
+        :disabled="isDownloadingMd"
+        @click="handleDownloadMd"
+      >
+        <span v-if="isDownloadingMd" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        <i v-else class="bi bi-markdown-fill"></i>
+      </button>
+      <!-- vCard Button -->
+      <button
+        class="btn glass-btn-primary btn-lg rounded-circle shadow-lg"
+        title="Download vCard"
+        :disabled="isDownloadingVcf"
+        @click="handleDownloadVcf"
+      >
+        <span v-if="isDownloadingVcf" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        <i v-else class="bi bi-person-vcard-fill"></i>
+      </button>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from 'vue';
-import { getPublicProfile, ApiError } from '@/services/api/index.js';
+import { ref, computed } from 'vue';
+import { usePublicPortfolioStore } from '@/stores/publicPortfolioStore.js';
 import { authService } from '@/services/authService.js';
 import { usePortfolioDownloader } from '@/composables/usePortfolioDownloader.js';
+import { downloadMarkdownBySlug, downloadVCardBySlug } from '@/services/api';
+import { triggerDownload, getFilenameFromResponse } from '@/utils/downloadUtils';
 
 // Modal components
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 
-const profile = ref(null);
-const isLoading = ref(true);
-const error = ref(null);
-const showCoverLetterModal = ref(false);
+// --- State from Central Store ---
+const { portfolio, isLoading, error, currentSlug } = usePublicPortfolioStore();
 
+// --- Local UI State ---
+const showCoverLetterModal = ref(false);
+const isDownloadingMd = ref(false);
+const isDownloadingVcf = ref(false);
+
+// --- Computed Properties for Template ---
 const fullName = computed(() => {
-  if (!profile.value) return '';
-  return `${profile.value.firstName || ''} ${profile.value.lastName || ''}`.trim();
+  if (!portfolio.value?.user) return '';
+  return `${portfolio.value.user.firstName || ''} ${portfolio.value.user.lastName || ''}`.trim();
 });
 
+const isAdmin = computed(() => authService.isAuthenticated.value && authService.user.value?.roles?.includes('ADMIN'));
+
+// --- Composables ---
+// usePortfolioDownloader handles PDF and the modals
 const {
   isDownloadingPdf,
   showSuccessModal,
@@ -210,33 +242,47 @@ const {
   showErrorModal,
   errorModalMessage,
   handleDownloadPdf
-} = usePortfolioDownloader(fullName);
+} = usePortfolioDownloader(currentSlug);
 
-const isAdmin = computed(() => authService.isAuthenticated.value && authService.user.value?.roles?.includes('ADMIN'));
-
-onMounted(async () => {
-  isLoading.value = true;
+// --- Download Handlers ---
+const handleDownloadMd = async () => {
+  if (!currentSlug.value) return;
+  isDownloadingMd.value = true;
   try {
-    const fetchedProfile = await getPublicProfile();
-
-    if (fetchedProfile && (fetchedProfile.headline || fetchedProfile.summary)) {
-      profile.value = fetchedProfile;
-    } else {
-      profile.value = null;
-      console.log("Profile found but is empty. Displaying 'Coming Soon' page.");
-    }
+    const response = await downloadMarkdownBySlug(currentSlug.value);
+    const filename = getFilenameFromResponse(response, `${currentSlug.value}-portfolio.md`);
+    const blob = await response.blob();
+    triggerDownload(blob, filename);
+    successModalMessage.value = 'Markdown file download has started.';
+    showSuccessModal.value = true;
   } catch (err) {
-    if (err instanceof ApiError && err.httpStatus === 404) {
-      profile.value = null;
-      error.value = null;
-    } else {
-      console.error("Failed to fetch profile data:", err);
-      error.value = err;
-    }
+    console.error('Markdown download failed:', err);
+    errorModalMessage.value = err.message || 'An unexpected error occurred while downloading the Markdown file.';
+    showErrorModal.value = true;
   } finally {
-    isLoading.value = false;
+    isDownloadingMd.value = false;
   }
-});
+};
+
+const handleDownloadVcf = async () => {
+  if (!currentSlug.value) return;
+  isDownloadingVcf.value = true;
+  try {
+    const response = await downloadVCardBySlug(currentSlug.value);
+    const filename = getFilenameFromResponse(response, `${currentSlug.value}-contact.vcf`);
+    const blob = await response.blob();
+    triggerDownload(blob, filename);
+    successModalMessage.value = 'vCard file download has started.';
+    showSuccessModal.value = true;
+  } catch (err) {
+    console.error('vCard download failed:', err);
+    errorModalMessage.value = err.message || 'An unexpected error occurred while downloading the vCard file.';
+    showErrorModal.value = true;
+  } finally {
+    isDownloadingVcf.value = false;
+  }
+};
+
 </script>
 
 <style scoped>
@@ -317,38 +363,6 @@ onMounted(async () => {
   transform: translateY(-2px);
 }
 
-.pdf-download-button:hover {
-  transform: scale(1.1);
-  animation-play-state: paused;
-}
-
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(var(--bs-primary-rgb), 0.5);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(var(--bs-primary-rgb), 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(var(--bs-primary-rgb), 0);
-  }
-}
-
-.pdf-download-button {
-  position: fixed;
-  bottom: 1.5rem;
-  right: 1.5rem;
-  z-index: 1030;
-  width: 48px;
-  height: 48px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 1.2rem;
-  transition: transform 0.3s ease;
-  animation: pulse 2.5s infinite cubic-bezier(0.66, 0, 0, 1);
-}
-
 .cover-letter-text {
   white-space: pre-wrap;
   font-family: var(--bs-font-sans-serif);
@@ -359,6 +373,31 @@ onMounted(async () => {
 .empty-state-icon {
   font-size: 3rem;
   color: var(--bs-primary);
+}
+
+/* --- Download Buttons --- */
+.download-actions {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 1030;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.download-actions .btn {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.download-actions .btn:hover {
+  transform: scale(1.1);
 }
 
 @media (max-width: 576px) {
@@ -390,9 +429,13 @@ onMounted(async () => {
     gap: 8px;
   }
 
-  .pdf-download-button {
+  .download-actions {
     bottom: 1rem;
     right: 1rem;
+    gap: 0.5rem;
+  }
+
+  .download-actions .btn {
     width: 40px;
     height: 40px;
     font-size: 1rem;

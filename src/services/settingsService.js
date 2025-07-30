@@ -14,6 +14,7 @@ import { authService } from './authService';
 // The internal state is a key-value map: { "SHOW_PROJECTS": "true", ... }
 const settings = ref({});
 const isLoading = ref(true);
+const isInitialized = ref(false); // <-- ADDED: Flag to track initialization status.
 
 /**
  * Initializes the settings from the backend based on the current context.
@@ -22,16 +23,18 @@ const isLoading = ref(true);
  */
 async function initializeSettings(slug = null) {
   isLoading.value = true;
+  isInitialized.value = false;
   try {
     let settingsArray = [];
-    if (slug) {
-      // We are on a specific user's public portfolio page
+    if (slug && slug !== 'default') {
+      // We are on a specific user's public portfolio page.
       settingsArray = await publicApi.getPortfolioSettings(slug);
-    } else if (authService.isAuthenticated.value) {
-      // The logged-in user is browsing their own dashboard area (/me/*)
+    } else if (authService.isAuthenticated.value && !slug) {
+      // The logged-in user is browsing their own dashboard area (e.g., /my-projects).
       settingsArray = await settingsApi.getAll();
     } else {
-      // A generic public page (e.g., /login, /register)
+      // This handles the main landing page (slug is 'default') or other
+      // generic public pages where global settings should apply.
       settingsArray = await publicApi.getGlobalSettings();
     }
     // Normalize the array from the API into the service's internal map format.
@@ -41,6 +44,7 @@ async function initializeSettings(slug = null) {
     settings.value = {}; // Reset to a safe default
   } finally {
     isLoading.value = false;
+    isInitialized.value = true; // <-- ADDED: Mark as initialized even on failure to prevent loops.
   }
 }
 
@@ -70,6 +74,7 @@ function updateSettings(settingsArray) {
 // --- Exported Service ---
 export const settingsService = {
   isLoading,
+  isInitialized, // <-- ADDED: Export the new flag.
   settings,
   initialize: initializeSettings,
   updateSettings,

@@ -10,8 +10,10 @@ import { jwtDecode } from 'jwt-decode';
 import { login as apiLogin, logout as apiLogout, register as apiRegister, refreshToken as apiRefreshToken } from './api/auth.api';
 import { getMyAccount } from './api/user.api';
 // --- THIS IS THE FIX ---
-// We import the `publicApi` object, which contains the function we need.
+// We need to import the services we want to reset on logout.
 import { publicApi } from './api/public.api';
+import { settingsService } from './settingsService.js';
+import { usePublicPortfolioStore } from '@/stores/publicPortfolioStore.js';
 import { ApiError } from './api/index.js';
 
 // --- Reactive State ---
@@ -76,6 +78,21 @@ async function logout() {
     console.error("[AuthService] Backend logout failed, clearing state anyway.", e);
   } finally {
     _clearAuthState();
+
+    // --- THIS IS THE FIX ---
+    // After clearing authentication, we must reset the application's context
+    // to the default state for a public, non-logged-in visitor.
+
+    // 1. Reset the public portfolio store to clear the previous user's data.
+    const portfolioStore = usePublicPortfolioStore();
+    portfolioStore.portfolio.value = null;
+    portfolioStore.currentSlug.value = null;
+    portfolioStore.error.value = null;
+
+    // 2. Re-initialize the settings service to load the global defaults.
+    //    This ensures the navbar shows the correct links for the landing page.
+    await settingsService.initialize('default');
+    // --- END OF FIX ---
   }
 }
 

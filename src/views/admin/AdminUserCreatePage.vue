@@ -39,29 +39,23 @@
 
       <!-- Content -->
       <div v-else-if="groupedSkills.length > 0">
-        <div v-for="(categoryGroup, catIndex) in groupedSkills" :key="categoryGroup.category" class="mb-5 animate-fade-in-up" :style="{ 'animation-delay': (catIndex * 0.2) + 's' }">
-          <h2 class="display-5 mb-4 fw-bold text-center glass-text">{{ categoryGroup.category }}</h2>
-
-          <div v-for="(levelGroup, levelIndex) in categoryGroup.levels" :key="levelGroup.name" class="mb-5">
-            <h3 class="display-6 mb-4 fw-light text-center animate-fade-in-up glass-subtitle"
-                :style="{ 'animation-delay': (catIndex * 0.2 + levelIndex * 0.1) + 's' }">
-              {{ levelGroup.name }}
-            </h3>
-            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
-              <div v-for="(skill, skillIndex) in levelGroup.skills" :key="skill.uuid"
-                   class="col animate-fade-in-up"
-                   :style="{ 'animation-delay': (catIndex * 0.2 + levelIndex * 0.1 + skillIndex * 0.05) + 0.2 + 's' }">
-                <div class="card glass-card glass-card-floating h-100 text-center shadow-sm interactive-card-lift interactive-card-shadow-primary">
-                  <div class="card-body d-flex flex-column justify-content-center align-items-center">
-                    <div class="skill-icon mb-3">
-                      <!-- Use the skill's specific icon if provided, otherwise fall back to a level-based icon -->
-                      <i :class="skill.icon || iconForLevel(skill.level)"/>
-                    </div>
-                    <h5 class="card-title">{{ skill.name }}</h5>
-                    <p v-if="skill.description" class="card-text small text-white-50 px-2">{{ skill.description }}</p>
-                    <div class="proficiency-indicator" :data-level="skill.level.toLowerCase()"
-                         :title="skill.level.charAt(0).toUpperCase() + skill.level.slice(1).toLowerCase()">
-                    </div>
+        <div v-for="(group, groupIndex) in groupedSkills" :key="group.name" class="mb-5">
+          <h2 class="display-6 mb-4 fw-light text-center animate-fade-in-up glass-text"
+              :style="{ 'animation-delay': (groupIndex * 0.2) + 's' }">
+            {{ group.name }}
+          </h2>
+          <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+            <div v-for="(skill, skillIndex) in group.skills" :key="skill.uuid"
+                 class="col animate-fade-in-up"
+                 :style="{ 'animation-delay': (groupIndex * 0.2 + skillIndex * 0.05) + 0.2 + 's' }">
+              <div class="card glass-card glass-card-floating h-100 text-center shadow-sm interactive-card-lift interactive-card-shadow-primary">
+                <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                  <div class="skill-icon mb-3">
+                    <i :class="iconForLevel(skill.level)"/>
+                  </div>
+                  <h5 class="card-title">{{ skill.name }}</h5>
+                  <div class="proficiency-indicator" :data-level="skill.level.toLowerCase()"
+                       :title="skill.level.charAt(0).toUpperCase() + skill.level.slice(1).toLowerCase()">
                   </div>
                 </div>
               </div>
@@ -89,7 +83,7 @@
 <script setup>
 import { computed } from 'vue';
 import { usePublicPortfolioStore } from '@/stores/publicPortfolioStore.js';
-import { groupSkills } from '@/services/skillsService.js';
+import { groupSkillsByLevel } from '@/services/skillsService.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 
 // Use the store to get reactive state.
@@ -113,19 +107,13 @@ const iconForLevel = (level) => {
   }
 };
 
-const groupedSkills = computed(() => groupSkills(skills.value));
+const groupedSkills = computed(() => groupSkillsByLevel(skills.value));
 </script>
 
 <style scoped>
 /* --- Page Styling --- */
 .skills-page {
   overflow-x: hidden;
-}
-
-.display-5 {
-  border-bottom: 2px solid var(--bs-primary);
-  padding-bottom: 1rem;
-  display: inline-block;
 }
 
 .display-6 {
@@ -141,12 +129,6 @@ const groupedSkills = computed(() => groupSkills(skills.value));
 }
 .card:hover .skill-icon {
   transform: scale(1.2);
-}
-
-.card-text {
-  min-height: 40px; /* Reserve space for description to prevent layout shifts */
-  font-size: 0.85rem;
-  line-height: 1.4;
 }
 
 /* --- Proficiency Bar --- */

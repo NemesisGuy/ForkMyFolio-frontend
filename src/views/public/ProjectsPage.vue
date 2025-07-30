@@ -11,7 +11,7 @@
         </p>
       </div>
 
-      <LoadingModal :visible="isLoading" class="glass-modal"/>
+      <LoadingModal :visible="isLoading" />
 
       <!-- Skeleton loader with new glass styles -->
       <div v-if="isLoading" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
@@ -43,9 +43,6 @@
           <p class="card-text text-light opacity-75">
             Could not load projects data. Please try again later.
           </p>
-          <button @click="retryLoad" class="btn btn-outline-light glass-btn mt-3">
-            <i class="bi bi-arrow-clockwise me-2"></i>Retry
-          </button>
         </div>
       </div>
 
@@ -80,9 +77,11 @@
                   }}{{ project.description?.length > 180 ? '...' : '' }}
                 </p>
 
-                <div v-if="project.techStack && project.techStack.length" class="mt-auto pt-2">
-                  <span v-for="tech in project.techStack" :key="tech"
-                        class="badge tech-badge me-1 mb-1">{{ tech }}</span>
+                <div v-if="project.skills && project.skills.length" class="mt-auto pt-2">
+                  <span v-for="skill in project.skills" :key="skill.uuid" class="badge tech-badge me-1 mb-1">
+                    <i v-if="skill.icon" :class="skill.icon" class="me-1"></i>
+                    {{ skill.name }}
+                  </span>
                 </div>
               </div>
             </div>
@@ -90,16 +89,27 @@
         </div>
       </div>
 
-      <!-- Enhanced empty state with glassmorphic styling -->
+      <!-- --- THIS IS THE FIX --- -->
+      <!-- Enhanced empty state with a helpful tip for the owner -->
       <div v-else class="glass-card mx-auto" style="max-width: 800px;">
         <div class="card-body text-center p-5">
           <div class="empty-state-icon mb-4">
             <i class="bi bi-kanban"></i>
           </div>
           <h4 class="card-title glass-title mb-3">No Projects Yet</h4>
-          <p class="card-text glass-subtitle mb-4">
+
+          <!-- Generic message for public visitors -->
+          <p v-if="!isOwner" class="card-text glass-subtitle mb-4">
             New projects are in the pipeline. Please check back later to see the showcase.
           </p>
+
+          <!-- Helpful tip for the portfolio owner -->
+          <div v-else class="alert alert-info mt-3">
+            <p class="mb-1"><strong>Hey there!</strong> It looks like you don't have any projects visible on your public page.</p>
+            <p class="mb-0">
+              Go to your <router-link :to="{ name: 'my-projects', params: { slug: currentSlug } }">Project Management</router-link> page to add new projects or make existing ones visible.
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -107,39 +117,29 @@
 </template>
 
 <script setup>
-import {onMounted, ref} from 'vue';
-import {ApiError, getPublicProjects} from '@/services/api/index.js';
+import { computed } from 'vue';
+import { usePublicPortfolioStore } from '@/stores/publicPortfolioStore.js';
+import { authService } from '@/services/authService.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 
-const projects = ref([]);
-const isLoading = ref(true);
-const error = ref(null);
+// Use the central store for all data
+const { portfolio, isLoading, error, currentSlug } = usePublicPortfolioStore();
 
-const fetchProjects = async () => {
-  // Reset state for retry logic
-  isLoading.value = true;
-  error.value = null;
-  try {
-    const data = await getPublicProjects();
-    projects.value = data || [];
-  } catch (err) {
-    console.error('Failed to fetch projects:', err);
-    if (err instanceof ApiError) {
-      error.value = err;
-    } else {
-      error.value = {message: err.message || 'An unexpected error occurred while fetching projects.'};
-    }
-    projects.value = [];
-  } finally {
-    isLoading.value = false;
-  }
-};
+// Projects are now a computed property from the store's portfolio
+const projects = computed(() => {
+  const projs = portfolio.value?.projects || [];
+  // Sort by displayOrder ascending (lower number first)
+  return projs.sort((a, b) => (a.displayOrder || 999) - (b.displayOrder || 999));
+});
 
-const retryLoad = () => {
-  fetchProjects();
-};
+// --- THIS IS THE FIX ---
+// Check if the currently logged-in user is the owner of this portfolio
+const isOwner = computed(() => {
+  return authService.isAuthenticated.value && authService.user.value?.slug === currentSlug.value;
+});
 
-onMounted(retryLoad);
+// All local data fetching logic (fetchProjects, onMounted, etc.) has been removed.
+// The router guard is now the single source of truth for data fetching.
 </script>
 
 <style scoped>
@@ -249,4 +249,9 @@ onMounted(retryLoad);
   border: 1px solid rgba(var(--bs-primary-rgb), 0.2);
 }
 
+.empty-state-icon {
+  font-size: 4rem;
+  color: var(--bs-primary);
+  opacity: 0.6;
+}
 </style>

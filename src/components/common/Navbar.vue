@@ -2,9 +2,9 @@
   <nav :class="[
     'navbar',
     'navbar-expand-lg',
-    'glass-nav', // This class provides the glassmorphic effect
+    'glass-nav',
     'sticky-top',
-    currentTheme === 'dark' ? 'navbar-dark' : 'navbar-light' // For correct text/icon colors
+    currentTheme === 'dark' ? 'navbar-dark' : 'navbar-light'
   ]">
     <div class="container-fluid">
       <router-link class="navbar-brand d-flex align-items-center" to="/">
@@ -28,38 +28,49 @@
       <div id="navbarNav" ref="navbarNavCollapsible" class="collapse navbar-collapse">
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
           <li class="nav-item">
-            <!-- This link now consistently points to the main homepage -->
-            <router-link class="nav-link" active-class="active" to="/" @click="collapseNavbar">
+            <router-link
+              class="nav-link"
+              :class="{ 'active': isHomeActive }"
+              :to="homeLinkTarget"
+              @click="collapseNavbar">
               Home
             </router-link>
           </li>
-          <li v-if="settingsService.isEnabled.value('SHOW_PROJECTS')" class="nav-item">
-            <router-link class="nav-link" active-class="active" to="/projects" @click="collapseNavbar">
+          <!-- THIS IS THE FIX: Added '&& currentSlug' to all public portfolio links -->
+          <li v-if="settingsService.isEnabled.value('SHOW_PROJECTS') && currentSlug" class="nav-item">
+            <router-link class="nav-link" active-class="active" :to="{ name: 'projects-public', params: { slug: currentSlug } }" @click="collapseNavbar">
               Projects
             </router-link>
           </li>
-          <li v-if="settingsService.isEnabled.value('SHOW_SKILLS')" class="nav-item">
-            <router-link class="nav-link" active-class="active" to="/skills" @click="collapseNavbar">
+          <li v-if="settingsService.isEnabled.value('SHOW_SKILLS') && currentSlug" class="nav-item">
+            <router-link class="nav-link" active-class="active" :to="{ name: 'skills-public', params: { slug: currentSlug } }" @click="collapseNavbar">
               Skills
             </router-link>
           </li>
-          <li v-if="settingsService.isEnabled.value('SHOW_EXPERIENCE')" class="nav-item">
-            <router-link class="nav-link" active-class="active" to="/experience" @click="collapseNavbar">
+          <li v-if="settingsService.isEnabled.value('SHOW_EXPERIENCE') && currentSlug" class="nav-item">
+            <router-link class="nav-link" active-class="active" :to="{ name: 'experience-public', params: { slug: currentSlug } }" @click="collapseNavbar">
               Experience
             </router-link>
           </li>
-          <li v-if="settingsService.isEnabled.value('SHOW_TESTIMONIALS')" class="nav-item">
-            <router-link class="nav-link" active-class="active" to="/testimonials" @click="collapseNavbar">
+          <li v-if="settingsService.isEnabled.value('SHOW_TESTIMONIALS') && currentSlug" class="nav-item">
+            <router-link class="nav-link" active-class="active" :to="{ name: 'testimonials-public', params: { slug: currentSlug } }" @click="collapseNavbar">
               Testimonials
             </router-link>
           </li>
-          <li v-if="settingsService.isEnabled.value('SHOW_QUALIFICATIONS')" class="nav-item">
-            <router-link class="nav-link" active-class="active" to="/qualifications" @click="collapseNavbar">
+          <li v-if="settingsService.isEnabled.value('SHOW_QUALIFICATIONS') && currentSlug" class="nav-item">
+            <router-link class="nav-link" active-class="active" :to="{ name: 'qualifications-public', params: { slug: currentSlug } }" @click="collapseNavbar">
               Qualifications
             </router-link>
           </li>
-          <li v-if="settingsService.isEnabled.value('SHOW_CONTACT_FORM')" class="nav-item">
-            <router-link class="nav-link" active-class="active" to="/contact" @click="collapseNavbar">
+
+          <li v-if="settingsService.isEnabled.value('SHOW_EDUCATION') && currentSlug" class="nav-item">
+            <router-link class="nav-link" active-class="active" :to="{ name: 'education-public', params: { slug: currentSlug } }" @click="collapseNavbar">
+              Education
+            </router-link>
+          </li>
+
+          <li v-if="settingsService.isEnabled.value('SHOW_CONTACT_FORM') && currentSlug" class="nav-item">
+            <router-link class="nav-link" active-class="active" :to="{ name: 'contact', params: { slug: currentSlug } }" @click="collapseNavbar">
               Contact
             </router-link>
           </li>
@@ -72,7 +83,7 @@
             <div class="vr"></div>
           </li>
 
-          <template v-if="authService.isAuthenticated.value">
+          <template v-if="authService.isAuthenticated.value && authService.user.value">
             <li v-if="isAdmin" class="nav-item">
               <router-link class="nav-link" active-class="active" to="/admin" @click="collapseNavbar">
                 Admin
@@ -85,26 +96,31 @@
                 <i v-else class="bi bi-person-circle navbar-avatar-placeholder me-2"></i>
                 {{ authService.user.value?.firstName || 'User' }}
               </a>
-              <!-- The dropdown menu is now cleaner and links to the correct routes. -->
               <ul class="dropdown-menu dropdown-menu-end glass-dropdown" aria-labelledby="navbarUserDropdown">
                 <li>
-                  <router-link class="dropdown-item" :to="{ name: 'dashboard' }" @click="collapseNavbar">
+                  <router-link class="dropdown-item" :to="{ name: 'dashboard', params: { slug: authService.user.value.slug } }" @click="collapseNavbar">
                     <i class="bi bi-grid-1x2-fill me-2"></i>My Dashboard
                   </router-link>
                 </li>
                 <li>
-                  <router-link class="dropdown-item" :to="{ name: 'profile' }" @click="collapseNavbar">
+                  <router-link class="dropdown-item" :to="{ name: 'profile', params: { slug: authService.user.value.slug } }" @click="collapseNavbar">
                     <i class="bi bi-person-badge-fill me-2"></i>My Profile
+                  </router-link>
+                </li>
+                <!-- THIS IS THE NEW LINK -->
+                <li v-if="authService.user.value?.slug">
+                  <router-link class="dropdown-item" :to="{ name: 'portfolio-home', params: { slug: authService.user.value.slug } }" @click="collapseNavbar">
+                    <i class="bi bi-house-door-fill me-2"></i>My Public Page
                   </router-link>
                 </li>
                 <li><hr class="dropdown-divider"></li>
                 <li>
-                  <router-link class="dropdown-item" :to="{ name: 'display-settings' }" @click="collapseNavbar">
+                  <router-link class="dropdown-item" :to="{ name: 'display-settings', params: { slug: authService.user.value.slug } }" @click="collapseNavbar">
                     <i class="bi bi-toggles me-2"></i>Display Settings
                   </router-link>
                 </li>
                 <li>
-                  <router-link class="dropdown-item" :to="{ name: 'pdf-settings' }" @click="collapseNavbar">
+                  <router-link class="dropdown-item" :to="{ name: 'pdf-settings', params: { slug: authService.user.value.slug } }" @click="collapseNavbar">
                     <i class="bi bi-file-earmark-pdf-fill me-2"></i>PDF Settings
                   </router-link>
                 </li>
@@ -121,6 +137,11 @@
             <li class="nav-item">
               <router-link class="nav-link" active-class="active" to="/login" @click="collapseNavbar">
                 Login
+              </router-link>
+            </li>
+            <li class="nav-item">
+              <router-link class="nav-link" active-class="active" to="/register" @click="collapseNavbar">
+                Register
               </router-link>
             </li>
           </template>
@@ -143,15 +164,18 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { authService } from '@/services/authService.js';
 import { useTheme } from '@/services/themeService.js';
 import { settingsService } from '@/services/settingsService.js';
+import { usePublicPortfolioStore } from '@/stores/publicPortfolioStore.js';
 import ConfirmModal from './modals/ConfirmModal.vue';
 import ThemeToggle from './ThemeToggle.vue';
 
 const { currentTheme } = useTheme();
 const router = useRouter();
+const route = useRoute();
+const { currentSlug } = usePublicPortfolioStore();
 
 const navbarToggler = ref(null);
 const navbarNavCollapsible = ref(null);
@@ -162,8 +186,30 @@ const collapseNavbar = () => {
   }
 };
 
-// The dynamic homeLinkTarget computed property is no longer needed,
-// as the "Home" link now always points to the root path "/".
+/**
+ * Dynamically determines the target for the "Home" link based on the current context.
+ */
+const homeLinkTarget = computed(() => {
+  // If we are on a page that belongs to a specific user's portfolio (i.e., a slug exists)
+  if (currentSlug.value) {
+    // The "Home" button should link back to that user's main portfolio page.
+    return { name: 'portfolio-home', params: { slug: currentSlug.value } };
+  }
+  // Otherwise, it should link to the main site landing page.
+  return { name: 'home' };
+});
+
+/**
+ * Dynamically determines if the "Home" link should be marked as active.
+ */
+const isHomeActive = computed(() => {
+  // If we are in a portfolio context, the "Home" link is active only on the user's main portfolio page.
+  if (currentSlug.value) {
+    return route.name === 'portfolio-home';
+  }
+  // Otherwise, it's active only on the main site landing page.
+  return route.name === 'home';
+});
 
 const isAdmin = computed(() => {
   return (

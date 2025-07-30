@@ -1,25 +1,27 @@
 <template>
   <LoadingModal v-if="isLoading" />
 
-  <div class="user-settings-page py-5" v-show="!isLoading">
+  <!-- CORRECTED: Added animated-gradient-background and switched to v-if for consistency -->
+  <div class="user-settings-page py-5 animated-gradient-background" v-if="!isLoading">
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-lg-10 col-xl-8">
-          <h1 class="display-5 mb-4">Display Settings</h1>
-          <p class="lead text-muted mb-5">
+          <!-- CORRECTED: Header now uses glass-text for better theme adaptability -->
+          <h1 class="display-5 mb-4 glass-text animate-fade-in-up">Display Settings</h1>
+          <p class="lead glass-subtitle mb-5 animate-fade-in-up" style="animation-delay: 0.1s;">
             Control which sections are visible on your public portfolio page.
           </p>
 
           <!-- Error State -->
-          <div v-if="error" class="alert alert-danger">
+          <div v-if="error" class="alert alert-danger glass-card-dark animate-fade-in-up">
             <h4 class="alert-heading">🚫 Error</h4>
             <p>Could not load your display settings. Please try again later.</p>
             <pre class="small">{{ error.message }}</pre>
           </div>
 
           <!-- Settings Form -->
-          <form v-else @submit.prevent="handleSaveSettings">
-            <div class="card glass-card shadow-sm">
+          <form v-else @submit.prevent="handleSaveSettings" class="animate-fade-in-up" style="animation-delay: 0.2s;">
+            <div class="card glass-card">
               <div class="card-header">
                 <h5 class="mb-0">Section Visibility</h5>
               </div>
@@ -117,7 +119,6 @@ const settingDefinitions = [
   { name: 'SHOW_PROJECTS', label: 'Projects Section', description: 'Display your project showcase.' },
   { name: 'SHOW_SKILLS', label: 'Skills Section', description: 'Display your list of skills.' },
   { name: 'SHOW_EXPERIENCE', label: 'Experience Section', description: 'Display your work experience.' },
-  { name: 'SHOW_EDUCATION', label: 'Education Section', description: 'Display your education history.' },
   { name: 'SHOW_QUALIFICATIONS', label: 'Qualifications Section', description: 'Display your qualifications and certifications.' },
   { name: 'SHOW_TESTIMONIALS', label: 'Testimonials Section', description: 'Display testimonials from clients or colleagues.' },
   { name: 'SHOW_CONTACT_FORM', label: 'Contact Form', description: 'Allow visitors to send you messages.' },
@@ -222,6 +223,7 @@ const resetChanges = () => {
 </script>
 
 <style scoped>
+/* CORRECTED: Updated styles to match other refactored pages */
 .user-settings-page h1 {
   font-weight: 300;
 }
@@ -231,13 +233,21 @@ const resetChanges = () => {
   border-bottom: 1px solid var(--glass-border);
   padding-top: 1rem;
   padding-bottom: 1rem;
+  color: var(--glass-text);
 }
 .list-group-item:last-child {
   border-bottom: none;
+}
+.list-group-item .text-muted {
+  color: var(--glass-text-secondary) !important;
 }
 .form-check-input {
   width: 3em;
   height: 1.5em;
   cursor: pointer;
+}
+.card-header {
+  background-color: rgba(var(--bs-body-color-rgb), 0.05);
+  border-bottom: 1px solid var(--glass-border-hover);
 }
 </style>

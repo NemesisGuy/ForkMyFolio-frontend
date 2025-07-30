@@ -1,6 +1,7 @@
 <template>
   <div class="contact-page py-5 animated-gradient-background">
     <div class="container" style="max-width: 600px;">
+
       <div class="text-center mb-4">
         <h1 class="display-4 fw-bold animate-fade-in-up glass-text">📧 Get In Touch</h1>
         <p class="lead animate-fade-in-up glass-subtitle" style="animation-delay: 0.1s;">
@@ -8,11 +9,9 @@
         </p>
       </div>
 
-      <!-- Enhanced glassmorphic modal -->
-      <LoadingModal :visible="isPageLoading" class="glass-modal" />
+      <LoadingModal :visible="isLoading" />
 
-      <!-- Enhanced skeleton loader with glassmorphic styling -->
-      <div v-if="isPageLoading"
+      <div v-if="isLoading"
            class="card glass-card shimmering glass-card-floating animate-fade-in-up"
            style="animation-delay: 0.2s;">
         <div class="card-body p-4 p-md-5">
@@ -32,7 +31,6 @@
         </div>
       </div>
 
-      <!-- Enhanced glassmorphic contact form -->
       <div v-else
            class="card glass-card shimmering glass-card-floating animate-fade-in-up interactive-card-lift interactive-card-shadow-primary"
            style="animation-delay: 0.2s;">
@@ -43,14 +41,14 @@
                 <i class="bi bi-person-fill me-2"></i>Name
               </label>
               <input id="name"
-                     v-model="form.name"
-                     :class="{'is-invalid': fieldErrors.name}"
+                     v-model="form.senderName"
+                     :class="{'is-invalid': fieldErrors.senderName}"
                      class="form-control glass-input"
                      required
                      type="text"
                      placeholder="Enter your full name">
-              <div v-if="fieldErrors.name" class="invalid-feedback glass-error">
-                <i class="bi bi-exclamation-circle me-1"></i>{{ fieldErrors.name }}
+              <div v-if="fieldErrors.senderName" class="invalid-feedback glass-error">
+                <i class="bi bi-exclamation-circle me-1"></i>{{ fieldErrors.senderName }}
               </div>
             </div>
 
@@ -59,14 +57,14 @@
                 <i class="bi bi-envelope-fill me-2"></i>Email address
               </label>
               <input id="email"
-                     v-model="form.email"
-                     :class="{'is-invalid': fieldErrors.email}"
+                     v-model="form.senderEmail"
+                     :class="{'is-invalid': fieldErrors.senderEmail}"
                      class="form-control glass-input"
                      required
                      type="email"
                      placeholder="your.email@example.com">
-              <div v-if="fieldErrors.email" class="invalid-feedback glass-error">
-                <i class="bi bi-exclamation-circle me-1"></i>{{ fieldErrors.email }}
+              <div v-if="fieldErrors.senderEmail" class="invalid-feedback glass-error">
+                <i class="bi bi-exclamation-circle me-1"></i>{{ fieldErrors.senderEmail }}
               </div>
             </div>
 
@@ -98,20 +96,26 @@
             </button>
           </form>
 
-          <!-- Contact info cards -->
           <div class="row mt-4 g-3">
-            <div class="col-md-6">
-              <div class="glass-info-card text-center p-3">
+            <div class="col-md-4">
+              <div class="glass-card text-center p-3 h-100 interactive-card-lift">
                 <i class="bi bi-clock-fill text-primary mb-2" style="font-size: 1.5rem;"></i>
                 <div class="glass-subtitle small">Response Time</div>
                 <div class="glass-text small fw-semibold">Within 24 hours</div>
               </div>
             </div>
-            <div class="col-md-6">
-              <div class="glass-info-card text-center p-3">
+            <div class="col-md-4">
+              <div class="glass-card text-center p-3 h-100 interactive-card-lift">
                 <i class="bi bi-shield-check-fill text-success mb-2" style="font-size: 1.5rem;"></i>
                 <div class="glass-subtitle small">Privacy</div>
                 <div class="glass-text small fw-semibold">100% Secure</div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="glass-card text-center p-3 h-100 interactive-card-lift">
+                <i class="bi bi-calendar-check-fill text-info mb-2" style="font-size: 1.5rem;"></i>
+                <div class="glass-subtitle small">Availability</div>
+                <div class="glass-text small fw-semibold">Open for Work</div>
               </div>
             </div>
           </div>
@@ -119,44 +123,43 @@
       </div>
     </div>
 
-    <!-- Enhanced modals with glassmorphic styling -->
     <SuccessModal
       :visible="showSuccessModal"
       title="Message Sent!"
       :message="successMessage"
       @close="closeSuccessModal"
-      class="glass-modal"
     />
     <ErrorModal
       :visible="showErrorModal"
       :title="error.title"
       :message="error.message"
       @close="closeErrorModal"
-      class="glass-modal"
     />
   </div>
 </template>
 
 <script setup>
-import { reactive, ref, onMounted } from 'vue';
-import { submitContactMessage, ApiError } from '@/services/api/index.js';
+import { reactive, ref } from 'vue';
+import { usePublicPortfolioStore } from '@/stores/publicPortfolioStore.js';
+import { sendContactMessage, ApiError } from '@/services/api/index.js';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 
+const { currentSlug, isLoading } = usePublicPortfolioStore();
+
 const form = reactive({
-  name: '',
-  email: '',
+  senderName: '',
+  senderEmail: '',
   message: ''
 });
 
 const fieldErrors = reactive({
-  name: null,
-  email: null,
+  senderName: null,
+  senderEmail: null,
   message: null
 });
 
-const isPageLoading = ref(true);
 const isSubmitting = ref(false);
 const error = ref({ title: '', message: '' });
 const showErrorModal = ref(false);
@@ -174,65 +177,42 @@ const closeSuccessModal = () => {
 };
 
 const validateForm = () => {
-  // Clear previous errors
   for (const key in fieldErrors) {
     fieldErrors[key] = null;
   }
-
   let isValid = true;
 
-  if (!form.name.trim()) {
-    fieldErrors.name = "Name is required.";
-    isValid = false;
-  } else if (form.name.trim().length < 2) {
-    fieldErrors.name = "Name must be at least 2 characters.";
+  if (!form.senderName.trim()) {
+    fieldErrors.senderName = "Name is required.";
     isValid = false;
   }
-
-  if (!form.email.trim()) {
-    fieldErrors.email = "Email is required.";
+  if (!form.senderEmail.trim()) {
+    fieldErrors.senderEmail = "Email is required.";
     isValid = false;
-  } else if (!/\S+@\S+\.\S+/.test(form.email)) {
-    fieldErrors.email = "Please enter a valid email address.";
+  } else if (!/\S+@\S+\.\S+/.test(form.senderEmail)) {
+    fieldErrors.senderEmail = "Please enter a valid email address.";
     isValid = false;
   }
-
   if (!form.message.trim()) {
     fieldErrors.message = "Message is required.";
     isValid = false;
-  } else if (form.message.trim().length < 10) {
-    fieldErrors.message = "Message must be at least 10 characters.";
-    isValid = false;
   }
-
   return isValid;
 };
 
 const handleSubmit = async () => {
   if (!validateForm()) {
-    // Add shake animation to form on validation error
-    const form = document.querySelector('.glass-card');
-    form?.classList.add('shake-animation');
-    setTimeout(() => form?.classList.remove('shake-animation'), 600);
     return;
   }
 
   isSubmitting.value = true;
   try {
-    await submitContactMessage({ ...form });
+    await sendContactMessage(currentSlug.value, { ...form });
     successMessage.value = 'Thank you for your message! I will get back to you shortly.';
     showSuccessModal.value = true;
-
-    // Reset form
-    form.name = '';
-    form.email = '';
+    form.senderName = '';
+    form.senderEmail = '';
     form.message = '';
-
-    // Add success animation
-    const formCard = document.querySelector('.glass-card');
-    formCard?.classList.add('success-pulse');
-    setTimeout(() => formCard?.classList.remove('success-pulse'), 1000);
-
   } catch (err) {
     console.error("Failed to send message:", err);
     error.value = {
@@ -240,35 +220,18 @@ const handleSubmit = async () => {
       message: err instanceof ApiError ? err.message : 'Could not send the message. Please try again later.'
     };
     showErrorModal.value = true;
-
-    // Add error shake animation
-    const formCard = document.querySelector('.glass-card');
-    formCard?.classList.add('error-shake');
-    setTimeout(() => formCard?.classList.remove('error-shake'), 600);
   } finally {
     isSubmitting.value = false;
   }
 };
-
-// Simulate page load with smooth transition
-onMounted(() => {
-  setTimeout(() => {
-    isPageLoading.value = false;
-  }, 800); // Slightly longer for better visual effect
-});
 </script>
 
 <style scoped>
-/* ==========================================================================
-   Enhanced Glassmorphic Contact Form Styles
-   ========================================================================== */
-
 .contact-page {
   min-height: calc(100vh - 56px - 1px);
   overflow-x: hidden;
 }
 
-/* --- Enhanced Form Controls --- */
 .glass-input {
   background: var(--glass-bg);
   backdrop-filter: blur(15px);
@@ -306,7 +269,6 @@ onMounted(() => {
   min-height: 120px;
 }
 
-/* --- Labels and Text --- */
 .glass-label {
   color: var(--glass-text);
   font-weight: 600;
@@ -330,82 +292,6 @@ onMounted(() => {
   backdrop-filter: blur(10px);
 }
 
-/* --- Enhanced Primary Button --- */
-.glass-btn-primary {
-  background: linear-gradient(135deg,
-  rgba(var(--bs-primary-rgb), 0.8),
-  rgba(var(--bs-primary-rgb), 0.9)
-  );
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(var(--bs-primary-rgb), 0.3);
-  color: white;
-  font-weight: 600;
-  padding: 0.875rem 2rem;
-  border-radius: 0.75rem;
-  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.glass-btn-primary::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg,
-  transparent,
-  rgba(255, 255, 255, 0.2),
-  transparent
-  );
-  transition: left 0.6s ease;
-}
-
-.glass-btn-primary:hover::before {
-  left: 100%;
-}
-
-.glass-btn-primary:hover {
-  background: linear-gradient(135deg,
-  rgba(var(--bs-primary-rgb), 0.9),
-  rgba(var(--bs-primary-rgb), 1)
-  );
-  transform: translateY(-3px);
-  box-shadow:
-    0 12px 35px rgba(var(--bs-primary-rgb), 0.4),
-    0 4px 15px rgba(var(--bs-primary-rgb), 0.2);
-  border-color: rgba(var(--bs-primary-rgb), 0.5);
-}
-
-.glass-btn-primary:active {
-  transform: translateY(-1px);
-}
-
-.glass-btn-primary:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* --- Info Cards --- */
-.glass-info-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border: 1px solid var(--glass-border);
-  border-radius: 1rem;
-  transition: all 0.3s ease;
-}
-
-.glass-info-card:hover {
-  background: var(--glass-bg-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px var(--glass-shadow);
-}
-
-/* --- Animation Classes --- */
 .animate-fade-in-up {
   opacity: 0;
   animation: fadeInUp 1s ease-out forwards;
@@ -422,38 +308,6 @@ onMounted(() => {
   }
 }
 
-/* --- Interaction Feedback Animations --- */
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-  20%, 40%, 60%, 80% { transform: translateX(5px); }
-}
-
-@keyframes successPulse {
-  0% { box-shadow: 0 0 0 0 rgba(var(--bs-success-rgb), 0.4); }
-  70% { box-shadow: 0 0 0 20px rgba(var(--bs-success-rgb), 0); }
-  100% { box-shadow: 0 0 0 0 rgba(var(--bs-success-rgb), 0); }
-}
-
-@keyframes errorShake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
-  20%, 40%, 60%, 80% { transform: translateX(8px); }
-}
-
-.shake-animation {
-  animation: shake 0.6s ease-in-out;
-}
-
-.success-pulse {
-  animation: successPulse 1s ease-out;
-}
-
-.error-shake {
-  animation: errorShake 0.6s ease-in-out;
-}
-
-/* --- Skeleton Loaders --- */
 .skeleton-line,
 .skeleton-input,
 .skeleton-textarea,
@@ -497,62 +351,25 @@ onMounted(() => {
   100% { background-position: 200% 0; }
 }
 
-/* --- Responsive Design --- */
-@media (max-width: 768px) {
-  .glass-input {
-    padding: 0.625rem 0.875rem;
-  }
-
-  .glass-btn-primary {
-    padding: 0.75rem 1.5rem;
-  }
-
-  .contact-page .container {
-    max-width: 90% !important;
-  }
+/* --- THIS IS THE FIX --- */
+/* Override glass variables specifically for this page's inputs in light mode for better contrast. */
+/* This ensures the inputs AND cards are visible against the light page background. */
+[data-bs-theme="light"] .glass-card {
+  background: rgba(255, 255, 255, 0.6); /* More opaque white */
+  border-color: rgba(0, 0, 0, 0.1); /* Subtle dark border */
 }
 
-/* --- Focus States for Accessibility --- */
-.glass-input:focus-visible {
-  outline: 2px solid var(--bs-primary);
-  outline-offset: 2px;
+[data-bs-theme="light"] .glass-input {
+  background: rgba(255, 255, 255, 0.6); /* More opaque white */
+  border-color: rgba(0, 0, 0, 0.1); /* Subtle dark border */
 }
 
-.glass-btn-primary:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.8);
-  outline-offset: 2px;
+[data-bs-theme="light"] .glass-input::placeholder {
+  color: rgba(0, 0, 0, 0.5);
 }
 
-/* --- High Contrast Mode Support --- */
-@media (prefers-contrast: high) {
-  .glass-input {
-    border-width: 2px;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-  }
-
-  .glass-btn-primary {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    background: var(--bs-primary);
-  }
-}
-
-/* --- Reduced Motion Support --- */
-@media (prefers-reduced-motion: reduce) {
-  .glass-input,
-  .glass-btn-primary,
-  .glass-info-card,
-  .skeleton-line,
-  .skeleton-input,
-  .skeleton-textarea,
-  .skeleton-button {
-    animation: none;
-    transition: none;
-  }
-
-  .glass-btn-primary::before {
-    display: none;
-  }
+[data-bs-theme="light"] .glass-input:focus {
+  background: rgba(255, 255, 255, 0.75);
+  border-color: rgba(var(--bs-primary-rgb), 0.5);
 }
 </style>

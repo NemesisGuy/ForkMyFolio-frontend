@@ -1,15 +1,15 @@
 <template>
-  <div class="backup-restore-page py-5 animated-gradient-background">
+  <div class="admin-backup-restore-page py-5 animated-gradient-background">
     <div class="container">
       <!-- Header -->
       <div class="text-center mb-5 animate-fade-in-up">
-        <h2 class="display-5 glass-text">Backup & Restore</h2>
+        <h1 class="display-5 fw-light glass-text">System Backup & Restore</h1>
         <p class="lead glass-subtitle" style="animation-delay: 0.1s;">
-          Download a full backup of your portfolio or restore from a previously saved file.
+          Create a full system backup or restore the entire application from a previously saved file.
         </p>
       </div>
 
-      <!-- Loading and Error Modals -->
+      <!-- Modals -->
       <LoadingModal :visible="isLoading" />
       <ErrorModal :visible="!!error" :message="error" title="An Error Occurred" @close="error = null" />
       <SuccessModal :visible="!!successMessage" :message="successMessage" title="Success" @close="handleSuccessClose" />
@@ -22,12 +22,12 @@
               <div class="mb-3">
                 <i class="bi bi-database-down display-4 text-primary"></i>
               </div>
-              <h5 class="card-title glass-title">Download Backup</h5>
+              <h5 class="card-title glass-title">Download System Backup</h5>
               <p class="card-text glass-subtitle small flex-grow-1">
-                Generate and download a full backup of your projects, skills, experience, and other portfolio data as a single JSON file.
+                Generate and download a full backup of all users and their portfolio data as a single JSON file.
               </p>
               <button class="btn btn-primary mt-auto interactive-lift" @click="handleDownloadBackup" :disabled="isLoading">
-                Download My Data
+                Download System Data
               </button>
             </div>
           </div>
@@ -42,8 +42,8 @@
               </div>
               <h5 class="card-title glass-title">Restore from Backup</h5>
               <p class="card-text glass-subtitle small flex-grow-1">
-                Select a valid portfolio backup JSON file to restore your data.
-                <strong class="text-danger d-block mt-2">Warning: This will overwrite your current portfolio data.</strong>
+                Select a valid system backup JSON file to restore all data.
+                <strong class="text-danger d-block mt-2">Warning: This will overwrite the entire system's data.</strong>
               </p>
               <div class="mt-auto">
                 <input
@@ -55,7 +55,7 @@
                   :disabled="isLoading"
                 />
                 <button class="btn btn-warning mt-3 w-100 interactive-lift" @click="handleRestoreBackup" :disabled="!selectedFile || isLoading">
-                  Restore from File
+                  Restore System from File
                 </button>
               </div>
             </div>
@@ -69,35 +69,27 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { downloadMyBackup, restoreMyBackup } from '@/services/api/user.api.js';
+// Use the dedicated backup API functions
+import { downloadBackup, ingestBackup } from '@/services/api/backup.api.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';
-
-const props = defineProps({
-  slug: {
-    type: String,
-    required: true,
-  },
-});
 
 const router = useRouter();
 const isLoading = ref(false);
 const error = ref(null);
 const successMessage = ref(null);
-
 const fileInput = ref(null);
 const selectedFile = ref(null);
 
 const handleDownloadBackup = async () => {
-  error.value = null;
   isLoading.value = true;
+  error.value = null;
   try {
-    await downloadMyBackup();
-    // The download is handled by the API function, so no success message is needed here.
+    await downloadBackup();
   } catch (err) {
-    console.error('Backup download failed:', err);
-    error.value = err.message || 'An unexpected error occurred during the backup download.';
+    console.error('System backup download failed:', err);
+    error.value = err.message || 'An unexpected error occurred during the system backup download.';
   } finally {
     isLoading.value = false;
   }
@@ -112,18 +104,16 @@ const handleRestoreBackup = async () => {
     error.value = 'Please select a backup file first.';
     return;
   }
-
-  error.value = null;
   isLoading.value = true;
+  error.value = null;
   try {
-    await restoreMyBackup(selectedFile.value);
-    successMessage.value = 'Your portfolio has been successfully restored! You will now be redirected to the dashboard.';
+    await ingestBackup(selectedFile.value);
+    successMessage.value = 'The system has been successfully restored! You will now be redirected to the admin dashboard.';
   } catch (err) {
-    console.error('Backup restore failed:', err);
-    error.value = err.message || 'An unexpected error occurred during the restore process. Please ensure the file is a valid backup.';
+    console.error('System restore failed:', err);
+    error.value = err.message || 'An unexpected error occurred during the restore. Please ensure the file is a valid system backup.';
   } finally {
     isLoading.value = false;
-    // Clear the file input
     if (fileInput.value) {
       fileInput.value.value = '';
     }
@@ -133,20 +123,14 @@ const handleRestoreBackup = async () => {
 
 const handleSuccessClose = () => {
   successMessage.value = null;
-  // Redirect to dashboard to see the restored data
-  router.push({ name: 'dashboard', params: { slug: props.slug } });
+  router.push({ name: 'admin' });
 };
 </script>
 
 <style scoped>
-.backup-restore-page .display-5 {
+.admin-backup-restore-page .display-5 {
   font-weight: 300;
 }
-
-.card-title i {
-  vertical-align: -0.125em;
-}
-
 .form-control {
   background-color: rgba(var(--bs-body-bg-rgb), 0.5);
   border: 1px solid rgba(var(--bs-body-color-rgb), 0.1);

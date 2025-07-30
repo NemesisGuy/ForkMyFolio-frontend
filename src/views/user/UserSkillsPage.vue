@@ -36,6 +36,22 @@
                   <input type="text" class="form-control" id="skillName" v-model="currentSkill.name" required>
                 </div>
                 <div class="mb-3">
+                  <label for="skillCategory" class="form-label">Category</label>
+                  <input type="text" class="form-control" id="skillCategory" v-model="currentSkill.category" list="category-suggestions" placeholder="e.g., Frontend, Backend, DevOps">
+                  <datalist id="category-suggestions">
+                    <option v-for="cat in uniqueCategories" :key="cat" :value="cat"></option>
+                  </datalist>
+                </div>
+                <div class="mb-3">
+                  <label for="skillIcon" class="form-label">Icon</label>
+                  <input type="text" class="form-control" id="skillIcon" v-model="currentSkill.icon" placeholder="e.g., bi bi-vue">
+                  <div class="form-text">Optional: A Bootstrap Icon class name (e.g., 'bi bi-git').</div>
+                </div>
+                <div class="mb-3">
+                  <label for="skillDescription" class="form-label">Description</label>
+                  <textarea class="form-control" id="skillDescription" v-model="currentSkill.description" rows="2" maxlength="255" placeholder="A short description of your experience with this skill."></textarea>
+                </div>
+                <div class="mb-3">
                   <label for="skillLevel" class="form-label">Proficiency Level</label>
                   <select class="form-select" id="skillLevel" v-model="currentSkill.level" required>
                     <option disabled value="">Please select a level</option>
@@ -58,29 +74,35 @@
         </div>
       </div>
 
-      <!-- Skills List -->
-      <div v-if="!isLoading && skills.length > 0" class="card glass-card animate-fade-in-up" style="animation-delay: 0.1s;">
-        <ul class="list-group list-group-flush">
-          <li v-for="skill in skills" :key="skill.uuid" class="list-group-item d-flex justify-content-between align-items-center">
-            <div>
-              <span>{{ skill.name }}</span>
-              <span class="badge rounded-pill ms-2" :class="levelBadgeClass(skill.level)">
-                {{ formatSkillLevel(skill.level) }}
-              </span>
-              <span :class="['badge', 'rounded-pill', 'ms-2', skill.visible ? 'bg-success' : 'bg-secondary']">
-                {{ skill.visible ? 'Visible' : 'Hidden' }}
-              </span>
+      <!-- Grouped Skills List -->
+      <div v-if="!isLoading && skills.length > 0">
+        <div v-for="(categoryGroup, catIndex) in groupedSkills" :key="categoryGroup.category" class="mb-5 animate-fade-in-up" :style="{ 'animation-delay': (catIndex * 0.2) + 's' }">
+          <h3 class="mb-4 glass-title">{{ categoryGroup.category }}</h3>
+          <div v-for="levelGroup in categoryGroup.levels" :key="levelGroup.name" class="mb-4">
+            <h4 class="glass-subtitle mb-3 ps-2">{{ levelGroup.name }}</h4>
+            <div class="card glass-card">
+              <ul class="list-group list-group-flush">
+                <li v-for="skill in levelGroup.skills" :key="skill.uuid" class="list-group-item d-flex justify-content-between align-items-center">
+                  <div>
+                    <span>{{ skill.name }}</span>
+                    <p v-if="skill.description" class="small text-muted mb-0">{{ skill.description }}</p>
+                  </div>
+                  <div class="actions d-flex align-items-center">
+                    <div class="form-check form-switch me-3" title="Toggle Visibility">
+                      <input class="form-check-input" type="checkbox" role="switch" :checked="skill.visible" @change="handleVisibilityToggle(skill)">
+                    </div>
+                    <button class="btn btn-sm btn-outline-primary me-2" @click="openEditModal(skill)" title="Edit Skill">
+                      <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" @click="skillToDelete = skill" title="Delete Skill">
+                      <i class="bi bi-trash-fill"></i>
+                    </button>
+                  </div>
+                </li>
+              </ul>
             </div>
-            <div class="actions">
-              <button class="btn btn-sm btn-outline-primary me-2" @click="openEditModal(skill)" title="Edit Skill">
-                <i class="bi bi-pencil-fill"></i>
-              </button>
-              <button class="btn btn-sm btn-outline-danger" @click="skillToDelete = skill" title="Delete Skill">
-                <i class="bi bi-trash-fill"></i>
-              </button>
-            </div>
-          </li>
-        </ul>
+          </div>
+        </div>
       </div>
 
       <!-- Empty State -->
@@ -96,8 +118,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, reactive } from 'vue';
+import { ref, onMounted, reactive, computed } from 'vue';
 import { skillsApi } from '@/services/api/user.api.js';
+import { groupSkills, SKILL_LEVELS } from '@/services/skillsService.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';
@@ -119,15 +142,21 @@ const currentSkill = reactive({
   uuid: null,
   name: '',
   level: '',
+  category: '',
+  icon: '',
+  description: '',
   visible: true,
 });
 
-const skillLevels = [
-  { value: 'BEGINNER', text: 'Beginner' },
-  { value: 'INTERMEDIATE', text: 'Intermediate' },
-  { value: 'ADVANCED', text: 'Advanced' },
-  { value: 'EXPERT', text: 'Expert' }
-];
+const skillLevels = SKILL_LEVELS;
+
+// --- Computed Properties ---
+const groupedSkills = computed(() => groupSkills(skills.value));
+const uniqueCategories = computed(() => {
+  const categories = new Set(skills.value.map(s => s.category).filter(Boolean));
+  return Array.from(categories).sort();
+});
+
 
 // --- Lifecycle Hooks ---
 onMounted(async () => {
@@ -136,22 +165,6 @@ onMounted(async () => {
     skillModalInstance = new Modal(skillModalRef.value);
   }
 });
-
-// --- Helper Functions ---
-const formatSkillLevel = (level) => {
-  if (!level) return '';
-  return level.charAt(0).toUpperCase() + level.slice(1).toLowerCase();
-};
-
-const levelBadgeClass = (level) => {
-  switch (level) {
-    case 'BEGINNER': return 'bg-secondary bg-opacity-75';
-    case 'INTERMEDIATE': return 'bg-info bg-opacity-75';
-    case 'ADVANCED': return 'bg-primary bg-opacity-75';
-    case 'EXPERT': return 'bg-success bg-opacity-75';
-    default: return 'bg-light text-dark';
-  }
-};
 
 // --- Data Fetching ---
 const fetchSkills = async () => {
@@ -173,7 +186,10 @@ const openAddModal = () => {
   currentSkill.uuid = null;
   currentSkill.name = '';
   currentSkill.visible = true;
-  currentSkill.level = 'INTERMEDIATE'; // Set a sensible default
+  currentSkill.level = 'INTERMEDIATE';
+  currentSkill.category = '';
+  currentSkill.icon = '';
+  currentSkill.description = '';
   skillModalInstance?.show();
 };
 
@@ -183,6 +199,9 @@ const openEditModal = (skill) => {
   currentSkill.name = skill.name;
   currentSkill.level = skill.level;
   currentSkill.visible = skill.visible;
+  currentSkill.category = skill.category || '';
+  currentSkill.icon = skill.icon || '';
+  currentSkill.description = skill.description || '';
   skillModalInstance?.show();
 };
 
@@ -195,6 +214,15 @@ const handleFormSubmit = async () => {
   }
 };
 
+const buildPayload = (skill) => ({
+  name: skill.name,
+  level: skill.level,
+  visible: skill.visible,
+  category: skill.category,
+  icon: skill.icon,
+  description: skill.description,
+});
+
 const handleAddSkill = async () => {
   if (!currentSkill.name.trim() || !currentSkill.level) {
     error.value = "Skill name and level are required.";
@@ -203,12 +231,10 @@ const handleAddSkill = async () => {
   isLoading.value = true;
   error.value = null;
   try {
-    // This payload now correctly matches the CreateSkillRequest DTO
-    const payload = { name: currentSkill.name, level: currentSkill.level, visible: currentSkill.visible };
-    const newSkill = await skillsApi.create(payload);
-
-    skills.value.push(newSkill);
-    successMessage.value = `Skill '${newSkill.name}' was added successfully.`;
+    const payload = buildPayload(currentSkill);
+    await skillsApi.create(payload);
+    await fetchSkills();
+    successMessage.value = `Skill '${payload.name}' was added successfully.`;
     skillModalInstance?.hide();
   } catch (err) {
     console.error("Failed to add skill:", err);
@@ -226,15 +252,10 @@ const handleUpdateSkill = async () => {
   isLoading.value = true;
   error.value = null;
   try {
-    // This payload also matches the expected structure for an update
-    const payload = { name: currentSkill.name, level: currentSkill.level, visible: currentSkill.visible };
-    const updatedSkill = await skillsApi.update(currentSkill.uuid, payload);
-
-    const index = skills.value.findIndex(s => s.uuid === currentSkill.uuid);
-    if (index !== -1) {
-      skills.value[index] = updatedSkill;
-    }
-    successMessage.value = `Skill was updated to '${updatedSkill.name}' successfully.`;
+    const payload = buildPayload(currentSkill);
+    await skillsApi.update(currentSkill.uuid, payload);
+    await fetchSkills();
+    successMessage.value = `Skill was updated to '${payload.name}' successfully.`;
     skillModalInstance?.hide();
   } catch (err) {
     console.error("Failed to update skill:", err);
@@ -250,14 +271,30 @@ const handleDeleteSkill = async () => {
   error.value = null;
   try {
     await skillsApi.remove(skillToDelete.value.uuid);
-    skills.value = skills.value.filter(s => s.uuid !== skillToDelete.value.uuid);
+    await fetchSkills();
     successMessage.value = `Skill '${skillToDelete.value.name}' was deleted successfully.`;
-  } catch (err) {
+  } catch (err)
+  {
     console.error("Failed to delete skill:", err);
     error.value = err.message || 'An error occurred while deleting the skill.';
   } finally {
     isLoading.value = false;
-    skillToDelete.value = null; // Close the confirm modal
+    skillToDelete.value = null;
+  }
+};
+
+const handleVisibilityToggle = async (skill) => {
+  const originalVisibility = skill.visible;
+  skill.visible = !skill.visible;
+
+  try {
+    const payload = buildPayload(skill);
+    await skillsApi.update(skill.uuid, payload);
+    successMessage.value = `Visibility for '${skill.name}' updated.`;
+  } catch (err) {
+    skill.visible = originalVisibility;
+    console.error("Failed to update visibility:", err);
+    error.value = err.message || 'An error occurred while updating visibility.';
   }
 };
 </script>
@@ -268,6 +305,7 @@ const handleDeleteSkill = async () => {
   border-bottom: 1px solid var(--glass-border);
   color: var(--glass-text);
   transition: background-color 0.3s ease;
+  padding: 1rem 1.25rem;
 }
 
 .list-group-item:last-child {
@@ -287,9 +325,12 @@ const handleDeleteSkill = async () => {
   opacity: 1;
 }
 
-.badge {
-  font-weight: 500;
-  font-size: 0.75em;
-  padding: 0.4em 0.7em;
+.empty-state-icon {
+  font-size: 4rem;
+  color: var(--glass-text);
+}
+
+.form-check-input {
+  cursor: pointer;
 }
 </style>

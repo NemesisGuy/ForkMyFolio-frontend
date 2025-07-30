@@ -20,9 +20,9 @@
             </div>
             <!-- Tech Stack -->
             <div class="mb-3">
-              <label for="projectTechStack" class="form-label">Tech Stack</label>
-              <input type="text" class="form-control" id="projectTechStack" v-model="form.techStack" placeholder="e.g., Vue, Spring Boot, PostgreSQL">
-              <div class="form-text">Enter technologies separated by commas.</div>
+              <label class="form-label">Tech Stack</label>
+              <TagInput v-model="form.techStack" placeholder="Add skills and press Enter..." />
+              <div class="form-text">Enter a skill and press Enter or comma to add it.</div>
             </div>
             <!-- URLs -->
             <div class="row">
@@ -61,6 +61,7 @@
 
 <script setup>
 import { ref, watch, computed } from 'vue';
+import TagInput from '@/components/forms/TagInput.vue';
 
 const props = defineProps({
   visible: {
@@ -75,56 +76,39 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'save']);
 
-// The form model now includes all the necessary fields.
-// techStack is managed as a string for easy input.
 const form = ref({});
 
 const isEditing = computed(() => !!props.project?.uuid);
 
-// Watch for the project prop to change, and populate the form
 watch(() => props.project, (newProject) => {
   if (newProject) {
-    // Editing an existing project
     form.value = {
       ...newProject,
-      // Convert techStack array to a comma-separated string for the input field
-      techStack: (newProject.techStack || []).join(', '),
+      techStack: newProject.techStack || [],
     };
   } else {
-    // Creating a new project, reset to defaults
     form.value = {
       title: '',
       description: '',
-      techStack: '', // Stored as a string
+      techStack: [],
       liveUrl: '',
       repoUrl: '',
       imageUrl: '',
       visible: true,
     };
   }
-}, { immediate: true });
+}, { immediate: true, deep: true });
 
 const closeModal = () => {
   emit('close');
 };
 
 const submitForm = () => {
-  // Basic validation
   if (!form.value.title) {
     return;
   }
-
-  // Prepare the payload to be emitted
-  const payload = {
-    ...form.value,
-    // Convert the techStack string back into an array of strings.
-    // This splits by comma, trims whitespace from each item, and filters out any empty strings.
-    techStack: form.value.techStack
-      ? form.value.techStack.split(',').map(tech => tech.trim()).filter(tech => tech)
-      : [],
-  };
-
-  emit('save', payload);
+  // The techStack is already an array thanks to the TagInput component.
+  emit('save', { ...form.value });
 };
 </script>
 

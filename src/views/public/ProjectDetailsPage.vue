@@ -42,7 +42,7 @@
             {{ error.message || 'Could not fetch the project details. It might not exist or there was a server error.' }}
           </p>
           <div class="d-flex justify-content-center gap-3 mt-4">
-            <router-link to="/projects" class="btn btn-outline-light glass-btn">
+            <router-link :to="{ name: 'projects-public', params: { slug: currentSlug } }" class="btn btn-outline-light glass-btn">
               <i class="bi bi-arrow-left me-2"></i>Back to Projects
             </router-link>
             <button @click="retryLoad" class="btn btn-outline-primary glass-btn">
@@ -68,9 +68,9 @@
           </div>
 
           <!-- Tech Stack -->
-          <div v-if="project.techStack && project.techStack.length" class="text-center mb-4">
-            <span v-for="tech in project.techStack" :key="tech" class="badge tech-badge me-2 mb-2">
-              {{ tech }}
+          <div v-if="project.skills && project.skills.length" class="text-center mb-4">
+            <span v-for="skill in project.skills" :key="skill.uuid" class="badge tech-badge me-2 mb-2">
+              <i v-if="skill.icon" :class="skill.icon" class="me-1"></i>{{ skill.name }}
             </span>
           </div>
 
@@ -90,7 +90,7 @@
           </div>
 
           <div class="text-center">
-            <router-link to="/projects" class="btn btn-link glass-subtitle">
+            <router-link :to="{ name: 'projects-public', params: { slug: currentSlug } }" class="btn btn-link glass-subtitle">
               <i class="bi bi-arrow-left me-1"></i> Back to All Projects
             </router-link>
           </div>
@@ -107,7 +107,7 @@
           <p class="card-text text-light opacity-75">
             The project you are looking for does not exist or has been moved.
           </p>
-          <router-link to="/projects" class="btn btn-outline-light glass-btn mt-4">
+          <router-link :to="{ name: 'projects-public', params: { slug: currentSlug } }" class="btn btn-outline-light glass-btn mt-4">
             <i class="bi bi-arrow-left me-2"></i>Back to All Projects
           </router-link>
         </div>
@@ -117,9 +117,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { getPublicProjectById, ApiError } from '@/services/api/index.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
+import { usePublicPortfolioStore } from '@/stores/publicPortfolioStore.js';
 
 const props = defineProps({
   /**
@@ -137,18 +138,38 @@ const project = ref(null);
 const isLoading = ref(true);
 const error = ref(null);
 
+// Use the store to get both the data and the slug for the back-link.
+const { portfolio, currentSlug } = usePublicPortfolioStore();
+
 const loadProject = async () => {
   isLoading.value = true;
   error.value = null;
+
+  // --- THIS IS THE FIX ---
+  // Case 1: The portfolio is already loaded in the store.
+  // This is the common path when navigating from the projects list.
+  if (portfolio.value) {
+    console.log('[ProjectDetails] Portfolio found in store. Searching for project...');
+    const foundProject = portfolio.value.projects?.find(p => p.uuid === props.uuid);
+
+    if (foundProject) {
+      project.value = foundProject;
+    } else {
+      // Portfolio is loaded, but project isn't in it. This is a 404.
+      error.value = { message: `Project with ID ${props.uuid} not found in this portfolio.` };
+    }
+    isLoading.value = false; // We have our answer, stop loading.
+    return;
+  }
+
+  // Case 2: The portfolio is NOT in the store (e.g., direct URL visit).
+  // Fall back to fetching the individual project directly from the API.
+  console.log('[ProjectDetails] Portfolio not in store. Fetching individual project...');
   try {
     project.value = await getPublicProjectById(props.uuid);
   } catch (err) {
     console.error(`Failed to fetch project with UUID ${props.uuid}:`, err);
-    if (err instanceof ApiError) {
-      error.value = err;
-    } else {
-      error.value = { message: 'An unexpected error occurred.' };
-    }
+    error.value = err instanceof ApiError ? err : { message: 'An unexpected error occurred.' };
   } finally {
     isLoading.value = false;
   }

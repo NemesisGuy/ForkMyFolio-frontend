@@ -1,90 +1,86 @@
 <template>
-  <div class="admin-settings-page py-4">
+  <div class="admin-settings-page py-5 animated-gradient-background">
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-lg-10 col-xl-8">
 
-          <h1 class="display-5 mb-4">Site Visibility Settings</h1>
-
-          <div class="card shadow-sm">
-            <div class="card-header">
-              <h5 class="mb-0">Public Section Visibility</h5>
-              <small class="text-muted">Enable or disable sections on your public portfolio site.</small>
-            </div>
-            <div class="card-body p-4">
-              <LoadingSpinner v-if="isLoading"/>
-
-              <div v-else-if="error" class="alert alert-danger" role="alert">
-                <strong>Error:</strong> {{ error.message || 'Could not load settings.' }}
-              </div>
-
-              <form v-else @submit.prevent="handleSave">
-                <!-- The v-for loop now correctly handles the 'value' property -->
-                <div v-for="setting in settings" :key="setting.uuid"
-                     class="form-check form-switch form-switch-lg mb-3">
-                  <!--
-                    --- KEY CHANGE #1: The v-model now binds to `setting.value` ---
-                    We use `true-value` and `false-value` to tell Vue to treat
-                    the string values "true" and "false" as the checked/unchecked states.
-                  -->
-                  <input
-                    :id="`switch-${setting.name}`"
-                    v-model="setting.value"
-                    class="form-check-input"
-                    role="switch"
-                    type="checkbox"
-                    true-value="true"
-                    false-value="false"
-                    @change="markAsDirty"
-                  >
-                  <label :for="`switch-${setting.name}`" class="form-check-label">
-                    <span class="fw-bold">{{ formatSettingName(setting.name) }}</span>
-                    <p class="small text-muted mb-0">{{ setting.description }}</p>
-                  </label>
-                </div>
-
-                <hr class="my-4">
-
-                <div class="d-flex justify-content-end mt-3">
-                  <button class="btn btn-secondary me-2" :disabled="!isDirty || isSaving" type="button"
-                          @click="resetChanges">
-                    Reset
-                  </button>
-                  <button class="btn btn-primary" :disabled="!isDirty || isSaving" type="submit">
-                    <span v-if="isSaving" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                    {{ isSaving ? 'Saving...' : 'Save Changes' }}
-                  </button>
-                </div>
-              </form>
-            </div>
+          <div class="text-center mb-5">
+            <h1 class="display-5 fw-light glass-text animate-fade-in-up">Application Settings</h1>
+            <p class="lead glass-subtitle animate-fade-in-up" style="animation-delay: 0.1s;">
+              Control global settings that affect all users unless they have their own override.
+            </p>
           </div>
+
+          <LoadingModal :visible="isLoading || isSaving"/>
+          <SuccessModal
+            :visible="showSuccessModal"
+            title="Settings Saved"
+            message="The application settings have been updated successfully."
+            @close="showSuccessModal = false"
+          />
+          <ErrorModal
+            :visible="showErrorModal"
+            title="Save Failed"
+            :message="errorMessage"
+            @close="showErrorModal = false"
+          />
+
+          <div v-if="error" class="alert alert-danger glass-card-dark animate-fade-in-up">
+            <h4 class="alert-heading">🚫 Error</h4>
+            <p>Could not load application settings. Please try again later.</p>
+            <pre class="small">{{ error.message }}</pre>
+          </div>
+
+          <form v-else-if="!isLoading" @submit.prevent="handleSave" class="animate-fade-in-up" style="animation-delay: 0.2s;">
+            <div class="card glass-card">
+              <div class="card-header">
+                <h5 class="mb-0">Global Section Visibility</h5>
+              </div>
+              <div class="card-body p-4">
+                <ul class="list-group list-group-flush">
+                  <li v-for="setting in settings" :key="setting.uuid" class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="mb-0">{{ formatSettingName(setting.name) }}</h6>
+                      <small class="text-muted">{{ setting.description }}</small>
+                    </div>
+                    <div class="form-check form-switch">
+                      <input
+                        :id="`switch-${setting.name}`"
+                        v-model="setting.value"
+                        class="form-check-input"
+                        role="switch"
+                        type="checkbox"
+                        true-value="true"
+                        false-value="false"
+                        @change="markAsDirty"
+                        :disabled="isSaving"
+                      >
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-end mt-4">
+              <button class="btn btn-secondary me-2" :disabled="!isDirty || isSaving" type="button" @click="resetChanges">
+                Reset
+              </button>
+              <button class="btn btn-primary" :disabled="!isDirty || isSaving" type="submit">
+                <span v-if="isSaving" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                {{ isSaving ? 'Saving...' : 'Save Changes' }}
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
-
-    <!-- Modals for loading, success, and error feedback -->
-    <LoadingModal :visible="isSaving"/>
-    <SuccessModal
-      :visible="showSuccessModal"
-      title="Settings Saved"
-      :message="successMessage"
-      @close="showSuccessModal = false"
-    />
-    <ErrorModal
-      :message="errorMessage"
-      :visible="showErrorModal"
-      title="Save Failed"
-      @close="showErrorModal = false"
-    />
   </div>
 </template>
 
 <script setup>
-import {onMounted, ref} from 'vue';
-// Import from the main barrel file for consistency
-import {getAdminSettings, updateAdminSettings, ApiError} from '@/services/api/index.js';
-import {settingsService} from '@/services/settingsService.js';
-import LoadingSpinner from '@/components/common/LoadingSpinner.vue';
+import { onMounted, ref } from 'vue';
+import { getAdminSettings, updateAdminSettings, ApiError } from '@/services/api/admin.api.js';
+import { settingsService } from '@/services/settingsService.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
@@ -97,7 +93,6 @@ const error = ref(null);
 const isDirty = ref(false);
 
 const showSuccessModal = ref(false);
-const successMessage = ref('');
 const showErrorModal = ref(false);
 const errorMessage = ref('');
 
@@ -108,10 +103,11 @@ const copySettings = (source) => {
 
 onMounted(async () => {
   try {
-    // This correctly fetches settings with a `value` property
     const fetchedSettings = await getAdminSettings() || [];
-    settings.value = copySettings(fetchedSettings);
-    originalSettings.value = copySettings(fetchedSettings);
+    // Filter out the PDF template setting, as it's managed elsewhere
+    const displaySettings = fetchedSettings.filter(s => s.name !== 'DEFAULT_PDF_TEMPLATE');
+    settings.value = copySettings(displaySettings);
+    originalSettings.value = copySettings(displaySettings);
   } catch (err) {
     console.error('Failed to fetch settings:', err);
     error.value = err instanceof ApiError ? err : { message: 'An unexpected error occurred.' };
@@ -129,23 +125,17 @@ const handleSave = async () => {
   isSaving.value = true;
 
   try {
-    // --- KEY CHANGE #2: The payload now sends a `value` property ---
-    // This creates the exact JSON array the backend is expecting.
     const payload = settings.value.map((s) => ({ uuid: s.uuid, value: s.value }));
     const updatedSettings = await updateAdminSettings(payload);
 
     settingsService.updateSettings(updatedSettings);
 
-    settings.value = copySettings(updatedSettings);
-    originalSettings.value = copySettings(updatedSettings);
+    const displaySettings = updatedSettings.filter(s => s.name !== 'DEFAULT_PDF_TEMPLATE');
+    settings.value = copySettings(displaySettings);
+    originalSettings.value = copySettings(displaySettings);
     isDirty.value = false;
 
-    successMessage.value = 'Your site visibility settings have been updated successfully.';
     showSuccessModal.value = true;
-    setTimeout(() => {
-      showSuccessModal.value = false;
-    }, 2000);
-
   } catch (err) {
     console.error('Failed to save settings:', err);
     errorMessage.value = err.message || 'An unexpected error occurred. Please try again.';
@@ -172,25 +162,35 @@ const formatSettingName = (name) => {
 </script>
 
 <style scoped>
-.admin-settings-page h1 {
+.admin-settings-page .display-5 {
   font-weight: 300;
 }
 
-.btn .spinner-border {
-  vertical-align: -0.125em;
+.list-group-item {
+  background-color: transparent;
+  border: none;
+  border-bottom: 1px solid var(--glass-border);
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  color: var(--glass-text);
 }
 
-.form-switch-lg {
-  padding-left: 3.5rem;
+.list-group-item:last-child {
+  border-bottom: none;
 }
 
-.form-switch-lg .form-check-input {
-  width: 3rem;
-  height: 1.5rem;
-  margin-left: -3.5rem;
+.list-group-item .text-muted {
+  color: var(--glass-text-secondary) !important;
 }
 
-.form-check-label {
-  padding-top: 0.15rem;
+.form-check-input {
+  width: 3em;
+  height: 1.5em;
+  cursor: pointer;
+}
+
+.card-header {
+  background-color: rgba(var(--bs-body-color-rgb), 0.05);
+  border-bottom: 1px solid var(--glass-border-hover);
 }
 </style>

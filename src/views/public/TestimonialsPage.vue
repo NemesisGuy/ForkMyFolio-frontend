@@ -10,8 +10,7 @@
         </p>
       </div>
 
-      <!-- The glassmorphic modal will overlay everything while loading -->
-      <LoadingModal :visible="isLoading" class="glass-modal" />
+      <LoadingModal :visible="isLoading" />
 
       <!-- A skeleton loader that mimics the new testimonial card style -->
       <div v-if="isLoading" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
@@ -35,15 +34,21 @@
         </div>
       </div>
 
-      <div v-else-if="error" class="alert alert-danger shadow-sm" role="alert">
-        <h4 class="alert-heading"><i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i> Error Loading Testimonials</h4>
-        <p>{{ error.message || 'Could not load testimonials. Please try again later.' }}</p>
+      <!-- Error State -->
+      <div v-else-if="error" class="glass-card glass-card-dark mx-auto" style="max-width: 800px;">
+        <div class="card-body text-center p-5">
+          <i class="bi bi-exclamation-triangle-fill text-warning mb-3" style="font-size: 3rem;"></i>
+          <h5 class="card-title text-white mb-3">Unable to Load Testimonials</h5>
+          <p class="card-text text-light opacity-75">
+            {{ error.message || 'Could not load testimonials. Please try again later.' }}
+          </p>
+        </div>
       </div>
 
       <!-- State for when a portfolio is loaded and has testimonials -->
-      <div v-else-if="portfolio && testimonials.length > 0" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      <div v-else-if="testimonials.length > 0" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         <div v-for="(testimonial, index) in testimonials"
-             :key="testimonial.id"
+             :key="testimonial.uuid"
              class="col animate-fade-in-up"
              :style="{ 'animation-delay': (index * 0.1 + 0.2) + 's' }">
           <div class="card glass-card glass-card-floating h-100 interactive-card-lift interactive-card-shadow-primary">
@@ -63,22 +68,8 @@
         </div>
       </div>
 
-      <!-- State for when no portfolio has been loaded (e.g., direct navigation) -->
-      <div v-else-if="!portfolio" class="glass-card">
-        <div class="card-body text-center p-5">
-          <div class="empty-state-icon mb-4">
-            <i class="bi bi-person-bounding-box"></i>
-          </div>
-          <h4 class="card-title glass-title mb-3">No Portfolio Selected</h4>
-          <p class="card-text glass-subtitle mb-4">
-            Please navigate to a user's main portfolio page first to load their data.
-          </p>
-          <router-link to="/" class="btn btn-primary">Go to Home</router-link>
-        </div>
-      </div>
-
       <!-- State for when a portfolio is loaded but has no testimonials -->
-      <div v-else class="glass-card">
+      <div v-else class="glass-card mx-auto" style="max-width: 800px;">
         <div class="card-body text-center p-5">
           <div class="empty-state-icon mb-4">
             <i class="bi bi-chat-quote"></i>
@@ -107,9 +98,6 @@ const { portfolio, isLoading, error } = usePublicPortfolioStore();
 
 // The testimonials are now a computed property derived from the central store.
 const testimonials = computed(() => portfolio.value?.testimonials || []);
-
-// The onMounted hook that was making the bad API call is now completely removed.
-// The data is expected to be fetched by the main PortfolioPage.vue.
 </script>
 
 <style scoped>

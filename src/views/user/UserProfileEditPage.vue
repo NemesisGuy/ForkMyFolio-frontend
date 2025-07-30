@@ -89,6 +89,13 @@ import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';
 
+const props = defineProps({
+  slug: {
+    type: String,
+    required: true,
+  },
+});
+
 const router = useRouter();
 const profileData = ref(null);
 const isLoading = ref(true);
@@ -140,11 +147,11 @@ const handleSave = async () => {
 
 const closeSuccessModal = () => {
   showSuccess.value = false;
-  router.push({ name: 'profile' });
+  router.push({ name: 'profile', params: { slug: props.slug } });
 };
 
 const cancel = () => {
-  router.back();
+  router.push({ name: 'profile', params: { slug: props.slug } });
 };
 </script>
 
