@@ -4,31 +4,35 @@
       <!-- Centered and restyled hero section -->
       <div class="text-center mb-5">
         <h1 class="display-4 fw-bold animate-fade-in-up glass-text">
-          <i class="bi bi-kanban" aria-hidden="true"></i> Projects Showcase
+          <i aria-hidden="true" class="bi bi-kanban"></i> Projects Showcase
         </h1>
         <p class="lead animate-fade-in-up glass-subtitle" style="animation-delay: 0.1s;">
           A curated collection of my work, from professional applications to personal experiments.
         </p>
       </div>
 
-      <LoadingModal :visible="isLoading" />
+      <LoadingModal :visible="isLoading"/>
 
       <!-- Skeleton loader with new glass styles -->
       <div v-if="isLoading" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         <div v-for="n in 6"
              :key="n"
-             class="col animate-fade-in-up"
-             :style="{ 'animation-delay': (n * 0.05) + 's' }">
+             :style="{ 'animation-delay': (n * 0.05) + 's' }"
+             class="col animate-fade-in-up">
           <div class="card h-100 glass-card glass-card-floating">
-            <div class="card-img-top skeleton-line" style="height: 200px; border-radius: 1.5rem 1.5rem 0 0;"></div>
+            <div class="card-img-top skeleton-line"
+                 style="height: 200px; border-radius: 1.5rem 1.5rem 0 0;"></div>
             <div class="card-body d-flex flex-column">
               <div class="skeleton-line skeleton-title" style="width: 60%;"></div>
               <div class="skeleton-line skeleton-subtitle"></div>
               <div class="skeleton-line skeleton-subtitle" style="width: 80%;"></div>
               <div class="d-flex flex-wrap mt-auto pt-3">
-                <div class="skeleton-line me-1 mb-1" style="width: 50px; height: 24px; border-radius: 0.25rem;"></div>
-                <div class="skeleton-line me-1 mb-1" style="width: 70px; height: 24px; border-radius: 0.25rem;"></div>
-                <div class="skeleton-line me-1 mb-1" style="width: 60px; height: 24px; border-radius: 0.25rem;"></div>
+                <div class="skeleton-line me-1 mb-1"
+                     style="width: 50px; height: 24px; border-radius: 0.25rem;"></div>
+                <div class="skeleton-line me-1 mb-1"
+                     style="width: 70px; height: 24px; border-radius: 0.25rem;"></div>
+                <div class="skeleton-line me-1 mb-1"
+                     style="width: 60px; height: 24px; border-radius: 0.25rem;"></div>
               </div>
             </div>
           </div>
@@ -49,8 +53,8 @@
       <div v-else-if="projects && projects.length > 0"
            class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         <div v-for="(project, index) in projects" :key="project.uuid"
-             class="col animate-fade-in-up"
-             :style="{ 'animation-delay': (index * 0.1) + 0.2 + 's' }">
+             :style="{ 'animation-delay': (index * 0.1) + 0.2 + 's' }"
+             class="col animate-fade-in-up">
           <router-link :to="{ name: 'project-details', params: { uuid: project.uuid } }"
                        class="project-card-link interactive-card-lift interactive-card-shadow-primary">
             <div class="card h-100 glass-card glass-card-floating">
@@ -78,8 +82,10 @@
                 </p>
 
                 <div v-if="project.skills && project.skills.length" class="mt-auto pt-2">
-                  <span v-for="skill in project.skills" :key="skill.uuid" class="badge tech-badge me-1 mb-1">
-                    <i v-if="skill.icon" :class="skill.icon" class="me-1"></i>
+                  <!-- THIS IS THE FIX: Use the centralized getIconClass function -->
+                  <span v-for="skill in project.skills" :key="skill.uuid"
+                        class="badge tech-badge me-1 mb-1">
+                    <i :class="getIconClass(skill)" class="me-1"></i>
                     {{ skill.name }}
                   </span>
                 </div>
@@ -89,7 +95,6 @@
         </div>
       </div>
 
-      <!-- --- THIS IS THE FIX --- -->
       <!-- Enhanced empty state with a helpful tip for the owner -->
       <div v-else class="glass-card mx-auto" style="max-width: 800px;">
         <div class="card-body text-center p-5">
@@ -105,9 +110,14 @@
 
           <!-- Helpful tip for the portfolio owner -->
           <div v-else class="alert alert-info mt-3">
-            <p class="mb-1"><strong>Hey there!</strong> It looks like you don't have any projects visible on your public page.</p>
+            <p class="mb-1"><strong>Hey there!</strong> It looks like you don't have any projects
+              visible on your public page.</p>
             <p class="mb-0">
-              Go to your <router-link :to="{ name: 'my-projects', params: { slug: currentSlug } }">Project Management</router-link> page to add new projects or make existing ones visible.
+              Go to your
+              <router-link :to="{ name: 'my-projects', params: { slug: currentSlug } }">Project
+                Management
+              </router-link>
+              page to add new projects or make existing ones visible.
             </p>
           </div>
         </div>
@@ -117,13 +127,15 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import { usePublicPortfolioStore } from '@/stores/publicPortfolioStore.js';
-import { authService } from '@/services/authService.js';
+import {computed} from 'vue';
+import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore.js';
+import {authService} from '@/services/authService.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
+// THIS IS THE FIX: Import the centralized icon service
+import {getIconClass} from '@/services/iconService.js';
 
 // Use the central store for all data
-const { portfolio, isLoading, error, currentSlug } = usePublicPortfolioStore();
+const {portfolio, isLoading, error, currentSlug} = usePublicPortfolioStore();
 
 // Projects are now a computed property from the store's portfolio
 const projects = computed(() => {
@@ -132,14 +144,10 @@ const projects = computed(() => {
   return projs.sort((a, b) => (a.displayOrder || 999) - (b.displayOrder || 999));
 });
 
-// --- THIS IS THE FIX ---
 // Check if the currently logged-in user is the owner of this portfolio
 const isOwner = computed(() => {
   return authService.isAuthenticated.value && authService.user.value?.slug === currentSlug.value;
 });
-
-// All local data fetching logic (fetchProjects, onMounted, etc.) has been removed.
-// The router guard is now the single source of truth for data fetching.
 </script>
 
 <style scoped>

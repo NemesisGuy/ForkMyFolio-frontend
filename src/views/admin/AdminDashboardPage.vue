@@ -15,8 +15,10 @@
           <div class="card h-100 glass-card interactive-card-lift interactive-card-shadow-primary">
             <div class="card-body d-flex flex-column">
               <h5 class="card-title"><i class="bi bi-people-fill me-2"></i>Manage Users</h5>
-              <p class="card-text small text-muted">View, create, edit, and manage all user accounts.</p>
-              <router-link :to="{ name: 'admin-users' }" class="btn btn-outline-primary mt-auto align-self-start">
+              <p class="card-text small text-muted">View, create, edit, and manage all user
+                accounts.</p>
+              <router-link :to="{ name: 'admin-users' }"
+                           class="btn btn-outline-primary mt-auto align-self-start">
                 Go to User Management
               </router-link>
             </div>
@@ -27,9 +29,12 @@
         <div class="col-md-6 col-lg-4 animate-fade-in-up" style="animation-delay: 0.3s;">
           <div class="card h-100 glass-card interactive-card-lift interactive-card-shadow-primary">
             <div class="card-body d-flex flex-column">
-              <h5 class="card-title"><i class="bi bi-gear-wide-connected me-2"></i>Application Settings</h5>
-              <p class="card-text small text-muted">Control global settings like public section visibility.</p>
-              <router-link :to="{ name: 'admin-settings' }" class="btn btn-outline-primary mt-auto align-self-start">
+              <h5 class="card-title"><i class="bi bi-gear-wide-connected me-2"></i>Application
+                Settings</h5>
+              <p class="card-text small text-muted">Control global settings like public section
+                visibility.</p>
+              <router-link :to="{ name: 'admin-settings' }"
+                           class="btn btn-outline-primary mt-auto align-self-start">
                 Configure Settings
               </router-link>
             </div>
@@ -40,9 +45,11 @@
         <div class="col-md-6 col-lg-4 animate-fade-in-up" style="animation-delay: 0.4s;">
           <div class="card h-100 glass-card interactive-card-lift interactive-card-shadow-primary">
             <div class="card-body d-flex flex-column">
-              <h5 class="card-title"><i class="bi bi-bar-chart-line-fill me-2"></i>View Statistics</h5>
+              <h5 class="card-title"><i class="bi bi-bar-chart-line-fill me-2"></i>View Statistics
+              </h5>
               <p class="card-text small text-muted">View detailed statistics on site engagement.</p>
-              <router-link :to="{ name: 'admin-stats' }" class="btn btn-outline-primary mt-auto align-self-start">
+              <router-link :to="{ name: 'admin-stats' }"
+                           class="btn btn-outline-primary mt-auto align-self-start">
                 Go to Statistics
               </router-link>
             </div>
@@ -53,9 +60,12 @@
         <div class="col-md-6 col-lg-4 animate-fade-in-up" style="animation-delay: 0.5s;">
           <div class="card h-100 glass-card interactive-card-lift interactive-card-shadow-primary">
             <div class="card-body d-flex flex-column">
-              <h5 class="card-title"><i class="bi bi-envelope-paper-fill me-2"></i>Manage Messages</h5>
-              <p class="card-text small text-muted">View messages submitted through all contact forms.</p>
-              <router-link :to="{ name: 'admin-messages' }" class="btn btn-outline-primary mt-auto align-self-start">
+              <h5 class="card-title"><i class="bi bi-envelope-paper-fill me-2"></i>Manage Messages
+              </h5>
+              <p class="card-text small text-muted">View messages submitted through all contact
+                forms.</p>
+              <router-link :to="{ name: 'admin-messages' }"
+                           class="btn btn-outline-primary mt-auto align-self-start">
                 Go to Messages
               </router-link>
             </div>
@@ -66,9 +76,12 @@
         <div class="col-md-6 col-lg-4 animate-fade-in-up" style="animation-delay: 0.6s;">
           <div class="card h-100 glass-card interactive-card-lift interactive-card-shadow-primary">
             <div class="card-body d-flex flex-column">
-              <h5 class="card-title"><i class="bi bi-file-earmark-pdf-fill me-2"></i>PDF Settings</h5>
-              <p class="card-text small text-muted">Select the global default PDF template for downloads.</p>
-              <router-link :to="{ name: 'admin-pdf-settings' }" class="btn btn-outline-primary mt-auto align-self-start">
+              <h5 class="card-title"><i class="bi bi-file-earmark-pdf-fill me-2"></i>PDF Settings
+              </h5>
+              <p class="card-text small text-muted">Select the global default PDF template for
+                downloads.</p>
+              <router-link :to="{ name: 'admin-pdf-settings' }"
+                           class="btn btn-outline-primary mt-auto align-self-start">
                 Configure PDF
               </router-link>
             </div>
@@ -81,7 +94,8 @@
             <div class="card-body d-flex flex-column">
               <h5 class="card-title"><i class="bi bi-database-down me-2"></i>Backup & Restore</h5>
               <p class="card-text small text-muted">Manage full system backups and restores.</p>
-              <router-link :to="{ name: 'admin-backup-restore' }" class="btn btn-outline-primary mt-auto align-self-start">
+              <router-link :to="{ name: 'admin-backup-restore' }"
+                           class="btn btn-outline-primary mt-auto align-self-start">
                 Go to Backup & Restore
               </router-link>
             </div>

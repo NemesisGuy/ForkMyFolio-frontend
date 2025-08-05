@@ -10,20 +10,23 @@
       </div>
 
       <!-- Modals -->
-      <LoadingModal :visible="isLoading" />
-      <ErrorModal :visible="!!error" :message="error" title="An Error Occurred" @close="error = null" />
-      <SuccessModal :visible="!!successMessage" :message="successMessage" title="Success" @close="successMessage = null" />
+      <LoadingModal :visible="isLoading"/>
+      <ErrorModal :message="error" :visible="!!error" title="An Error Occurred"
+                  @close="error = null"/>
+      <SuccessModal :message="successMessage" :visible="!!successMessage" title="Success"
+                    @close="successMessage = null"/>
       <ConfirmModal
+        :message="`Are you sure you want to delete the message from ${messageToDelete?.senderName}? This action cannot be undone.`"
         :visible="!!messageToDelete"
         title="Confirm Deletion"
-        :message="`Are you sure you want to delete the message from ${messageToDelete?.senderName}? This action cannot be undone.`"
         type="danger"
-        @confirm="handleDelete"
         @close="messageToDelete = null"
+        @confirm="handleDelete"
       />
 
       <!-- Messages Table -->
-      <div v-if="!isLoading && messages.length > 0" class="card glass-card animate-fade-in-up" style="animation-delay: 0.1s;">
+      <div v-if="!isLoading && messages.length > 0" class="card glass-card animate-fade-in-up"
+           style="animation-delay: 0.1s;">
         <div class="card-body p-0">
           <div class="table-responsive">
             <table class="table table-hover glass-table mb-0">
@@ -49,10 +52,12 @@
                 <td class="message-preview">{{ message.message }}</td>
                 <td>{{ formatDateTime(message.createdAt) }}</td>
                 <td class="text-end">
-                  <button class="btn btn-sm btn-outline-primary me-2" @click="viewMessage(message)" title="View Message">
+                  <button class="btn btn-sm btn-outline-primary me-2" title="View Message"
+                          @click="viewMessage(message)">
                     <i class="bi bi-eye-fill"></i>
                   </button>
-                  <button class="btn btn-sm btn-outline-danger" @click="confirmDelete(message)" title="Delete Message">
+                  <button class="btn btn-sm btn-outline-danger" title="Delete Message"
+                          @click="confirmDelete(message)">
                     <i class="bi bi-trash-fill"></i>
                   </button>
                 </td>
@@ -64,7 +69,8 @@
       </div>
 
       <!-- Empty State -->
-      <div v-else-if="!isLoading" class="text-center p-5 glass-card animate-fade-in-up" style="animation-delay: 0.1s;">
+      <div v-else-if="!isLoading" class="text-center p-5 glass-card animate-fade-in-up"
+           style="animation-delay: 0.1s;">
         <div class="empty-state-icon mb-4">
           <i class="bi bi-envelope-open-fill"></i>
         </div>
@@ -73,21 +79,25 @@
       </div>
 
       <!-- View Message Modal -->
-      <div class="modal fade" id="viewMessageModal" tabindex="-1" aria-labelledby="viewMessageModalLabel" aria-hidden="true" ref="viewModalRef">
+      <div id="viewMessageModal" ref="viewModalRef" aria-hidden="true"
+           aria-labelledby="viewMessageModalLabel" class="modal fade" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
           <div class="modal-content glass-modal">
             <div class="modal-header">
-              <h5 class="modal-title" id="viewMessageModalLabel">Message from: {{ selectedMessage?.senderName }}</h5>
-              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+              <h5 id="viewMessageModalLabel" class="modal-title">Message from:
+                {{ selectedMessage?.senderName }}</h5>
+              <button aria-label="Close" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                      type="button"></button>
             </div>
-            <div class="modal-body" v-if="selectedMessage">
+            <div v-if="selectedMessage" class="modal-body">
               <p><strong>To:</strong> {{ selectedMessage.portfolioOwnerName }}</p>
-              <p><strong>From:</strong> {{ selectedMessage.senderName }} &lt;{{ selectedMessage.senderEmail }}&gt;</p>
+              <p><strong>From:</strong> {{ selectedMessage.senderName }}
+                &lt;{{ selectedMessage.senderEmail }}&gt;</p>
               <hr>
               <p class="message-body-text">{{ selectedMessage.message }}</p>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
             </div>
           </div>
         </div>
@@ -97,13 +107,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { getContactMessages, deleteContactMessage } from '@/services/api/admin.api.js';
+import {onMounted, ref} from 'vue';
+import {deleteContactMessage, getContactMessages} from '@/services/api/admin.api.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';
 import ConfirmModal from '@/components/common/modals/ConfirmModal.vue';
-import { Modal } from 'bootstrap';
+import {Modal} from 'bootstrap';
 
 const messages = ref([]);
 const isLoading = ref(true);
@@ -173,21 +183,25 @@ const handleDelete = async () => {
 .display-5 {
   font-weight: 300;
 }
+
 .glass-table {
   color: var(--glass-text);
   --bs-table-hover-color: var(--glass-text);
   --bs-table-hover-bg: var(--glass-bg-hover);
 }
+
 .glass-table thead th {
   background-color: rgba(var(--bs-body-color-rgb), 0.05);
   border-bottom: 2px solid var(--glass-border-hover);
   color: var(--glass-text);
   font-weight: 500;
 }
+
 .glass-table td, .glass-table th {
   border-color: var(--glass-border);
   vertical-align: middle;
 }
+
 .message-preview {
   max-width: 300px;
   white-space: nowrap;
@@ -195,11 +209,13 @@ const handleDelete = async () => {
   text-overflow: ellipsis;
   color: var(--glass-text-secondary);
 }
+
 .message-body-text {
   white-space: pre-wrap;
   font-size: 1.1rem;
   line-height: 1.6;
 }
+
 .empty-state-icon {
   font-size: 4rem;
   color: var(--glass-text);

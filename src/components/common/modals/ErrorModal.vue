@@ -107,6 +107,7 @@ const handleClose = () => {
   border-color: var(--bs-danger);
   color: var(--bs-danger);
 }
+
 .btn-outline-danger:hover {
   background-color: var(--bs-danger);
   color: #fff;

@@ -1,15 +1,13 @@
 <template>
   <LoadingModal v-if="isLoading" />
 
-  <!-- CORRECTED: Added animated-gradient-background and switched to v-if for consistency -->
-  <div class="user-settings-page py-5 animated-gradient-background" v-if="!isLoading">
+  <div v-if="!isLoading" class="user-settings-page py-5 animated-gradient-background">
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-lg-10 col-xl-8">
-          <!-- CORRECTED: Header now uses glass-text for better theme adaptability -->
           <h1 class="display-5 mb-4 glass-text animate-fade-in-up">Display Settings</h1>
           <p class="lead glass-subtitle mb-5 animate-fade-in-up" style="animation-delay: 0.1s;">
-            Control which sections are visible on your public portfolio page.
+            Use the master switch to make your entire portfolio public or private. Then, fine-tune which sections are visible.
           </p>
 
           <!-- Error State -->
@@ -20,82 +18,117 @@
           </div>
 
           <!-- Settings Form -->
-          <form v-else @submit.prevent="handleSaveSettings" class="animate-fade-in-up" style="animation-delay: 0.2s;">
-            <div class="card glass-card">
+          <div v-else class="animate-fade-in-up" style="animation-delay: 0.2s;">
+            <!-- Master Visibility Toggle -->
+            <div class="card glass-card mb-4">
               <div class="card-header">
-                <h5 class="mb-0">Section Visibility</h5>
+                <h5 class="mb-0">Master Portfolio Visibility</h5>
               </div>
-              <div class="card-body p-4">
-                <ul class="list-group list-group-flush">
-                  <li v-for="setting in displaySettings" :key="setting.name" class="list-group-item px-0 d-flex justify-content-between align-items-center">
-                    <div>
-                      <h6 class="mb-0">{{ setting.label }}</h6>
-                      <small class="text-muted">{{ setting.description }}</small>
-                    </div>
-                    <div class="form-check form-switch">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        role="switch"
-                        :id="`switch-${setting.name}`"
-                        v-model="setting.value"
-                        @change="isDirty = true"
-                        :disabled="isSaving"
-                      >
-                    </div>
-                  </li>
-                </ul>
+              <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 class="mb-0">
+                    <i :class="isPortfolioPublic ? 'bi-unlock-fill text-success' : 'bi-lock-fill text-danger'"
+                       class="bi me-2"></i>
+                    Portfolio is {{ isPortfolioPublic ? 'Public' : 'Private' }}
+                  </h6>
+                  <small class="text-muted">This is the main on/off switch for your entire public portfolio.</small>
+                </div>
+                <div class="form-check form-switch form-switch-lg">
+                  <input
+                    id="visibilityToggle"
+                    v-model="isPortfolioPublic"
+                    :disabled="isVisibilityLoading"
+                    class="form-check-input"
+                    role="switch"
+                    type="checkbox"
+                    @change="handleVisibilityChange"
+                  >
+                  <label class="form-check-label" for="visibilityToggle">
+                    <span v-if="isVisibilityLoading" class="spinner-border spinner-border-sm"></span>
+                  </label>
+                </div>
               </div>
             </div>
 
-            <div class="mt-4 text-end">
-              <button
-                type="button"
-                class="btn btn-secondary me-2"
-                :disabled="!isDirty || isSaving"
-                @click="resetChanges"
-              >
-                Reset
-              </button>
-              <button
-                type="submit"
-                class="btn btn-primary"
-                :disabled="!isDirty || isSaving"
-              >
-                <span
-                  v-if="isSaving"
-                  class="spinner-border spinner-border-sm me-2"
-                  role="status"
-                  aria-hidden="true"
-                ></span>
-                {{ isSaving ? 'Saving...' : 'Save Settings' }}
-              </button>
-            </div>
-          </form>
+            <!-- Section Visibility Form -->
+            <form @submit.prevent="handleSaveSettings">
+              <div class="card glass-card">
+                <div class="card-header">
+                  <h5 class="mb-0">Section Visibility</h5>
+                </div>
+                <div class="card-body p-4">
+                  <ul class="list-group list-group-flush">
+                    <li v-for="setting in displaySettings" :key="setting.key"
+                        class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                      <div>
+                        <h6 class="mb-0">{{ setting.label }}</h6>
+                        <small class="text-muted">{{ setting.description }}</small>
+                      </div>
+                      <div class="form-check form-switch">
+                        <input
+                          :id="`switch-${setting.key}`"
+                          v-model="setting.value"
+                          :disabled="isSaving"
+                          class="form-check-input"
+                          role="switch"
+                          type="checkbox"
+                          @change="isDirty = true"
+                        >
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="mt-4 text-end">
+                <button
+                  :disabled="!isDirty || isSaving"
+                  class="btn btn-secondary me-2"
+                  type="button"
+                  @click="resetChanges"
+                >
+                  Reset
+                </button>
+                <button
+                  :disabled="!isDirty || isSaving"
+                  class="btn btn-primary"
+                  type="submit"
+                >
+                  <span
+                    v-if="isSaving"
+                    aria-hidden="true"
+                    class="spinner-border spinner-border-sm me-2"
+                    role="status"
+                  ></span>
+                  {{ isSaving ? 'Saving...' : 'Save Settings' }}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>
 
     <SuccessModal
       :visible="showSuccessModal"
-      title="Settings Saved"
       message="Your display settings have been updated successfully."
+      title="Settings Saved"
       @close="showSuccessModal = false"
     />
     <ErrorModal
+      :message="errorMessage"
       :visible="showErrorModal"
       title="Save Failed"
-      :message="errorMessage"
       @close="showErrorModal = false"
     />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue';
-import { settingsApi } from '@/services/api/user.api.js';
-import { publicApi } from '@/services/api/public.api.js';
+import { nextTick, onMounted, ref } from 'vue';
+import { settingsApi, getMyPublicProfile, updateMyProfileVisibility } from '@/services/api/user.api.js';
 import { settingsService } from '@/services/settingsService.js';
+import { notificationService } from '@/services/notificationService.js';
 import { ApiError } from '@/services/api/index.js';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
@@ -104,9 +137,11 @@ import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 // --- State ---
 const displaySettings = ref([]);
 const originalSettings = ref({});
+const isPortfolioPublic = ref(false);
 
 const isLoading = ref(true);
 const isSaving = ref(false);
+const isVisibilityLoading = ref(false);
 const isDirty = ref(false);
 const error = ref(null);
 
@@ -114,17 +149,15 @@ const showSuccessModal = ref(false);
 const showErrorModal = ref(false);
 const errorMessage = ref('');
 
-// Defines the settings we want the user to be able to control.
 const settingDefinitions = [
-  { name: 'SHOW_PROJECTS', label: 'Projects Section', description: 'Display your project showcase.' },
-  { name: 'SHOW_SKILLS', label: 'Skills Section', description: 'Display your list of skills.' },
-  { name: 'SHOW_EXPERIENCE', label: 'Experience Section', description: 'Display your work experience.' },
-  { name: 'SHOW_QUALIFICATIONS', label: 'Qualifications Section', description: 'Display your qualifications and certifications.' },
-  { name: 'SHOW_TESTIMONIALS', label: 'Testimonials Section', description: 'Display testimonials from clients or colleagues.' },
-  { name: 'SHOW_CONTACT_FORM', label: 'Contact Form', description: 'Allow visitors to send you messages.' },
+  { key: 'portfolio.projects.show', label: 'Projects Section' },
+  { key: 'portfolio.skills.show', label: 'Skills Section' },
+  { key: 'portfolio.experience.show', label: 'Experience Section' },
+  { key: 'portfolio.qualifications.show', label: 'Qualifications Section' },
+  { key: 'portfolio.testimonials.show', label: 'Testimonials Section' },
+  { key: 'portfolio.contact.enabled', label: 'Contact Form' },
 ];
 
-// Sleep helper to guarantee minimum modal visible time
 const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
 
 onMounted(async () => {
@@ -133,36 +166,34 @@ onMounted(async () => {
   const minDelay = sleep(500);
 
   try {
-    // Fetch both the user's specific settings and the global defaults
-    const [userSettings, globalSettings] = await Promise.all([
+    // Fetch both sets of data in parallel for efficiency
+    const [userEffectiveSettings, profileStatus] = await Promise.all([
       settingsApi.getAll(),
-      publicApi.getGlobalSettings(),
+      getMyPublicProfile(),
     ]);
 
-    // Create maps for quick lookups
-    const userSettingsMap = new Map(userSettings.map(s => [s.name, s]));
-    const globalSettingsMap = new Map(globalSettings.map(s => [s.name, s.value]));
+    // --- Process Profile Visibility ---
+    // This is correct: the GET endpoint returns a 'public' field.
+    isPortfolioPublic.value = profileStatus.public;
 
-    // Build the reactive array for the UI
+    // --- Process Section Settings ---
+    const settingsMap = new Map(userEffectiveSettings.map(s => [s.name, s]));
     displaySettings.value = settingDefinitions.map(def => {
-      const userSetting = userSettingsMap.get(def.name);
-      const globalValue = globalSettingsMap.get(def.name) === 'true';
-      const currentValue = userSetting ? userSetting.value === 'true' : globalValue;
-
+      const apiSetting = settingsMap.get(def.key);
       return {
-        ...def,
-        value: currentValue,
-        uuid: userSetting?.uuid || null, // Keep track of existing UUIDs
+        key: def.key,
+        label: def.label,
+        description: apiSetting?.description || 'No description available.',
+        value: apiSetting ? apiSetting.value === 'true' : true,
+        uuid: apiSetting?.uuid,
       };
     });
-
-    // Store the initial state for the "Reset" functionality
     originalSettings.value = Object.fromEntries(
-      displaySettings.value.map(s => [s.name, s.value])
+      displaySettings.value.map(s => [s.key, s.value])
     );
 
   } catch (err) {
-    console.error('Error loading display settings:', err);
+    console.error('Error loading settings page data:', err);
     error.value = err instanceof ApiError ? err : { message: err.message || 'Unexpected error.' };
   } finally {
     await minDelay;
@@ -171,22 +202,44 @@ onMounted(async () => {
   }
 });
 
+const handleVisibilityChange = async () => {
+  isVisibilityLoading.value = true;
+  const newValue = isPortfolioPublic.value;
+  try {
+    // FIX: The update payload MUST send 'isPublic' to match the backend's validation requirement.
+    // The error message you provided is the source of truth.
+    await updateMyProfileVisibility({ isPublic: newValue });
+    notificationService.add({
+      type: 'success',
+      message: `Your portfolio is now ${newValue ? 'public' : 'private'}.`
+    });
+  } catch (e) {
+    notificationService.add({
+      type: 'error',
+      message: 'Failed to update visibility. Please try again.'
+    });
+    // Revert the toggle on failure
+    isPortfolioPublic.value = !newValue;
+  } finally {
+    isVisibilityLoading.value = false;
+  }
+};
+
 const handleSaveSettings = async () => {
   if (!isDirty.value) return;
   isSaving.value = true;
 
-  // Create the payload of settings that have actually changed
   const payload = displaySettings.value
-    .filter(setting => setting.value !== originalSettings.value[setting.name])
+    .filter(setting => setting.value !== originalSettings.value[setting.key])
     .map(setting => ({
-      uuid: setting.uuid, // Will be null for new user settings
-      name: setting.name,
-      value: String(setting.value), // Convert boolean to string for the API
+      uuid: setting.uuid,
+      value: String(setting.value),
     }));
 
-  if (payload.length === 0) {
+  if (payload.length === 0 || payload.some(p => !p.uuid)) {
+    errorMessage.value = 'Could not save settings due to a data mismatch. Please refresh and try again.';
+    showErrorModal.value = true;
     isSaving.value = false;
-    isDirty.value = false;
     return;
   }
 
@@ -194,11 +247,9 @@ const handleSaveSettings = async () => {
     const updatedSettings = await settingsApi.update(payload);
     settingsService.updateSettings(updatedSettings);
 
-    // Update local state with new UUIDs and original values
     updatedSettings.forEach(updated => {
-      const settingInUI = displaySettings.value.find(s => s.name === updated.name);
+      const settingInUI = displaySettings.value.find(s => s.key === updated.name);
       if (settingInUI) {
-        settingInUI.uuid = updated.uuid;
         originalSettings.value[updated.name] = settingInUI.value;
       }
     });
@@ -206,7 +257,6 @@ const handleSaveSettings = async () => {
     isDirty.value = false;
     showSuccessModal.value = true;
   } catch (err) {
-    console.error('Save failed:', err);
     errorMessage.value = err.message || 'Failed to save your settings. Please try again.';
     showErrorModal.value = true;
   } finally {
@@ -216,17 +266,17 @@ const handleSaveSettings = async () => {
 
 const resetChanges = () => {
   displaySettings.value.forEach(setting => {
-    setting.value = originalSettings.value[setting.name];
+    setting.value = originalSettings.value[setting.key];
   });
   isDirty.value = false;
 };
 </script>
 
 <style scoped>
-/* CORRECTED: Updated styles to match other refactored pages */
 .user-settings-page h1 {
   font-weight: 300;
 }
+
 .list-group-item {
   background-color: transparent;
   border: none;
@@ -235,19 +285,33 @@ const resetChanges = () => {
   padding-bottom: 1rem;
   color: var(--glass-text);
 }
+
 .list-group-item:last-child {
   border-bottom: none;
 }
+
 .list-group-item .text-muted {
   color: var(--glass-text-secondary) !important;
 }
+
 .form-check-input {
   width: 3em;
   height: 1.5em;
   cursor: pointer;
 }
+
 .card-header {
   background-color: rgba(var(--bs-body-color-rgb), 0.05);
   border-bottom: 1px solid var(--glass-border-hover);
+}
+
+/* Styles for the new toggle switch */
+.form-switch.form-switch-lg {
+  padding-left: 3.5rem;
+}
+
+.form-switch.form-switch-lg .form-check-input {
+  width: 3rem;
+  height: 1.5rem;
 }
 </style>

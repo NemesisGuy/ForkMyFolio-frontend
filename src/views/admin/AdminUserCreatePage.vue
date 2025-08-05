@@ -4,14 +4,14 @@
       <!-- Hero Section -->
       <div class="text-center mb-5">
         <h1 class="display-4 fw-bold animate-fade-in-up glass-text">
-          <i class="bi bi-tools" aria-hidden="true"></i> Skills & Proficiencies
+          <i aria-hidden="true" class="bi bi-tools"></i> Skills & Proficiencies
         </h1>
         <p class="lead animate-fade-in-up glass-subtitle" style="animation-delay: 0.1s;">
           A curated list of my technical competencies and tools I love to use.
         </p>
       </div>
 
-      <LoadingModal :visible="isLoading" />
+      <LoadingModal :visible="isLoading"/>
 
       <!-- Skeleton loader -->
       <div v-if="isLoading" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
@@ -40,22 +40,23 @@
       <!-- Content -->
       <div v-else-if="groupedSkills.length > 0">
         <div v-for="(group, groupIndex) in groupedSkills" :key="group.name" class="mb-5">
-          <h2 class="display-6 mb-4 fw-light text-center animate-fade-in-up glass-text"
-              :style="{ 'animation-delay': (groupIndex * 0.2) + 's' }">
+          <h2 :style="{ 'animation-delay': (groupIndex * 0.2) + 's' }"
+              class="display-6 mb-4 fw-light text-center animate-fade-in-up glass-text">
             {{ group.name }}
           </h2>
           <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
             <div v-for="(skill, skillIndex) in group.skills" :key="skill.uuid"
-                 class="col animate-fade-in-up"
-                 :style="{ 'animation-delay': (groupIndex * 0.2 + skillIndex * 0.05) + 0.2 + 's' }">
-              <div class="card glass-card glass-card-floating h-100 text-center shadow-sm interactive-card-lift interactive-card-shadow-primary">
+                 :style="{ 'animation-delay': (groupIndex * 0.2 + skillIndex * 0.05) + 0.2 + 's' }"
+                 class="col animate-fade-in-up">
+              <div
+                class="card glass-card glass-card-floating h-100 text-center shadow-sm interactive-card-lift interactive-card-shadow-primary">
                 <div class="card-body d-flex flex-column justify-content-center align-items-center">
                   <div class="skill-icon mb-3">
                     <i :class="iconForLevel(skill.level)"/>
                   </div>
                   <h5 class="card-title">{{ skill.name }}</h5>
-                  <div class="proficiency-indicator" :data-level="skill.level.toLowerCase()"
-                       :title="skill.level.charAt(0).toUpperCase() + skill.level.slice(1).toLowerCase()">
+                  <div :data-level="skill.level.toLowerCase()" :title="skill.level.charAt(0).toUpperCase() + skill.level.slice(1).toLowerCase()"
+                       class="proficiency-indicator">
                   </div>
                 </div>
               </div>
@@ -81,13 +82,13 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import { usePublicPortfolioStore } from '@/stores/publicPortfolioStore.js';
-import { groupSkillsByLevel } from '@/services/skillsService.js';
+import {computed} from 'vue';
+import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore.js';
+import {groupSkillsByLevel} from '@/services/skillsService.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 
 // Use the store to get reactive state.
-const { portfolio, isLoading, error } = usePublicPortfolioStore();
+const {portfolio, isLoading, error} = usePublicPortfolioStore();
 
 // The skills are now a computed property derived from the central store.
 const skills = computed(() => portfolio.value?.skills || []);
@@ -127,6 +128,7 @@ const groupedSkills = computed(() => groupSkillsByLevel(skills.value));
   font-size: 2.75rem;
   transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
+
 .card:hover .skill-icon {
   transform: scale(1.2);
 }
@@ -141,6 +143,7 @@ const groupedSkills = computed(() => groupSkillsByLevel(skills.value));
   overflow: hidden;
   position: relative;
 }
+
 .proficiency-indicator::after {
   content: '';
   position: absolute;
@@ -149,18 +152,22 @@ const groupedSkills = computed(() => groupSkillsByLevel(skills.value));
   width: 0;
   animation: fill-bar 1s ease-out 0.5s forwards;
 }
+
 .proficiency-indicator[data-level="expert"]::after {
   --target-width: 100%;
   background: linear-gradient(90deg, var(--bs-success), #28a745);
 }
+
 .proficiency-indicator[data-level="advanced"]::after {
   --target-width: 80%;
   background: linear-gradient(90deg, var(--bs-info), #0dcaf0);
 }
+
 .proficiency-indicator[data-level="intermediate"]::after {
   --target-width: 60%;
   background: linear-gradient(90deg, var(--bs-primary), #0d6efd);
 }
+
 .proficiency-indicator[data-level="beginner"]::after {
   --target-width: 35%;
   background: linear-gradient(90deg, var(--bs-warning), #ffc107);
@@ -168,9 +175,16 @@ const groupedSkills = computed(() => groupSkillsByLevel(skills.value));
 
 /* --- General Animations --- */
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
+
 .animate-fade-in-up {
   opacity: 0;
   animation: fadeInUp 0.8s ease-out forwards;

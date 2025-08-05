@@ -1,6 +1,7 @@
 <template>
   <!-- THIS IS THE FIX: The component is now a full-fledged, animated glass card -->
-  <div class="card glass-card shimmering animate-fade-in-up interactive-card-lift interactive-card-shadow-primary">
+  <div
+    class="card glass-card shimmering animate-fade-in-up interactive-card-lift interactive-card-shadow-primary">
     <div class="card-body text-center p-5">
       <i v-if="iconClass" :class="iconClasses"></i>
       <h2 class="display-6">{{ title }}</h2>

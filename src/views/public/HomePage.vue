@@ -1,6 +1,6 @@
 <template>
   <div class="home-page py-5 animated-gradient-background">
-    <LoadingModal :visible="isLoading" />
+    <LoadingModal :visible="isLoading"/>
 
     <!-- Skeleton Loader: A placeholder for when the profile is loading -->
     <div v-if="isLoading" class="container">
@@ -9,17 +9,22 @@
           <div class="card-body">
             <div class="row align-items-center">
               <div class="col-md-4 text-center mb-3 mb-md-0">
-                <div class="skeleton-line rounded-circle shadow-lg mx-auto" style="width: 100%; max-width: 200px; aspect-ratio: 1/1;"></div>
+                <div class="skeleton-line rounded-circle shadow-lg mx-auto"
+                     style="width: 100%; max-width: 200px; aspect-ratio: 1/1;"></div>
               </div>
               <div class="col-md-8">
                 <div class="skeleton-line skeleton-title" style="width: 70%; height: 36px;"></div>
-                <div class="skeleton-line skeleton-subtitle" style="width: 50%; height: 24px;"></div>
+                <div class="skeleton-line skeleton-subtitle"
+                     style="width: 50%; height: 24px;"></div>
                 <div class="skeleton-line skeleton-grade" style="width: 100%;"></div>
                 <div class="skeleton-line skeleton-grade" style="width: 90%;"></div>
-                <div class="skeleton-line skeleton-grade" style="width: 80%; margin-bottom: 1.5rem;"></div>
+                <div class="skeleton-line skeleton-grade"
+                     style="width: 80%; margin-bottom: 1.5rem;"></div>
                 <div class="d-flex flex-wrap align-items-center mb-3 justify-content-center">
-                  <div class="skeleton-line me-2 mb-2" style="width: 140px; height: 36px; border-radius: 0.75rem;"></div>
-                  <div class="skeleton-line mb-2" style="width: 140px; height: 36px; border-radius: 0.75rem;"></div>
+                  <div class="skeleton-line me-2 mb-2"
+                       style="width: 140px; height: 36px; border-radius: 0.75rem;"></div>
+                  <div class="skeleton-line mb-2"
+                       style="width: 140px; height: 36px; border-radius: 0.75rem;"></div>
                 </div>
                 <div class="d-flex flex-wrap justify-content-center">
                   <div class="skeleton-icon me-2"></div>
@@ -47,20 +52,36 @@
       </div>
     </div>
 
+    <!-- Private State -->
+    <div v-else-if="isPrivate" class="container py-4">
+      <div class="glass-card glass-card-dark mx-auto" style="max-width: 90%;">
+        <div class="card-body text-center p-3">
+          <i class="bi bi-lock-fill text-danger mb-2" style="font-size: 2rem;"></i>
+          <h5 class="card-title text-white mb-2">This Portfolio is Private</h5>
+          <p class="card-text text-light opacity-75">
+            The owner has set this portfolio to private. It is not currently accessible to the public.
+          </p>
+        </div>
+      </div>
+    </div>
+
     <!-- Profile Display State: The main cover page view -->
     <div v-else-if="portfolio && portfolio.profile" class="hero-section">
       <div class="container">
         <div class="animate-fade-in-up">
-          <div class="card glass-card glass-card-floating p-2 p-md-5 interactive-card-lift interactive-card-shadow-primary">
+          <div
+            class="card glass-card glass-card-floating p-2 p-md-5 interactive-card-lift interactive-card-shadow-primary">
             <div class="card-body">
               <div class="row align-items-center">
                 <div class="col-md-4 text-center mb-3 mb-md-0">
-                  <a :href="portfolio.profile.resumeUrl || '#'" target="_blank" class="profile-image-link shadow-lg">
+                  <a :href="portfolio.profile.resumeUrl || '#'" class="profile-image-link shadow-lg"
+                     target="_blank">
                     <img v-if="portfolio.profile.resumeImageUrl || portfolio.user.profileImageUrl"
-                         :src="portfolio.profile.resumeImageUrl || portfolio.user.profileImageUrl"
                          :alt="portfolio.profile.resumeImageUrl ? 'Resume Preview' : 'Profile Picture'"
+                         :src="portfolio.profile.resumeImageUrl || portfolio.user.profileImageUrl"
                          class="profile-image"/>
-                    <div v-else class="profile-image-placeholder d-flex align-items-center justify-content-center">
+                    <div v-else
+                         class="profile-image-placeholder d-flex align-items-center justify-content-center">
                       <i class="bi bi-person-circle"></i>
                     </div>
                   </a>
@@ -85,13 +106,17 @@
                       </button>
                     </div>
                     <div class="social-links d-flex flex-wrap justify-content-center">
-                      <a v-if="portfolio.profile.linkedinUrl" :href="portfolio.profile.linkedinUrl" class="social-icon" target="_blank"
+                      <a v-if="portfolio.profile.linkedinUrl" :href="portfolio.profile.linkedinUrl"
+                         class="social-icon" target="_blank"
                          title="LinkedIn"><i class="bi bi-linkedin"></i></a>
-                      <a v-if="portfolio.profile.githubUrl" :href="portfolio.profile.githubUrl" class="social-icon" target="_blank"
+                      <a v-if="portfolio.profile.githubUrl" :href="portfolio.profile.githubUrl"
+                         class="social-icon" target="_blank"
                          title="GitHub"><i class="bi bi-github"></i></a>
-                      <a v-if="portfolio.profile.websiteUrl" :href="portfolio.profile.websiteUrl" class="social-icon" target="_blank"
+                      <a v-if="portfolio.profile.websiteUrl" :href="portfolio.profile.websiteUrl"
+                         class="social-icon" target="_blank"
                          title="Personal Website"><i class="bi bi-globe"></i></a>
-                      <a v-if="portfolio.profile.publicEmail" :href="`mailto:${portfolio.profile.publicEmail}`" class="social-icon"
+                      <a v-if="portfolio.profile.publicEmail"
+                         :href="`mailto:${portfolio.profile.publicEmail}`" class="social-icon"
                          title="Email Me"><i class="bi bi-envelope-fill"></i></a>
                     </div>
                   </div>
@@ -115,9 +140,12 @@
             The owner is currently setting things up. Please check back later.
           </p>
           <div v-if="isAdmin" class="alert alert-info mt-3">
-            <p class="mb-1"><strong>Admin Tip:</strong> Your public profile is live but appears empty.</p>
+            <p class="mb-1"><strong>Admin Tip:</strong> Your public profile is live but appears
+              empty.</p>
             <p class="mb-0">
-              <router-link :to="{ name: 'profile', params: { slug: authService.user.value.slug } }">Go to the Profile Editor</router-link>
+              <router-link :to="{ name: 'profile', params: { slug: authService.user.value.slug } }">
+                Go to the Profile Editor
+              </router-link>
               to add your headline, summary, and more.
             </p>
           </div>
@@ -132,17 +160,21 @@
           <div class="modal-header">
             <h5 class="modal-title glass-title">Cover Letter Template</h5>
             <button
-              type="button"
-              class="btn-close btn-close-white"
               aria-label="Close"
+              class="btn-close btn-close-white"
+              type="button"
               @click="showCoverLetterModal = false"
             ></button>
           </div>
           <div class="modal-body">
-            <pre class="cover-letter-text glass-description">{{ portfolio.profile.coverLetterTemplate }}</pre>
+            <pre class="cover-letter-text glass-description">{{
+                portfolio.profile.coverLetterTemplate
+              }}</pre>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn glass-btn" @click="showCoverLetterModal = false">Close</button>
+            <button class="btn glass-btn" type="button" @click="showCoverLetterModal = false">
+              Close
+            </button>
           </div>
         </div>
       </div>
@@ -156,15 +188,15 @@
 
     <!-- Success and Error Modals for Downloads -->
     <SuccessModal
+      :message="successModalMessage"
       :visible="showSuccessModal"
       title="Download Started"
-      :message="successModalMessage"
       @close="showSuccessModal = false"
     />
     <ErrorModal
+      :message="errorModalMessage"
       :visible="showErrorModal"
       title="Download Failed"
-      :message="errorModalMessage"
       @close="showErrorModal = false"
     />
 
@@ -172,32 +204,35 @@
     <div v-if="portfolio && portfolio.profile" class="download-actions">
       <!-- PDF Button -->
       <button
+        :disabled="isDownloadingPdf"
         class="btn glass-btn-primary btn-lg rounded-circle shadow-lg"
         title="Download Resume as PDF"
-        :disabled="isDownloadingPdf"
         @click="handleDownloadPdf"
       >
-        <span v-if="isDownloadingPdf" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        <span v-if="isDownloadingPdf" aria-hidden="true" class="spinner-border spinner-border-sm"
+              role="status"></span>
         <i v-else class="bi bi-file-earmark-pdf-fill"></i>
       </button>
       <!-- Markdown Button -->
       <button
+        :disabled="isDownloadingMd"
         class="btn glass-btn-primary btn-lg rounded-circle shadow-lg"
         title="Download as Markdown"
-        :disabled="isDownloadingMd"
         @click="handleDownloadMd"
       >
-        <span v-if="isDownloadingMd" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        <span v-if="isDownloadingMd" aria-hidden="true" class="spinner-border spinner-border-sm"
+              role="status"></span>
         <i v-else class="bi bi-markdown-fill"></i>
       </button>
       <!-- vCard Button -->
       <button
+        :disabled="isDownloadingVcf"
         class="btn glass-btn-primary btn-lg rounded-circle shadow-lg"
         title="Download vCard"
-        :disabled="isDownloadingVcf"
         @click="handleDownloadVcf"
       >
-        <span v-if="isDownloadingVcf" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        <span v-if="isDownloadingVcf" aria-hidden="true" class="spinner-border spinner-border-sm"
+              role="status"></span>
         <i v-else class="bi bi-person-vcard-fill"></i>
       </button>
     </div>
@@ -205,12 +240,12 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { usePublicPortfolioStore } from '@/stores/publicPortfolioStore.js';
-import { authService } from '@/services/authService.js';
-import { usePortfolioDownloader } from '@/composables/usePortfolioDownloader.js';
-import { downloadMarkdownBySlug, downloadVCardBySlug } from '@/services/api';
-import { triggerDownload, getFilenameFromResponse } from '@/utils/downloadUtils';
+import {computed, ref} from 'vue';
+import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore.js';
+import {authService} from '@/services/authService.js';
+import {usePortfolioDownloader} from '@/composables/usePortfolioDownloader.js';
+import {downloadMarkdownBySlug, downloadVCardBySlug} from '@/services/api';
+import {getFilenameFromResponse, triggerDownload} from '@/utils/downloadUtils';
 
 // Modal components
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
@@ -218,7 +253,7 @@ import SuccessModal from '@/components/common/modals/SuccessModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 
 // --- State from Central Store ---
-const { portfolio, isLoading, error, currentSlug } = usePublicPortfolioStore();
+const {portfolio, isLoading, error, currentSlug, isPrivate} = usePublicPortfolioStore();
 
 // --- Local UI State ---
 const showCoverLetterModal = ref(false);

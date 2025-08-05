@@ -10,18 +10,23 @@
       </div>
 
       <!-- Modals for feedback -->
-      <SuccessModal :visible="showSuccessModal" title="Download Started" :message="successModalMessage" @close="showSuccessModal = false" />
-      <ErrorModal :visible="showErrorModal" title="Download Failed" :message="errorModalMessage" @close="showErrorModal = false" />
+      <SuccessModal :message="successModalMessage" :visible="showSuccessModal"
+                    title="Download Started" @close="showSuccessModal = false"/>
+      <ErrorModal :message="errorModalMessage" :visible="showErrorModal" title="Download Failed"
+                  @close="showErrorModal = false"/>
 
       <div class="row g-4 justify-content-center">
         <!-- PDF Card -->
         <div class="col-md-6 col-lg-4 animate-fade-in-up" style="animation-delay: 0.2s;">
           <div class="card h-100 glass-card interactive-card-lift interactive-card-shadow-primary">
             <div class="card-body d-flex flex-column text-center p-4">
-              <div class="mb-3"><i class="bi bi-file-earmark-pdf-fill display-4 text-danger"></i></div>
+              <div class="mb-3"><i class="bi bi-file-earmark-pdf-fill display-4 text-danger"></i>
+              </div>
               <h5 class="card-title glass-title">PDF Portfolio</h5>
-              <p class="card-text glass-subtitle small flex-grow-1">A professional, print-ready PDF version of your portfolio.</p>
-              <button class="btn btn-danger mt-auto interactive-lift" @click="handleDownloadPdf" :disabled="isDownloadingPdf">
+              <p class="card-text glass-subtitle small flex-grow-1">A professional, print-ready PDF
+                version of your portfolio.</p>
+              <button :disabled="isDownloadingPdf" class="btn btn-danger mt-auto interactive-lift"
+                      @click="handleDownloadPdf">
                 <span v-if="isDownloadingPdf" class="spinner-border spinner-border-sm me-2"></span>
                 Download PDF
               </button>
@@ -35,8 +40,10 @@
             <div class="card-body d-flex flex-column text-center p-4">
               <div class="mb-3"><i class="bi bi-markdown-fill display-4 text-info"></i></div>
               <h5 class="card-title glass-title">Markdown File</h5>
-              <p class="card-text glass-subtitle small flex-grow-1">A plain-text Markdown file, perfect for version control or static site generators.</p>
-              <button class="btn btn-info mt-auto interactive-lift" @click="handleDownloadMd" :disabled="isDownloadingMd">
+              <p class="card-text glass-subtitle small flex-grow-1">A plain-text Markdown file,
+                perfect for version control or static site generators.</p>
+              <button :disabled="isDownloadingMd" class="btn btn-info mt-auto interactive-lift"
+                      @click="handleDownloadMd">
                 <span v-if="isDownloadingMd" class="spinner-border spinner-border-sm me-2"></span>
                 Download .md
               </button>
@@ -50,8 +57,10 @@
             <div class="card-body d-flex flex-column text-center p-4">
               <div class="mb-3"><i class="bi bi-person-vcard-fill display-4 text-success"></i></div>
               <h5 class="card-title glass-title">vCard Contact</h5>
-              <p class="card-text glass-subtitle small flex-grow-1">A standard vCard (.vcf) file that can be easily imported into contact applications.</p>
-              <button class="btn btn-success mt-auto interactive-lift" @click="handleDownloadVcf" :disabled="isDownloadingVcf">
+              <p class="card-text glass-subtitle small flex-grow-1">A standard vCard (.vcf) file
+                that can be easily imported into contact applications.</p>
+              <button :disabled="isDownloadingVcf" class="btn btn-success mt-auto interactive-lift"
+                      @click="handleDownloadVcf">
                 <span v-if="isDownloadingVcf" class="spinner-border spinner-border-sm me-2"></span>
                 Download .vcf
               </button>
@@ -64,10 +73,14 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { authService } from '@/services/authService.js';
-import { downloadPublicPortfolioBySlug, downloadMarkdownBySlug, downloadVCardBySlug } from '@/services/api';
-import { triggerDownload, getFilenameFromResponse } from '@/utils/downloadUtils';
+import {computed, ref} from 'vue';
+import {authService} from '@/services/authService.js';
+import {
+  downloadMarkdownBySlug,
+  downloadPublicPortfolioBySlug,
+  downloadVCardBySlug
+} from '@/services/api';
+import {getFilenameFromResponse, triggerDownload} from '@/utils/downloadUtils';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 
@@ -115,6 +128,7 @@ const handleDownloadVcf = createDownloadHandler(downloadVCardBySlug, 'vcf', 'vcf
 .data-exports-page .display-5 {
   font-weight: 300;
 }
+
 .card-title i {
   vertical-align: -0.125em;
 }

@@ -3,7 +3,8 @@
   <div class="modal-test-page animated-gradient-background d-flex align-items-center">
     <div class="container">
       <!-- The content is now wrapped in a beautiful, animated glass card -->
-      <div class="card glass-card shimmering animate-fade-in-up interactive-card-lift interactive-card-shadow-primary">
+      <div
+        class="card glass-card shimmering animate-fade-in-up interactive-card-lift interactive-card-shadow-primary">
         <div class="card-body p-4 p-md-5">
           <h1 class="card-title display-5">Modal Test Page</h1>
           <p class="card-text text-muted">Use these buttons to test the application's modals.</p>
@@ -19,14 +20,16 @@
             <button class="btn btn-danger interactive-lift" @click="triggerErrorModalList">
               Show Error Modal (List)
             </button>
-            <button class="btn btn-primary interactive-lift" @click="triggerConfirmModal('primary')">
+            <button class="btn btn-primary interactive-lift"
+                    @click="triggerConfirmModal('primary')">
               Show Confirm Modal (Primary)
             </button>
             <!-- THIS IS THE FIX: Added buttons to test the new confirm modal types -->
             <button class="btn btn-danger interactive-lift" @click="triggerConfirmModal('danger')">
               Show Confirm Modal (Danger)
             </button>
-            <button class="btn btn-success interactive-lift" @click="triggerConfirmModal('success')">
+            <button class="btn btn-success interactive-lift"
+                    @click="triggerConfirmModal('success')">
               Show Confirm Modal (Success)
             </button>
           </div>
@@ -39,29 +42,29 @@
 
     <!-- Modals to be tested -->
     <SuccessModal
-      :visible="showSuccess"
-      :title="successTitle"
       :message="successMessage"
+      :title="successTitle"
+      :visible="showSuccess"
       @close="closeSuccessModal"
     />
 
     <ErrorModal
-      :visible="showError"
-      :title="errorTitle"
       :message="errorMessage"
+      :title="errorTitle"
+      :visible="showError"
       @close="closeErrorModal"
     />
 
     <ConfirmModal
-      :visible="showConfirm"
-      :title="confirmTitle"
-      :message="confirmMessage"
-      :confirmText="confirmButtonText"
       :cancelText="cancelButtonText"
+      :confirmText="confirmButtonText"
+      :message="confirmMessage"
+      :title="confirmTitle"
       :type="confirmType"
-      @confirm="handleConfirm"
+      :visible="showConfirm"
       @cancel="handleCancel"
       @close="handleCancel"
+      @confirm="handleConfirm"
     />
   </div>
 </template>

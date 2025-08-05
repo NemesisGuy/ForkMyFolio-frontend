@@ -1,13 +1,37 @@
-import { ref, computed } from 'vue';
+import {computed, ref} from 'vue';
 
 // Define the default state of all feature flags
 const getDefaultFlags = () => ([
-  { name: 'SHOW_PROJECTS', enabled: true, description: 'Display the "Projects" section on the public site.' },
-  { name: 'SHOW_SKILLS', enabled: true, description: 'Display the "Skills" section on the public site.' },
-  { name: 'SHOW_EXPERIENCE', enabled: true, description: 'Display the "Experience" section on the public site.' },
-  { name: 'SHOW_TESTIMONIALS', enabled: true, description: 'Display the "Testimonials" section on the public site.' },
-  { name: 'SHOW_QUALIFICATIONS', enabled: true, description: 'Display the "Qualifications" section on the public site.' },
-  { name: 'SHOW_CONTACT_FORM', enabled: true, description: 'Display the "Contact Me" section on the public site.' },
+  {
+    name: 'SHOW_PROJECTS',
+    enabled: true,
+    description: 'Display the "Projects" section on the public site.'
+  },
+  {
+    name: 'SHOW_SKILLS',
+    enabled: true,
+    description: 'Display the "Skills" section on the public site.'
+  },
+  {
+    name: 'SHOW_EXPERIENCE',
+    enabled: true,
+    description: 'Display the "Experience" section on the public site.'
+  },
+  {
+    name: 'SHOW_TESTIMONIALS',
+    enabled: true,
+    description: 'Display the "Testimonials" section on the public site.'
+  },
+  {
+    name: 'SHOW_QUALIFICATIONS',
+    enabled: true,
+    description: 'Display the "Qualifications" section on the public site.'
+  },
+  {
+    name: 'SHOW_CONTACT_FORM',
+    enabled: true,
+    description: 'Display the "Contact Me" section on the public site.'
+  },
 ]);
 
 // Helper to load flags from localStorage on startup
@@ -48,5 +72,5 @@ export function useFeatureFlags() {
     return (featureName) => flags.value.find(f => f.name === featureName)?.enabled ?? false;
   });
 
-  return { flags, saveFlags, isFeatureEnabled };
+  return {flags, saveFlags, isFeatureEnabled};
 }

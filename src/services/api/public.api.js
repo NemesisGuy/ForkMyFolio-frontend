@@ -1,5 +1,5 @@
-import { fetchWithAuth } from './apiClient';
-import { authService } from '@/services/authService';
+import {fetchWithAuth} from './apiClient';
+import {authService} from '@/services/authService';
 
 /**
  * @file src/services/api/public.api.js
@@ -9,23 +9,26 @@ import { authService } from '@/services/authService';
 // --- Named Exports for use with the barrel file (index.js) ---
 
 export const getPortfolioBySlug = (slug) => {
-  return fetchWithAuth(`/portfolios/${slug}`, { method: 'GET' }, false);
+  return fetchWithAuth(`/portfolios/${slug}`, {method: 'GET'}, false);
 };
 
 export const getPortfolioSettings = (slug) => {
-  return fetchWithAuth(`/portfolios/${slug}/settings`, { method: 'GET' }, false);
+  return fetchWithAuth(`/portfolios/${slug}/settings`, {method: 'GET'}, false);
 };
 
 export const getGlobalSettings = () => {
-  return fetchWithAuth('/settings', { method: 'GET' }, false);
+  return fetchWithAuth('/settings', {method: 'GET'}, false);
 };
 
 export const sendContactMessage = (slug, messageData) => {
-  return fetchWithAuth(`/portfolios/${slug}/contact-messages`, { method: 'POST', body: messageData }, false);
+  return fetchWithAuth(`/portfolios/${slug}/contact-messages`, {
+    method: 'POST',
+    body: messageData
+  }, false);
 };
 
 export const getAvailablePdfTemplates = () => {
-  return fetchWithAuth('/settings/pdf-templates', { method: 'GET' }, false);
+  return fetchWithAuth('/settings/pdf-templates', {method: 'GET'}, false);
 };
 
 /**
@@ -34,7 +37,7 @@ export const getAvailablePdfTemplates = () => {
  * @returns {Promise<Object>} The project data.
  */
 export const getPublicProjectById = (uuid) => {
-  return fetchWithAuth(`/projects/${uuid}`, { method: 'GET' }, false);
+  return fetchWithAuth(`/projects/${uuid}`, {method: 'GET'}, false);
 };
 
 /**
@@ -96,7 +99,7 @@ export const getPublicProfile = async () => {
       if (portfolioData && portfolioData.user && portfolioData.profile) {
         // Merge the base data, user details, and profile details.
         // The order is important: profile details should override user details if there are conflicts (e.g., firstName).
-        const flatProfile = { ...portfolioData, ...portfolioData.user, ...portfolioData.profile };
+        const flatProfile = {...portfolioData, ...portfolioData.user, ...portfolioData.profile};
 
         // Clean up the now-redundant nested objects.
         delete flatProfile.user;

@@ -5,10 +5,10 @@
  * in one part of the app (e.g., UserSettingsPage), other parts (e.g., Navbar)
  * react to the changes instantly.
  */
-import { ref, computed } from 'vue';
-import { publicApi } from '@/services/api/public.api.js';
-import { settingsApi } from '@/services/api/user.api.js';
-import { authService } from './authService';
+import {computed, ref} from 'vue';
+import {publicApi} from '@/services/api/public.api.js';
+import {settingsApi} from '@/services/api/user.api.js';
+import {authService} from './authService';
 
 // --- Reactive State ---
 // The internal state is a key-value map: { "SHOW_PROJECTS": "true", ... }
@@ -59,7 +59,7 @@ function updateSettings(settingsArray) {
     return;
   }
   // Create a mutable copy of the current settings map.
-  const newSettingsMap = { ...settings.value };
+  const newSettingsMap = {...settings.value};
 
   // Iterate over the incoming list and update/add values.
   settingsArray.forEach(setting => {

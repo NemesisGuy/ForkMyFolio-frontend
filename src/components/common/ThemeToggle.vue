@@ -16,8 +16,8 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import { useTheme } from '@/services/themeService.js';
+import {computed} from 'vue';
+import {useTheme} from '@/services/themeService.js';
 
 /**
  * @file src/components/common/ThemeToggle.vue
@@ -25,7 +25,7 @@ import { useTheme } from '@/services/themeService.js';
  */
 
 // Get the reactive theme state and the toggle function from our new service.
-const { currentTheme, toggleTheme } = useTheme();
+const {currentTheme, toggleTheme} = useTheme();
 
 // This computed property correctly reacts to changes from the central service.
 const isDarkMode = computed(() => currentTheme.value === 'dark');

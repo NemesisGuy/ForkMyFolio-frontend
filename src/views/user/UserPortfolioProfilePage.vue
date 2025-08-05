@@ -5,11 +5,13 @@
         <div class="col-lg-8">
           <h1 class="display-5 mb-4">Manage Portfolio Profile</h1>
 
-          <LoadingModal :visible="isLoading" />
-          <ErrorModal v-if="error.message" :visible="showErrorModal" :title="error.title" :message="error.message"
-                      @close="closeErrorModal" />
-          <SuccessModal :visible="showSuccessModal" title="Update Successful" :message="successMessage"
-                        @close="closeSuccessModal" />
+          <LoadingModal :visible="isLoading"/>
+          <ErrorModal v-if="error.message" :message="error.message" :title="error.title"
+                      :visible="showErrorModal"
+                      @close="closeErrorModal"/>
+          <SuccessModal :message="successMessage" :visible="showSuccessModal"
+                        title="Update Successful"
+                        @close="closeSuccessModal"/>
 
           <div v-if="!isLoading" class="card shadow-sm">
             <div class="card-body p-4">
@@ -25,7 +27,8 @@
                   <h5 class="mb-0">{{ fullName }}</h5>
                   <p class="text-muted small mb-0">
                     To change your name or profile image, please visit the
-                    <router-link to="/admin/account">Account Settings</router-link> page.
+                    <router-link to="/admin/account">Account Settings</router-link>
+                    page.
                   </p>
                 </div>
               </div>
@@ -35,19 +38,21 @@
                 <h5 class="mb-3">Main Information</h5>
                 <div class="row g-3">
                   <div class="col-12">
-                    <label for="headline" class="form-label">Headline</label>
-                    <input type="text" class="form-control" id="headline" v-model="formState.headline"
-                           placeholder="e.g., Full-Stack Software Engineer" required>
+                    <label class="form-label" for="headline">Headline</label>
+                    <input id="headline" v-model="formState.headline" class="form-control"
+                           placeholder="e.g., Full-Stack Software Engineer"
+                           required type="text">
                   </div>
                   <div class="col-12">
-                    <label for="summary" class="form-label">Summary / Bio</label>
-                    <textarea class="form-control" id="summary" v-model="formState.summary" rows="6"
-                              placeholder="A passionate developer with experience in..."></textarea>
+                    <label class="form-label" for="summary">Summary / Bio</label>
+                    <textarea id="summary" v-model="formState.summary" class="form-control" placeholder="A passionate developer with experience in..."
+                              rows="6"></textarea>
                   </div>
                   <div class="col-md-6">
-                    <label for="location" class="form-label">Location</label>
-                    <input type="text" class="form-control" id="location" v-model="formState.location"
-                           placeholder="e.g., San Francisco, CA">
+                    <label class="form-label" for="location">Location</label>
+                    <input id="location" v-model="formState.location" class="form-control"
+                           placeholder="e.g., San Francisco, CA"
+                           type="text">
                   </div>
                 </div>
 
@@ -57,34 +62,40 @@
                 <h5 class="mb-3">Contact & Links</h5>
                 <div class="row g-3">
                   <div class="col-md-6">
-                    <label for="publicEmail" class="form-label">Public Email</label>
-                    <input type="email" class="form-control" id="publicEmail" v-model="formState.publicEmail"
-                           placeholder="contact.jane@example.com">
+                    <label class="form-label" for="publicEmail">Public Email</label>
+                    <input id="publicEmail" v-model="formState.publicEmail" class="form-control"
+                           placeholder="contact.jane@example.com"
+                           type="email">
                   </div>
                   <div class="col-md-6">
-                    <label for="websiteUrl" class="form-label">Website URL</label>
-                    <input type="url" class="form-control" id="websiteUrl" v-model="formState.websiteUrl"
-                           placeholder="https://your-portfolio.com">
+                    <label class="form-label" for="websiteUrl">Website URL</label>
+                    <input id="websiteUrl" v-model="formState.websiteUrl" class="form-control"
+                           placeholder="https://your-portfolio.com"
+                           type="url">
                   </div>
                   <div class="col-md-6">
-                    <label for="linkedinUrl" class="form-label">LinkedIn URL</label>
-                    <input type="url" class="form-control" id="linkedinUrl" v-model="formState.linkedinUrl"
-                           placeholder="https://linkedin.com/in/your-profile">
+                    <label class="form-label" for="linkedinUrl">LinkedIn URL</label>
+                    <input id="linkedinUrl" v-model="formState.linkedinUrl" class="form-control"
+                           placeholder="https://linkedin.com/in/your-profile"
+                           type="url">
                   </div>
                   <div class="col-md-6">
-                    <label for="githubUrl" class="form-label">GitHub URL</label>
-                    <input type="url" class="form-control" id="githubUrl" v-model="formState.githubUrl"
-                           placeholder="https://github.com/your-username">
+                    <label class="form-label" for="githubUrl">GitHub URL</label>
+                    <input id="githubUrl" v-model="formState.githubUrl" class="form-control"
+                           placeholder="https://github.com/your-username"
+                           type="url">
                   </div>
                   <div class="col-md-6">
-                    <label for="resumeUrl" class="form-label">Resume URL</label>
-                    <input type="url" class="form-control" id="resumeUrl" v-model="formState.resumeUrl"
-                           placeholder="Link to your canonical PDF resume">
+                    <label class="form-label" for="resumeUrl">Resume URL</label>
+                    <input id="resumeUrl" v-model="formState.resumeUrl" class="form-control"
+                           placeholder="Link to your canonical PDF resume"
+                           type="url">
                   </div>
                   <div class="col-md-6">
-                    <label for="resumeImageUrl" class="form-label">Resume Preview Image URL</label>
-                    <input type="url" class="form-control" id="resumeImageUrl" v-model="formState.resumeImageUrl"
-                           placeholder="Link to a preview image of the resume">
+                    <label class="form-label" for="resumeImageUrl">Resume Preview Image URL</label>
+                    <input id="resumeImageUrl" v-model="formState.resumeImageUrl" class="form-control"
+                           placeholder="Link to a preview image of the resume"
+                           type="url">
                   </div>
                 </div>
 
@@ -94,17 +105,19 @@
                 <h5 class="mb-3">Cover Letter Template</h5>
                 <div class="row g-3">
                   <div class="col-12">
-                    <label for="coverLetterTemplate" class="form-label">Default Cover Letter</label>
-                    <textarea class="form-control" id="coverLetterTemplate"
-                              v-model="formState.coverLetterTemplate" rows="8"
-                              placeholder="Dear Hiring Manager, I am writing to express my keen interest in..."></textarea>
-                    <div class="form-text">This can be displayed on your home page as a template for visitors.</div>
+                    <label class="form-label" for="coverLetterTemplate">Default Cover Letter</label>
+                    <textarea id="coverLetterTemplate" v-model="formState.coverLetterTemplate"
+                              class="form-control" placeholder="Dear Hiring Manager, I am writing to express my keen interest in..."
+                              rows="8"></textarea>
+                    <div class="form-text">This can be displayed on your home page as a template for
+                      visitors.
+                    </div>
                   </div>
                 </div>
 
                 <!-- Action Buttons -->
                 <div class="d-flex justify-content-end mt-4">
-                  <button type="submit" class="btn btn-primary" :disabled="isSaving">
+                  <button :disabled="isSaving" class="btn btn-primary" type="submit">
                     <span v-if="isSaving" class="spinner-border spinner-border-sm me-1"></span>
                     {{ isSaving ? 'Saving...' : 'Save Profile' }}
                   </button>
@@ -119,14 +132,13 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue';
+import {computed, onMounted, reactive, ref} from 'vue';
 import {
-  // CORRECTED: Import all the necessary functions
+  ApiError,
+  createPortfolioProfile,
   getAccount,
   getPortfolioProfile,
-  createPortfolioProfile,
-  updatePortfolioProfile,
-  ApiError
+  updatePortfolioProfile
 } from '@/services/api/index.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
@@ -136,7 +148,7 @@ const isLoading = ref(true);
 const isSaving = ref(false);
 const profileExists = ref(false); // This flag determines whether to CREATE or UPDATE
 
-const error = ref({ title: '', message: '' });
+const error = ref({title: '', message: ''});
 const showErrorModal = ref(false);
 
 const showSuccessModal = ref(false);
@@ -164,7 +176,7 @@ const formState = reactive({
 
 const closeErrorModal = () => {
   showErrorModal.value = false;
-  error.value = { title: '', message: '' };
+  error.value = {title: '', message: ''};
 };
 
 const closeSuccessModal = () => {
@@ -202,7 +214,10 @@ onMounted(async () => {
   } catch (err) {
     // This catches errors from either getAccount() or non-404 errors from getPortfolioProfile()
     console.error("Failed to load page data:", err);
-    error.value = { title: 'Failed to Load Data', message: err.message || 'Could not load your page data.' };
+    error.value = {
+      title: 'Failed to Load Data',
+      message: err.message || 'Could not load your page data.'
+    };
     showErrorModal.value = true;
   } finally {
     isLoading.value = false;
@@ -226,7 +241,10 @@ const handleSave = async () => {
     showSuccessModal.value = true;
   } catch (err) {
     console.error("Failed to save profile:", err);
-    error.value = { title: 'Save Failed', message: err.message || `Could not save your profile. Error: ${err.message}` };
+    error.value = {
+      title: 'Save Failed',
+      message: err.message || `Could not save your profile. Error: ${err.message}`
+    };
     showErrorModal.value = true;
   } finally {
     isSaving.value = false;

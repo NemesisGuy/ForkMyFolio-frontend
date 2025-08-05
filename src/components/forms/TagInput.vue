@@ -2,24 +2,25 @@
   <div class="tag-input-container" @click="focusInput">
     <span v-for="(tag, index) in tags" :key="index" class="badge tag-badge">
       {{ tag }}
-      <button type="button" class="btn-close btn-close-sm" @click.stop="removeTag(index)" aria-label="Remove tag"></button>
+      <button aria-label="Remove tag" class="btn-close btn-close-sm" type="button"
+              @click.stop="removeTag(index)"></button>
     </span>
     <input
       ref="inputRef"
-      type="text"
-      class="tag-input"
       v-model="newTag"
       :placeholder="tags.length === 0 ? placeholder : ''"
+      class="tag-input"
+      type="text"
+      @blur="addTag"
       @keydown.enter.prevent="addTag"
       @keydown.backspace="handleBackspace"
       @keydown.,.prevent="addTag"
-      @blur="addTag"
     />
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import {ref, watch} from 'vue';
 
 const props = defineProps({
   modelValue: {
@@ -42,7 +43,7 @@ watch(() => props.modelValue, (newValue) => {
   if (JSON.stringify(newValue) !== JSON.stringify(tags.value)) {
     tags.value = [...newValue];
   }
-}, { deep: true });
+}, {deep: true});
 
 const addTag = () => {
   const tagToAdd = newTag.value.replace(/,/g, '').trim();
@@ -85,10 +86,12 @@ const focusInput = () => {
   transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
   cursor: text;
 }
+
 .tag-input-container:focus-within {
   border-color: rgba(var(--bs-primary-rgb), 0.5);
   box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.15);
 }
+
 .tag-badge {
   display: inline-flex;
   align-items: center;
@@ -99,15 +102,18 @@ const focusInput = () => {
   color: white;
   border-radius: 0.375rem;
 }
+
 .tag-badge .btn-close {
   margin-left: 0.5em;
   filter: invert(1) grayscale(100%) brightness(200%);
   opacity: 0.7;
   transition: opacity 0.2s ease;
 }
+
 .tag-badge .btn-close:hover {
   opacity: 1;
 }
+
 .tag-input {
   flex-grow: 1;
   border: none;
@@ -117,6 +123,7 @@ const focusInput = () => {
   min-width: 120px;
   color: var(--glass-text);
 }
+
 .tag-input::placeholder {
   color: var(--glass-text-secondary);
   opacity: 0.7;

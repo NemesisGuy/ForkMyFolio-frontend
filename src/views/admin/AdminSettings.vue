@@ -14,14 +14,14 @@
           <LoadingModal :visible="isLoading || isSaving"/>
           <SuccessModal
             :visible="showSuccessModal"
-            title="Settings Saved"
             message="The application settings have been updated successfully."
+            title="Settings Saved"
             @close="showSuccessModal = false"
           />
           <ErrorModal
+            :message="errorMessage"
             :visible="showErrorModal"
             title="Save Failed"
-            :message="errorMessage"
             @close="showErrorModal = false"
           />
 
@@ -31,14 +31,16 @@
             <pre class="small">{{ error.message }}</pre>
           </div>
 
-          <form v-else-if="!isLoading" @submit.prevent="handleSave" class="animate-fade-in-up" style="animation-delay: 0.2s;">
+          <form v-else-if="!isLoading" class="animate-fade-in-up" style="animation-delay: 0.2s;"
+                @submit.prevent="handleSave">
             <div class="card glass-card">
               <div class="card-header">
                 <h5 class="mb-0">Global Section Visibility</h5>
               </div>
               <div class="card-body p-4">
                 <ul class="list-group list-group-flush">
-                  <li v-for="setting in settings" :key="setting.uuid" class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                  <li v-for="setting in settings" :key="setting.uuid"
+                      class="list-group-item px-0 d-flex justify-content-between align-items-center">
                     <div>
                       <h6 class="mb-0">{{ formatSettingName(setting.name) }}</h6>
                       <small class="text-muted">{{ setting.description }}</small>
@@ -47,13 +49,13 @@
                       <input
                         :id="`switch-${setting.name}`"
                         v-model="setting.value"
-                        class="form-check-input"
-                        role="switch"
-                        type="checkbox"
-                        true-value="true"
-                        false-value="false"
-                        @change="markAsDirty"
                         :disabled="isSaving"
+                        class="form-check-input"
+                        false-value="false"
+                        role="switch"
+                        true-value="true"
+                        type="checkbox"
+                        @change="markAsDirty"
                       >
                     </div>
                   </li>
@@ -62,11 +64,13 @@
             </div>
 
             <div class="d-flex justify-content-end mt-4">
-              <button class="btn btn-secondary me-2" :disabled="!isDirty || isSaving" type="button" @click="resetChanges">
+              <button :disabled="!isDirty || isSaving" class="btn btn-secondary me-2" type="button"
+                      @click="resetChanges">
                 Reset
               </button>
-              <button class="btn btn-primary" :disabled="!isDirty || isSaving" type="submit">
-                <span v-if="isSaving" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              <button :disabled="!isDirty || isSaving" class="btn btn-primary" type="submit">
+                <span v-if="isSaving" aria-hidden="true" class="spinner-border spinner-border-sm me-2"
+                      role="status"></span>
                 {{ isSaving ? 'Saving...' : 'Save Changes' }}
               </button>
             </div>
@@ -78,9 +82,10 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
-import { getAdminSettings, updateAdminSettings, ApiError } from '@/services/api/admin.api.js';
-import { settingsService } from '@/services/settingsService.js';
+import {onMounted, ref} from 'vue';
+// THIS IS THE FIX: Import from the main 'api/index.js' barrel file
+import {ApiError, getAdminSettings, updateAdminSettings} from '@/services/api/index.js';
+import {settingsService} from '@/services/settingsService.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
@@ -98,7 +103,7 @@ const errorMessage = ref('');
 
 const copySettings = (source) => {
   if (!Array.isArray(source)) return [];
-  return source.map(setting => ({ ...setting }));
+  return source.map(setting => ({...setting}));
 };
 
 onMounted(async () => {
@@ -110,7 +115,7 @@ onMounted(async () => {
     originalSettings.value = copySettings(displaySettings);
   } catch (err) {
     console.error('Failed to fetch settings:', err);
-    error.value = err instanceof ApiError ? err : { message: 'An unexpected error occurred.' };
+    error.value = err instanceof ApiError ? err : {message: 'An unexpected error occurred.'};
   } finally {
     isLoading.value = false;
   }
@@ -125,7 +130,7 @@ const handleSave = async () => {
   isSaving.value = true;
 
   try {
-    const payload = settings.value.map((s) => ({ uuid: s.uuid, value: s.value }));
+    const payload = settings.value.map((s) => ({uuid: s.uuid, value: s.value}));
     const updatedSettings = await updateAdminSettings(payload);
 
     settingsService.updateSettings(updatedSettings);

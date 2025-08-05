@@ -11,117 +11,155 @@
       </div>
 
       <!-- Modals -->
-      <LoadingModal :visible="isLoading" />
-      <ErrorModal :visible="!!error" :message="error" title="An Error Occurred" @close="error = null" />
-      <SuccessModal :visible="!!successMessage" :message="successMessage" title="Success" @close="successMessage = null" />
+      <LoadingModal :visible="isLoading"/>
+      <ErrorModal :message="error" :visible="!!error" title="An Error Occurred"
+                  @close="error = null"/>
+      <SuccessModal :message="successMessage" :visible="!!successMessage" title="Success"
+                    @close="successMessage = null"/>
       <ConfirmModal
+        :message="`Are you sure you want to delete the qualification '${qualificationToDelete?.qualificationName}'?`"
         :visible="!!qualificationToDelete"
         title="Confirm Deletion"
-        :message="`Are you sure you want to delete the qualification '${qualificationToDelete?.qualificationName}'?`"
-        @confirm="handleDeleteQualification"
         @close="qualificationToDelete = null"
+        @confirm="handleDeleteQualification"
       />
 
       <!-- Add/Edit Qualification Modal -->
-      <div class="modal fade" id="qualificationModal" tabindex="-1" aria-labelledby="qualificationModalLabel" aria-hidden="true" ref="qualificationModalRef">
+      <div id="qualificationModal" ref="qualificationModalRef" aria-hidden="true"
+           aria-labelledby="qualificationModalLabel" class="modal fade" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content glass-modal">
             <div class="modal-header">
-              <h5 class="modal-title" id="qualificationModalLabel">{{ isEditing ? 'Edit Qualification' : 'Add New Qualification' }}</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              <h5 id="qualificationModalLabel" class="modal-title">
+                {{ isEditing ? 'Edit Qualification' : 'Add New Qualification' }}</h5>
+              <button aria-label="Close" class="btn-close" data-bs-dismiss="modal"
+                      type="button"></button>
             </div>
             <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
               <form @submit.prevent="handleFormSubmit">
                 <div class="row">
                   <div class="col-md-6 mb-3">
-                    <label for="qualName" class="form-label">Qualification / Degree</label>
-                    <input type="text" class="form-control" id="qualName" v-model="currentQualification.qualificationName" required>
+                    <label class="form-label" for="qualName">Qualification / Degree</label>
+                    <input id="qualName" v-model="currentQualification.qualificationName" class="form-control"
+                           required type="text">
                   </div>
                   <div class="col-md-6 mb-3">
-                    <label for="qualLevel" class="form-label">Level</label>
-                    <select class="form-select" id="qualLevel" v-model="currentQualification.level" required>
+                    <label class="form-label" for="qualLevel">Level</label>
+                    <select id="qualLevel" v-model="currentQualification.level" class="form-select"
+                            required>
                       <option disabled value="">Select a level</option>
-                      <option v-for="level in QUALIFICATION_LEVELS" :key="level.value" :value="level.value">{{ level.text }}</option>
+                      <option v-for="level in QUALIFICATION_LEVELS" :key="level.value"
+                              :value="level.value">{{ level.text }}
+                      </option>
                     </select>
                   </div>
                 </div>
                 <div class="mb-3">
-                  <label for="qualInstitution" class="form-label">Institution</label>
-                  <input type="text" class="form-control" id="qualInstitution" v-model="currentQualification.institutionName" required>
+                  <label class="form-label" for="qualInstitution">Institution</label>
+                  <input id="qualInstitution" v-model="currentQualification.institutionName" class="form-control"
+                         required type="text">
                 </div>
                 <div class="mb-3">
-                  <label for="qualFieldOfStudy" class="form-label">Field of Study (Optional)</label>
-                  <input type="text" class="form-control" id="qualFieldOfStudy" v-model="currentQualification.fieldOfStudy">
+                  <label class="form-label" for="qualFieldOfStudy">Field of Study (Optional)</label>
+                  <input id="qualFieldOfStudy" v-model="currentQualification.fieldOfStudy" class="form-control"
+                         type="text">
                 </div>
                 <div class="row">
                   <div class="col-md-6 mb-3">
-                    <label for="qualStartYear" class="form-label">Start Year</label>
-                    <input type="number" class="form-control" id="qualStartYear" v-model.number="currentQualification.startYear" required :min="1900" :max="new Date().getFullYear() + 5">
+                    <label class="form-label" for="qualStartYear">Start Year</label>
+                    <input id="qualStartYear" v-model.number="currentQualification.startYear" :max="new Date().getFullYear() + 5"
+                           :min="1900" class="form-control" required
+                           type="number">
                   </div>
                   <div class="col-md-6 mb-3">
-                    <label for="qualCompletionYear" class="form-label">Completion Year</label>
-                    <input type="number" class="form-control" id="qualCompletionYear" v-model.number="currentQualification.completionYear" :disabled="currentQualification.stillStudying" :min="1900" :max="new Date().getFullYear() + 10">
+                    <label class="form-label" for="qualCompletionYear">Completion Year</label>
+                    <input id="qualCompletionYear" v-model.number="currentQualification.completionYear" :disabled="currentQualification.stillStudying"
+                           :max="new Date().getFullYear() + 10"
+                           :min="1900" class="form-control"
+                           type="number">
                   </div>
                 </div>
                 <div class="form-check form-switch mb-3">
-                  <input class="form-check-input" type="checkbox" role="switch" id="qualStillStudying" v-model="currentQualification.stillStudying">
-                  <label class="form-check-label" for="qualStillStudying">I am still studying for this qualification</label>
+                  <input id="qualStillStudying" v-model="currentQualification.stillStudying" class="form-check-input"
+                         role="switch" type="checkbox">
+                  <label class="form-check-label" for="qualStillStudying">I am still studying for
+                    this qualification</label>
                 </div>
                 <div class="mb-3">
-                  <label for="qualGrade" class="form-label">Grade / Result (Optional)</label>
-                  <input type="text" class="form-control" id="qualGrade" v-model="currentQualification.grade">
+                  <label class="form-label" for="qualGrade">Grade / Result (Optional)</label>
+                  <input id="qualGrade" v-model="currentQualification.grade" class="form-control"
+                         type="text">
                 </div>
                 <hr class="my-4">
                 <h6 class="text-muted mb-3">Optional Links</h6>
                 <div class="mb-3">
-                  <label for="qualInstitutionLogoUrl" class="form-label">Institution Logo URL</label>
-                  <input type="url" class="form-control" id="qualInstitutionLogoUrl" v-model="currentQualification.institutionLogoUrl" placeholder="https://...">
+                  <label class="form-label" for="qualInstitutionLogoUrl">Institution Logo
+                    URL</label>
+                  <input id="qualInstitutionLogoUrl" v-model="currentQualification.institutionLogoUrl" class="form-control"
+                         placeholder="https://..."
+                         type="url">
                 </div>
                 <div class="mb-3">
-                  <label for="qualInstitutionWebsite" class="form-label">Institution Website URL</label>
-                  <input type="url" class="form-control" id="qualInstitutionWebsite" v-model="currentQualification.institutionWebsite" placeholder="https://...">
+                  <label class="form-label" for="qualInstitutionWebsite">Institution Website
+                    URL</label>
+                  <input id="qualInstitutionWebsite" v-model="currentQualification.institutionWebsite" class="form-control"
+                         placeholder="https://..."
+                         type="url">
                 </div>
                 <div class="mb-3">
-                  <label for="qualCredentialUrl" class="form-label">Credential URL</label>
-                  <input type="url" class="form-control" id="qualCredentialUrl" v-model="currentQualification.credentialUrl" placeholder="https://...">
+                  <label class="form-label" for="qualCredentialUrl">Credential URL</label>
+                  <input id="qualCredentialUrl" v-model="currentQualification.credentialUrl" class="form-control"
+                         placeholder="https://..." type="url">
                   <div class="form-text">A link to a digital certificate or verification page.</div>
                 </div>
                 <hr class="my-4">
                 <div class="form-check form-switch mb-3">
-                  <input class="form-check-input" type="checkbox" role="switch" id="qualVisible" v-model="currentQualification.visible">
-                  <label class="form-check-label" for="qualVisible">Visible on public portfolio</label>
+                  <input id="qualVisible" v-model="currentQualification.visible" class="form-check-input" role="switch"
+                         type="checkbox">
+                  <label class="form-check-label" for="qualVisible">Visible on public
+                    portfolio</label>
                 </div>
               </form>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-              <button type="button" class="btn btn-primary" @click="handleFormSubmit">{{ isEditing ? 'Save Changes' : 'Add Qualification' }}</button>
+              <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+              <button class="btn btn-primary" type="button" @click="handleFormSubmit">
+                {{ isEditing ? 'Save Changes' : 'Add Qualification' }}
+              </button>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Qualifications List -->
-      <div v-if="!isLoading && qualifications.length > 0" class="card glass-card animate-fade-in-up" style="animation-delay: 0.1s;">
+      <div v-if="!isLoading && qualifications.length > 0" class="card glass-card animate-fade-in-up"
+           style="animation-delay: 0.1s;">
         <ul class="list-group list-group-flush">
-          <li v-for="qual in qualifications" :key="qual.uuid" class="list-group-item d-flex justify-content-between align-items-center">
+          <li v-for="qual in qualifications" :key="qual.uuid"
+              class="list-group-item d-flex justify-content-between align-items-center">
             <div>
               <h5 class="mb-1">{{ qual.qualificationName }}</h5>
               <p class="mb-1 text-primary fw-bold">
                 {{ qual.institutionName }}
               </p>
-              <small class="d-block text-muted">{{ qual.startYear }} - {{ qual.stillStudying ? 'Present' : qual.completionYear }}</small>
-              <small v-if="qual.fieldOfStudy" class="d-block text-muted">{{ qual.fieldOfStudy }}</small>
+              <small class="d-block text-muted">{{ qual.startYear }} -
+                {{ qual.stillStudying ? 'Present' : qual.completionYear }}</small>
+              <small v-if="qual.fieldOfStudy" class="d-block text-muted">{{
+                  qual.fieldOfStudy
+                }}</small>
               <small v-if="qual.grade" class="text-muted">Grade: {{ qual.grade }}</small>
             </div>
             <div class="actions d-flex align-items-center">
               <div class="form-check form-switch me-3" title="Toggle Visibility">
-                <input class="form-check-input" type="checkbox" role="switch" :checked="qual.visible" @change="handleVisibilityToggle(qual)">
+                <input :checked="qual.visible" class="form-check-input" role="switch"
+                       type="checkbox" @change="handleVisibilityToggle(qual)">
               </div>
-              <button class="btn btn-sm btn-outline-primary me-2" @click="openEditModal(qual)" title="Edit Qualification">
+              <button class="btn btn-sm btn-outline-primary me-2" title="Edit Qualification"
+                      @click="openEditModal(qual)">
                 <i class="bi bi-pencil-fill"></i>
               </button>
-              <button class="btn btn-sm btn-outline-danger" @click="qualificationToDelete = qual" title="Delete Qualification">
+              <button class="btn btn-sm btn-outline-danger" title="Delete Qualification"
+                      @click="qualificationToDelete = qual">
                 <i class="bi bi-trash-fill"></i>
               </button>
             </div>
@@ -130,36 +168,38 @@
       </div>
 
       <!-- Empty State -->
-      <div v-else-if="!isLoading" class="text-center p-5 glass-card animate-fade-in-up" style="animation-delay: 0.1s;">
+      <div v-else-if="!isLoading" class="text-center p-5 glass-card animate-fade-in-up"
+           style="animation-delay: 0.1s;">
         <div class="empty-state-icon mb-4">
           <i class="bi bi-mortarboard-fill"></i>
         </div>
         <h4 class="glass-title">No Qualifications Found</h4>
-        <p class="glass-subtitle">You haven't added any qualifications yet. Click the button above to get started!</p>
+        <p class="glass-subtitle">You haven't added any qualifications yet. Click the button above
+          to get started!</p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, reactive, watch } from 'vue';
-import { qualificationsApi } from '@/services/api/user.api.js';
+import {onMounted, reactive, ref, watch} from 'vue';
+import {qualificationsApi} from '@/services/api/user.api.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';
 import ConfirmModal from '@/components/common/modals/ConfirmModal.vue';
-import { Modal } from 'bootstrap';
+import {Modal} from 'bootstrap';
 
 const QUALIFICATION_LEVELS = [
-  { value: 'DOCTORATE', text: 'Doctorate (PhD)' },
-  { value: 'MASTERS', text: 'Master\'s Degree' },
-  { value: 'POSTGRADUATE_DIPLOMA', text: 'Postgraduate Diploma' },
-  { value: 'BACHELORS', text: 'Bachelor\'s Degree' },
-  { value: 'ASSOCIATE_DEGREE', text: 'Associate Degree' },
-  { value: 'DIPLOMA', text: 'Diploma' },
-  { value: 'CERTIFICATE', text: 'Certificate' },
-  { value: 'HIGH_SCHOOL', text: 'High School / Secondary' },
-  { value: 'OTHER', text: 'Other' },
+  {value: 'DOCTORATE', text: 'Doctorate (PhD)'},
+  {value: 'MASTERS', text: 'Master\'s Degree'},
+  {value: 'POSTGRADUATE_DIPLOMA', text: 'Postgraduate Diploma'},
+  {value: 'BACHELORS', text: 'Bachelor\'s Degree'},
+  {value: 'ASSOCIATE_DEGREE', text: 'Associate Degree'},
+  {value: 'DIPLOMA', text: 'Diploma'},
+  {value: 'CERTIFICATE', text: 'Certificate'},
+  {value: 'HIGH_SCHOOL', text: 'High School / Secondary'},
+  {value: 'OTHER', text: 'Other'},
 ];
 
 // --- State ---

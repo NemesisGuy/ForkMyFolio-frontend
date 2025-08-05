@@ -1,4 +1,4 @@
-import { fetchWithAuth } from './apiClient';
+import {fetchWithAuth} from './apiClient';
 
 /**
  * @file src/services/api/auth.api.js

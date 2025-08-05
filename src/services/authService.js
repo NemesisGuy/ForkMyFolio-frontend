@@ -3,18 +3,21 @@
  * @description Manages authentication state, including login, logout, token storage, and session initialization.
  * This service acts as the central hub for authentication logic.
  */
-import { ref, computed } from 'vue';
-import { jwtDecode } from 'jwt-decode';
+import {computed, ref} from 'vue';
 
 // Import the specific API functions
-import { login as apiLogin, logout as apiLogout, register as apiRegister, refreshToken as apiRefreshToken } from './api/auth.api';
-import { getMyAccount } from './api/user.api';
+import {
+  login as apiLogin,
+  logout as apiLogout,
+  refreshToken as apiRefreshToken,
+  register as apiRegister
+} from './api/auth.api';
+import {getMyAccount} from './api/user.api';
 // --- THIS IS THE FIX ---
 // We need to import the services we want to reset on logout.
-import { publicApi } from './api/public.api';
-import { settingsService } from './settingsService.js';
-import { usePublicPortfolioStore } from '@/stores/publicPortfolioStore.js';
-import { ApiError } from './api/index.js';
+import {publicApi} from './api/public.api';
+import {settingsService} from './settingsService.js';
+import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore.js';
 
 // --- Reactive State ---
 const isAuthenticated = ref(false);

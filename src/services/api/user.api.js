@@ -1,8 +1,8 @@
-import { fetchWithAuth } from './apiClient';
+import {fetchWithAuth} from './apiClient';
 
 /**
  * @file src/services/api/user.api.js
- * @description API functions for all authenticated user-specific operations under the /me/ scope.
+ * @description API functions for all authenticated user-specific operations.
  */
 
 // --- User Account & Public Profile ---
@@ -13,7 +13,7 @@ import { fetchWithAuth } from './apiClient';
  */
 export const getMyAccount = () => {
   // Endpoint: GET /api/v1/me
-  return fetchWithAuth('/me', { method: 'GET' });
+  return fetchWithAuth('/me', {method: 'GET'});
 };
 
 /**
@@ -23,14 +23,14 @@ export const getMyAccount = () => {
  */
 export const updateMyAccount = (accountData) => {
   // Endpoint: PUT /api/v1/me
-  return fetchWithAuth('/me', { method: 'PUT', body: accountData });
+  return fetchWithAuth('/me', {method: 'PUT', body: accountData});
 };
 
 /**
  * Fetches the public-facing profile details for the authenticated user to edit.
  * @returns {Promise<Object>} The user's public profile data.
  */
-export const getMyPublicProfile = () => fetchWithAuth('/me/profile', { method: 'GET' });
+export const getMyPublicProfile = () => fetchWithAuth('/me/profile', {method: 'GET'});
 
 /**
  * Updates the public profile for the authenticated user.
@@ -38,7 +38,6 @@ export const getMyPublicProfile = () => fetchWithAuth('/me/profile', { method: '
  * @returns {Promise<Object>} The updated public profile data.
  */
 export const updateMyPublicProfile = (profileData) => {
-  // CORRECTED: This now sends a simple JSON payload, not FormData.
   // The image is handled separately via updateMyAccount.
   return fetchWithAuth('/me/profile', {
     method: 'PUT',
@@ -46,36 +45,87 @@ export const updateMyPublicProfile = (profileData) => {
   });
 };
 
+/**
+ * Updates the master public visibility of the authenticated user's portfolio.
+ * @param {Object} visibilityData - The visibility data, e.g., { isPublic: true }.
+ * @returns {Promise<void>}
+ */
+export const updateMyProfileVisibility = (visibilityData) => {
+  // Endpoint: PUT /api/v1/me/profile/visibility
+  return fetchWithAuth('/me/profile/visibility', {
+    method: 'PUT',
+    body: visibilityData,
+  });
+};
 
-// --- Generic CRUD factory ---
+
+// --- Generic CRUD factory for /me resources ---
 const createCrudFunctions = (resource) => ({
   getAll: () => fetchWithAuth(`/me/${resource}`),
   getById: (uuid) => fetchWithAuth(`/me/${resource}/${uuid}`),
-  create: (data) => fetchWithAuth(`/me/${resource}`, { method: 'POST', body: data }),
-  update: (uuid, data) => fetchWithAuth(`/me/${resource}/${uuid}`, { method: 'PUT', body: data }),
-  remove: (uuid) => fetchWithAuth(`/me/${resource}/${uuid}`, { method: 'DELETE' }),
+  create: (data) => fetchWithAuth(`/me/${resource}`, {method: 'POST', body: data}),
+  update: (uuid, data) => fetchWithAuth(`/me/${resource}/${uuid}`, {method: 'PUT', body: data}),
+  remove: (uuid) => fetchWithAuth(`/me/${resource}/${uuid}`, {method: 'DELETE'}),
 });
 
 // --- Export CRUD functions for each resource ---
 export const projectsApi = createCrudFunctions('projects');
-export const skillsApi = createCrudFunctions('skills');
 export const experiencesApi = createCrudFunctions('experiences');
 export const qualificationsApi = createCrudFunctions('qualifications');
 export const testimonialsApi = createCrudFunctions('testimonials');
 
+// REFACTOR: The skillsApi now points to the dedicated /user/skills endpoint,
+// not the generic /me/skills factory endpoint, to align with the new UserSkillController.
+const USER_SKILLS_RESOURCE = '/user/skills';
+export const skillsApi = {
+  getAll: () => fetchWithAuth(USER_SKILLS_RESOURCE),
+  create: (data) => fetchWithAuth(USER_SKILLS_RESOURCE, {method: 'POST', body: data}),
+  update: (uuid, data) => fetchWithAuth(`${USER_SKILLS_RESOURCE}/${uuid}`, {
+    method: 'PUT',
+    body: data
+  }),
+  remove: (uuid) => fetchWithAuth(`${USER_SKILLS_RESOURCE}/${uuid}`, {method: 'DELETE'}),
+};
+
+
 // --- Contact Messages (User-specific) ---
 export const getMyContactMessages = () => fetchWithAuth('/me/contact-messages');
-export const deleteMyContactMessage = (uuid) => fetchWithAuth(`/me/contact-messages/${uuid}`, { method: 'DELETE' });
+export const deleteMyContactMessage = (uuid) => fetchWithAuth(`/me/contact-messages/${uuid}`, {method: 'DELETE'});
+
+/**
+ * Fetches the count of unread messages for the authenticated user.
+ * @returns {Promise<number>} The number of unread messages.
+ */
+export const getUnreadMessageCount = async () => {
+  // Endpoint: GET /api/v1/me/contact-messages/unread-count
+  const response = await fetchWithAuth('/me/contact-messages/unread-count');
+  // The backend returns { "unreadCount": 3 }, so we access the property.
+  return response.unreadCount;
+};
+
+/**
+ * Partially updates a contact message for the authenticated user.
+ * @param {string} uuid - The UUID of the message to update.
+ * @param {object} updateData - An object with the fields to update (e.g., { read: true, priority: 'HIGH' }).
+ * @returns {Promise<object>} The updated message object from the server.
+ */
+export const updateMyContactMessage = (uuid, updateData) => {
+  // Endpoint: PUT /api/v1/me/contact-messages/{uuid}
+  return fetchWithAuth(`/me/contact-messages/${uuid}`, {
+    method: 'PUT',
+    body: updateData,
+  });
+};
+
 
 // --- Settings API ---
 export const settingsApi = {
   getAll: () => fetchWithAuth('/me/settings'),
-  update: (settingsList) => fetchWithAuth('/me/settings', { method: 'PUT', body: settingsList }),
+  update: (settingsList) => fetchWithAuth('/me/settings', {method: 'PUT', body: settingsList}),
 };
 
 // --- Backup & Restore (User-specific) ---
 export const downloadMyBackup = async () => {
-  // --- THIS IS THE FIX ---
   // The backend sends a raw JSON file, not a standard API response.
   // We must request it as a 'blob' to handle it as a file download.
   const blob = await fetchWithAuth('/me/backup', {
@@ -97,5 +147,5 @@ export const downloadMyBackup = async () => {
 export const restoreMyBackup = (file) => {
   const formData = new FormData();
   formData.append('file', file);
-  return fetchWithAuth('/me/backup/restore', { method: 'POST', body: formData });
+  return fetchWithAuth('/me/backup/restore', {method: 'POST', body: formData});
 };

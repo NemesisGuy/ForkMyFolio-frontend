@@ -9,7 +9,7 @@
         </p>
       </div>
 
-      <LoadingModal :visible="isLoading" />
+      <LoadingModal :visible="isLoading"/>
 
       <div v-if="isLoading"
            class="card glass-card shimmering glass-card-floating animate-fade-in-up"
@@ -41,14 +41,14 @@
                 <i class="bi bi-person-fill me-2"></i>Name
               </label>
               <input id="name"
-                     v-model="form.senderName"
-                     :class="{'is-invalid': fieldErrors.senderName}"
+                     v-model="form.name"
+                     :class="{'is-invalid': fieldErrors.name}"
                      class="form-control glass-input"
+                     placeholder="Enter your full name"
                      required
-                     type="text"
-                     placeholder="Enter your full name">
-              <div v-if="fieldErrors.senderName" class="invalid-feedback glass-error">
-                <i class="bi bi-exclamation-circle me-1"></i>{{ fieldErrors.senderName }}
+                     type="text">
+              <div v-if="fieldErrors.name" class="invalid-feedback glass-error">
+                <i class="bi bi-exclamation-circle me-1"></i>{{ fieldErrors.name }}
               </div>
             </div>
 
@@ -57,14 +57,14 @@
                 <i class="bi bi-envelope-fill me-2"></i>Email address
               </label>
               <input id="email"
-                     v-model="form.senderEmail"
-                     :class="{'is-invalid': fieldErrors.senderEmail}"
+                     v-model="form.email"
+                     :class="{'is-invalid': fieldErrors.email}"
                      class="form-control glass-input"
+                     placeholder="your.email@example.com"
                      required
-                     type="email"
-                     placeholder="your.email@example.com">
-              <div v-if="fieldErrors.senderEmail" class="invalid-feedback glass-error">
-                <i class="bi bi-exclamation-circle me-1"></i>{{ fieldErrors.senderEmail }}
+                     type="email">
+              <div v-if="fieldErrors.email" class="invalid-feedback glass-error">
+                <i class="bi bi-exclamation-circle me-1"></i>{{ fieldErrors.email }}
               </div>
             </div>
 
@@ -76,9 +76,9 @@
                         v-model="form.message"
                         :class="{'is-invalid': fieldErrors.message}"
                         class="form-control glass-input glass-textarea"
+                        placeholder="Tell me about your project or ask any questions..."
                         required
-                        rows="5"
-                        placeholder="Tell me about your project or ask any questions..."></textarea>
+                        rows="5"></textarea>
               <div v-if="fieldErrors.message" class="invalid-feedback glass-error">
                 <i class="bi bi-exclamation-circle me-1"></i>{{ fieldErrors.message }}
               </div>
@@ -122,58 +122,39 @@
         </div>
       </div>
     </div>
-
-    <SuccessModal
-      :visible="showSuccessModal"
-      title="Message Sent!"
-      :message="successMessage"
-      @close="closeSuccessModal"
-    />
-    <ErrorModal
-      :visible="showErrorModal"
-      :title="error.title"
-      :message="error.message"
-      @close="closeErrorModal"
-    />
   </div>
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue';
-import { usePublicPortfolioStore } from '@/stores/publicPortfolioStore.js';
-import { sendContactMessage, ApiError } from '@/services/api/index.js';
-import SuccessModal from '@/components/common/modals/SuccessModal.vue';
-import ErrorModal from '@/components/common/modals/ErrorModal.vue';
+import {reactive, ref} from 'vue';
+import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore.js';
+import {notificationService} from '@/services/notificationService.js';
+import {ApiError, sendContactMessage} from '@/services/api/index.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 
-const { currentSlug, isLoading } = usePublicPortfolioStore();
+const {currentSlug, isLoading} = usePublicPortfolioStore();
 
 const form = reactive({
-  senderName: '',
-  senderEmail: '',
+  name: '',
+  email: '',
   message: ''
 });
 
 const fieldErrors = reactive({
-  senderName: null,
-  senderEmail: null,
+  name: null,
+  email: null,
   message: null
 });
 
 const isSubmitting = ref(false);
-const error = ref({ title: '', message: '' });
-const showErrorModal = ref(false);
-const successMessage = ref('');
-const showSuccessModal = ref(false);
 
-const closeErrorModal = () => {
-  showErrorModal.value = false;
-  error.value = { title: '', message: '' };
-};
-
-const closeSuccessModal = () => {
-  showSuccessModal.value = false;
-  successMessage.value = '';
+const resetForm = () => {
+  form.name = '';
+  form.email = '';
+  form.message = '';
+  for (const key in fieldErrors) {
+    fieldErrors[key] = null;
+  }
 };
 
 const validateForm = () => {
@@ -182,15 +163,15 @@ const validateForm = () => {
   }
   let isValid = true;
 
-  if (!form.senderName.trim()) {
-    fieldErrors.senderName = "Name is required.";
+  if (!form.name.trim()) {
+    fieldErrors.name = "Name is required.";
     isValid = false;
   }
-  if (!form.senderEmail.trim()) {
-    fieldErrors.senderEmail = "Email is required.";
+  if (!form.email.trim()) {
+    fieldErrors.email = "Email is required.";
     isValid = false;
-  } else if (!/\S+@\S+\.\S+/.test(form.senderEmail)) {
-    fieldErrors.senderEmail = "Please enter a valid email address.";
+  } else if (!/\S+@\S+\.\S+/.test(form.email)) {
+    fieldErrors.email = "Please enter a valid email address.";
     isValid = false;
   }
   if (!form.message.trim()) {
@@ -207,19 +188,18 @@ const handleSubmit = async () => {
 
   isSubmitting.value = true;
   try {
-    await sendContactMessage(currentSlug.value, { ...form });
-    successMessage.value = 'Thank you for your message! I will get back to you shortly.';
-    showSuccessModal.value = true;
-    form.senderName = '';
-    form.senderEmail = '';
-    form.message = '';
+    await sendContactMessage(currentSlug.value, {...form});
+    notificationService.add({
+      type: 'success',
+      message: 'Thank you for your message! I will get back to you shortly.'
+    });
+    resetForm();
   } catch (err) {
     console.error("Failed to send message:", err);
-    error.value = {
-      title: 'Submission Failed',
+    notificationService.add({
+      type: 'error',
       message: err instanceof ApiError ? err.message : 'Could not send the message. Please try again later.'
-    };
-    showErrorModal.value = true;
+    });
   } finally {
     isSubmitting.value = false;
   }
@@ -252,9 +232,8 @@ const handleSubmit = async () => {
 .glass-input:focus {
   background: var(--glass-bg-hover);
   border-color: rgba(var(--bs-primary-rgb), 0.5);
-  box-shadow:
-    0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.15),
-    0 8px 25px rgba(var(--bs-primary-rgb), 0.1);
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.15),
+  0 8px 25px rgba(var(--bs-primary-rgb), 0.1);
   transform: translateY(-2px);
 }
 
@@ -347,13 +326,15 @@ const handleSubmit = async () => {
 }
 
 @keyframes glassShimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
-/* --- THIS IS THE FIX --- */
 /* Override glass variables specifically for this page's inputs in light mode for better contrast. */
-/* This ensures the inputs AND cards are visible against the light page background. */
 [data-bs-theme="light"] .glass-card {
   background: rgba(255, 255, 255, 0.6); /* More opaque white */
   border-color: rgba(0, 0, 0, 0.1); /* Subtle dark border */

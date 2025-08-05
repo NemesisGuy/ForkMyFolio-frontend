@@ -3,7 +3,8 @@
   <div class="signup-page animated-gradient-background">
     <div class="container" style="max-width: 500px;">
       <!-- KEY CHANGE: The card now uses the global glass-card and interactive classes -->
-      <div class="card glass-card shimmering animate-fade-in-up interactive-card-lift interactive-card-shadow-primary">
+      <div
+        class="card glass-card shimmering animate-fade-in-up interactive-card-lift interactive-card-shadow-primary">
         <div class="card-body p-4 p-md-5">
           <h1 class="card-title text-center mb-4 fs-3">Create Account</h1>
 
@@ -21,7 +22,8 @@
           <form novalidate @submit.prevent="handleSignup">
             <div class="mb-3">
               <label class="form-label" for="firstName">First Name</label>
-              <input id="firstName" v-model="formData.firstName" :class="{'is-invalid': fieldErrors.firstName}"
+              <input id="firstName" v-model="formData.firstName"
+                     :class="{'is-invalid': fieldErrors.firstName}"
                      class="form-control" required type="text">
               <div v-if="fieldErrors.firstName" class="invalid-feedback">{{
                   fieldErrors.firstName
@@ -30,7 +32,8 @@
             </div>
             <div class="mb-3">
               <label class="form-label" for="lastName">Last Name</label>
-              <input id="lastName" v-model="formData.lastName" :class="{'is-invalid': fieldErrors.lastName}"
+              <input id="lastName" v-model="formData.lastName"
+                     :class="{'is-invalid': fieldErrors.lastName}"
                      class="form-control" required type="text">
               <div v-if="fieldErrors.lastName" class="invalid-feedback">{{
                   fieldErrors.lastName
@@ -63,7 +66,9 @@
               </div>
             </div>
             <!-- KEY CHANGE: The button now uses the global interactive classes -->
-            <button :disabled="isLoading" class="btn btn-primary w-100 interactive-lift interactive-shadow-primary" type="submit">
+            <button :disabled="isLoading"
+                    class="btn btn-primary w-100 interactive-lift interactive-shadow-primary"
+                    type="submit">
               <span v-if="isLoading" aria-hidden="true" class="spinner-border spinner-border-sm"
                     role="status"></span>
               {{ isLoading ? 'Creating Account...' : 'Create Account' }}
@@ -147,7 +152,7 @@ const closeSignupSuccessModal = () => {
   showSignupSuccessModal.value = false;
   signupSuccessMessage.value = null;
   const userSlug = authService.user.value?.slug;
-  router.push({ name: 'dashboard', params: { slug: userSlug } });
+  router.push({name: 'dashboard', params: {slug: userSlug}});
 };
 
 /**
@@ -314,16 +319,19 @@ const handleSignup = async () => {
   color: var(--bs-body-color);
   transition: all 0.3s ease;
 }
+
 .form-control:focus {
   background-color: rgba(var(--bs-body-bg-rgb), 0.7);
   color: var(--bs-body-color);
   border-color: var(--bs-primary);
   box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
 }
+
 .form-control.is-invalid {
   border-color: var(--bs-danger);
   background-color: rgba(var(--bs-danger-rgb), 0.1);
 }
+
 .invalid-feedback {
   color: var(--bs-danger);
   font-weight: 500;

@@ -47,10 +47,10 @@
  * @file src/components/common/ConfirmModal.vue
  * @description A reusable, glassmorphic modal for asking users to confirm an action.
  */
-import { computed } from 'vue';
-import { useTheme } from '@/services/themeService.js';
+import {computed} from 'vue';
+import {useTheme} from '@/services/themeService.js';
 
-const { currentTheme } = useTheme();
+const {currentTheme} = useTheme();
 
 const props = defineProps({
   title: {

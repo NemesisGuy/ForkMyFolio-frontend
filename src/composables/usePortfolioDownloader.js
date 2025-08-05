@@ -3,9 +3,9 @@
  * @description A Vue composable to handle the logic for downloading a public PDF portfolio.
  */
 
-import { ref, unref } from 'vue';
-import { downloadPublicPortfolioBySlug } from '@/services/api';
-import { triggerDownload, getFilenameFromResponse } from '@/utils/downloadUtils';
+import {ref, unref} from 'vue';
+import {downloadPublicPortfolioBySlug} from '@/services/api';
+import {getFilenameFromResponse, triggerDownload} from '@/utils/downloadUtils';
 
 /**
  * A composable to handle the logic for downloading a public portfolio PDF.

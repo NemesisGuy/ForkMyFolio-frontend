@@ -10,7 +10,7 @@
       </div>
 
       <!-- The glassmorphic modal will overlay everything while loading -->
-      <LoadingModal :visible="isLoading" />
+      <LoadingModal :visible="isLoading"/>
 
       <!-- A skeleton loader that mimics the new timeline style -->
       <div v-if="isLoading" class="timeline">
@@ -19,7 +19,8 @@
             <div class="card-body">
               <div class="skeleton-line skeleton-title"></div>
               <div class="skeleton-line skeleton-subtitle"></div>
-              <div class="skeleton-line skeleton-grade" style="width: 50%; margin-top: 1rem; margin-bottom: 1rem;"></div>
+              <div class="skeleton-line skeleton-grade"
+                   style="width: 50%; margin-top: 1rem; margin-bottom: 1rem;"></div>
               <div class="skeleton-line skeleton-subtitle" style="width: 90%;"></div>
               <div class="skeleton-line skeleton-subtitle" style="width: 75%;"></div>
             </div>
@@ -40,32 +41,43 @@
 
       <div v-else-if="experiences.length > 0" class="timeline">
         <div v-for="(exp, index) in experiences" :key="exp.uuid"
-             class="timeline-item animate-fade-in-up"
-             :style="{ 'animation-delay': (index * 0.15) + 0.2 + 's' }">
-          <div class="timeline-content card glass-card glass-card-floating h-100 interactive-card-lift interactive-card-shadow-primary">
+             :style="{ 'animation-delay': (index * 0.15) + 0.2 + 's' }"
+             class="timeline-item animate-fade-in-up">
+          <div
+            class="timeline-content card glass-card glass-card-floating h-100 interactive-card-lift interactive-card-shadow-primary">
             <div class="card-body">
               <div class="d-flex align-items-start mb-3">
-                <a v-if="exp.companyUrl" :href="exp.companyUrl" target="_blank" rel="noopener noreferrer" class="company-logo-link">
-                  <img v-if="exp.companyLogoUrl" :src="exp.companyLogoUrl" :alt="`${exp.companyName} Logo`" class="company-logo me-3">
-                  <div v-else class="company-logo-placeholder me-3"><i class="bi bi-building"></i></div>
+                <a v-if="exp.companyUrl" :href="exp.companyUrl" class="company-logo-link"
+                   rel="noopener noreferrer" target="_blank">
+                  <img v-if="exp.companyLogoUrl" :alt="`${exp.companyName} Logo`"
+                       :src="exp.companyLogoUrl" class="company-logo me-3">
+                  <div v-else class="company-logo-placeholder me-3"><i class="bi bi-building"></i>
+                  </div>
                 </a>
                 <div v-else class="company-logo-link">
-                  <img v-if="exp.companyLogoUrl" :src="exp.companyLogoUrl" :alt="`${exp.companyName} Logo`" class="company-logo me-3">
-                  <div v-else class="company-logo-placeholder me-3"><i class="bi bi-building"></i></div>
+                  <img v-if="exp.companyLogoUrl" :alt="`${exp.companyName} Logo`"
+                       :src="exp.companyLogoUrl" class="company-logo me-3">
+                  <div v-else class="company-logo-placeholder me-3"><i class="bi bi-building"></i>
+                  </div>
                 </div>
 
                 <div class="flex-grow-1">
                   <h5 class="card-title glass-title">{{ exp.jobTitle }}</h5>
                   <h6 class="card-subtitle mb-2 glass-subtitle">{{ exp.companyName }}</h6>
                   <div class="small text-muted">
-                    <span><i class="bi bi-calendar-event me-1"></i>{{ formatDate(exp.startDate) }} - {{ exp.endDate ? formatDate(exp.endDate) : 'Present' }}</span>
+                    <span><i class="bi bi-calendar-event me-1"></i>{{ formatDate(exp.startDate) }} - {{
+                        exp.endDate ? formatDate(exp.endDate) : 'Present'
+                      }}</span>
                     <span class="mx-2">|</span>
-                    <span><i class="bi bi-geo-alt-fill me-1"></i>{{ exp.location }} ({{ exp.locationType?.replace('_', ' ') }})</span>
+                    <span><i class="bi bi-geo-alt-fill me-1"></i>{{
+                        exp.location
+                      }} ({{ exp.locationType?.replace('_', ' ') }})</span>
                   </div>
                 </div>
               </div>
 
-              <p v-if="exp.description" class="card-text glass-description experience-description" v-html="exp.description"></p>
+              <p v-if="exp.description" class="card-text glass-description experience-description"
+                 v-html="exp.description"></p>
 
               <div v-if="exp.achievements" class="mt-3">
                 <h6 class="achievements-title">Key Achievements</h6>
@@ -75,7 +87,12 @@
               <div v-if="exp.skills && exp.skills.length > 0" class="mt-4">
                 <h6 class="skills-title">Skills Used</h6>
                 <div class="d-flex flex-wrap gap-2">
-                  <span v-for="skill in exp.skills" :key="skill.uuid" class="badge skill-badge">{{ skill.name }}</span>
+                  <!-- THIS IS THE FIX: Use the centralized getIconClass function -->
+                  <span v-for="skill in exp.skills" :key="skill.uuid"
+                        class="badge skill-badge d-flex align-items-center">
+                    <i :class="[getIconClass(skill), 'me-2']"></i>
+                    {{ skill.name }}
+                  </span>
                 </div>
               </div>
             </div>
@@ -98,9 +115,14 @@
 
           <!-- Helpful tip for the portfolio owner -->
           <div v-else class="alert alert-info mt-3">
-            <p class="mb-1"><strong>Hey there!</strong> It looks like you don't have any work experience visible on your public page.</p>
+            <p class="mb-1"><strong>Hey there!</strong> It looks like you don't have any work
+              experience visible on your public page.</p>
             <p class="mb-0">
-              Go to your <router-link :to="{ name: 'my-experience', params: { slug: currentSlug } }">Experience Management</router-link> page to add new entries or make existing ones visible.
+              Go to your
+              <router-link :to="{ name: 'my-experience', params: { slug: currentSlug } }">Experience
+                Management
+              </router-link>
+              page to add new entries or make existing ones visible.
             </p>
           </div>
         </div>
@@ -110,14 +132,15 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import { usePublicPortfolioStore } from '@/stores/publicPortfolioStore.js';
-import { authService } from '@/services/authService.js';
+import {computed} from 'vue';
+import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore.js';
+import {authService} from '@/services/authService.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
+// THIS IS THE FIX: Import the centralized icon service
+import {getIconClass} from '@/services/iconService.js';
 
-// --- THIS IS THE FIX ---
 // Get all necessary reactive properties from the store.
-const { portfolio, isLoading, error, currentSlug } = usePublicPortfolioStore();
+const {portfolio, isLoading, error, currentSlug} = usePublicPortfolioStore();
 
 // Experiences are a computed property from the store's portfolio.
 const experiences = computed(() => {
@@ -133,11 +156,11 @@ const isOwner = computed(() => {
 
 const formatDate = (dateString) => {
   if (!dateString) return '';
-  const options = { year: 'numeric', month: 'long' };
+  const options = {year: 'numeric', month: 'long'};
   // Add a day to the date to avoid timezone issues where it might show the previous day.
   const date = new Date(dateString);
   date.setDate(date.getDate() + 1);
-  return date.toLocaleDateString(undefined, { ...options, timeZone: 'UTC' });
+  return date.toLocaleDateString(undefined, {...options, timeZone: 'UTC'});
 };
 </script>
 
@@ -151,6 +174,7 @@ const formatDate = (dateString) => {
   white-space: pre-wrap;
   word-wrap: break-word;
 }
+
 .achievements-text {
   white-space: pre-wrap;
   word-wrap: break-word;
@@ -159,17 +183,25 @@ const formatDate = (dateString) => {
   border-left: 3px solid var(--bs-primary);
   color: var(--glass-text-secondary);
 }
+
 .achievements-title, .skills-title {
   font-weight: 600;
   color: var(--glass-subtitle);
   margin-bottom: 0.5rem;
 }
+
 .skill-badge {
   background-color: rgba(var(--bs-primary-rgb), 0.15);
   color: var(--bs-primary);
   font-weight: 500;
   padding: 0.4em 0.75em;
 }
+
+.skill-badge i {
+  font-size: 1.1em; /* Make icon slightly larger than text */
+  line-height: 1;
+}
+
 .company-logo, .company-logo-placeholder {
   width: 50px;
   height: 50px;
@@ -179,6 +211,7 @@ const formatDate = (dateString) => {
   background-color: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--glass-border);
 }
+
 .company-logo-placeholder {
   display: flex;
   align-items: center;
@@ -186,10 +219,12 @@ const formatDate = (dateString) => {
   font-size: 1.5rem;
   color: var(--glass-subtitle);
 }
+
 .company-logo-link {
   display: block;
   transition: transform 0.2s ease;
 }
+
 .company-logo-link:hover {
   transform: scale(1.05);
 }

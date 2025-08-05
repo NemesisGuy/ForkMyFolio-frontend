@@ -13,20 +13,23 @@
       </div>
 
       <!-- Modals -->
-      <LoadingModal :visible="isLoading" />
-      <ErrorModal :visible="!!error" :message="error" title="An Error Occurred" @close="error = null" />
-      <SuccessModal :visible="!!successMessage" :message="successMessage" title="Success" @close="successMessage = null" />
+      <LoadingModal :visible="isLoading"/>
+      <ErrorModal :message="error" :visible="!!error" title="An Error Occurred"
+                  @close="error = null"/>
+      <SuccessModal :message="successMessage" :visible="!!successMessage" title="Success"
+                    @close="successMessage = null"/>
       <ConfirmModal
+        :message="`Are you sure you want to delete the user '${userToDelete?.firstName} ${userToDelete?.lastName}' (ID: ${userToDelete?.id})? This action cannot be undone.`"
         :visible="!!userToDelete"
         title="Confirm Deletion"
-        :message="`Are you sure you want to delete the user '${userToDelete?.firstName} ${userToDelete?.lastName}' (ID: ${userToDelete?.id})? This action cannot be undone.`"
         type="danger"
-        @confirm="handleDelete"
         @close="userToDelete = null"
+        @confirm="handleDelete"
       />
 
       <!-- User List Table -->
-      <div v-if="!isLoading && users.length > 0" class="card glass-card animate-fade-in-up" style="animation-delay: 0.1s;">
+      <div v-if="!isLoading && users.length > 0" class="card glass-card animate-fade-in-up"
+           style="animation-delay: 0.1s;">
         <div class="card-body p-0">
           <div class="table-responsive">
             <table class="table table-hover glass-table mb-0">
@@ -58,10 +61,12 @@
                     </span>
                 </td>
                 <td class="text-end">
-                  <button class="btn btn-sm btn-outline-primary me-2" @click="editUser(user.id)" title="Edit User">
+                  <button class="btn btn-sm btn-outline-primary me-2" title="Edit User"
+                          @click="editUser(user.id)">
                     <i class="bi bi-pencil-fill"></i>
                   </button>
-                  <button class="btn btn-sm btn-outline-danger" @click="confirmDelete(user)" title="Delete User">
+                  <button class="btn btn-sm btn-outline-danger" title="Delete User"
+                          @click="confirmDelete(user)">
                     <i class="bi bi-trash-fill"></i>
                   </button>
                 </td>
@@ -73,7 +78,8 @@
       </div>
 
       <!-- Empty State -->
-      <div v-else-if="!isLoading" class="text-center p-5 glass-card animate-fade-in-up" style="animation-delay: 0.1s;">
+      <div v-else-if="!isLoading" class="text-center p-5 glass-card animate-fade-in-up"
+           style="animation-delay: 0.1s;">
         <div class="empty-state-icon mb-4">
           <i class="bi bi-people"></i>
         </div>
@@ -85,9 +91,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { getAdminUsers, deleteAdminUser } from '@/services/api/admin.api.js';
+import {onMounted, ref} from 'vue';
+import {useRouter} from 'vue-router';
+import {deleteAdminUser, getAdminUsers} from '@/services/api/admin.api.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';
@@ -124,7 +130,7 @@ const editUser = (userId) => {
     error.value = "Could not open the edit page because the user's ID is missing. Please refresh and try again.";
     return;
   }
-  router.push({ name: 'admin-user-edit', params: { id: userId } });
+  router.push({name: 'admin-user-edit', params: {id: userId}});
 };
 
 const confirmDelete = (user) => {
@@ -159,19 +165,23 @@ const handleDelete = async () => {
   --bs-table-hover-color: var(--glass-text);
   --bs-table-hover-bg: var(--glass-bg-hover);
 }
+
 .glass-table thead th {
   background-color: rgba(var(--bs-body-color-rgb), 0.05);
   border-bottom: 2px solid var(--glass-border-hover);
   color: var(--glass-text);
   font-weight: 500;
 }
+
 .glass-table td, .glass-table th {
   border-color: var(--glass-border);
   vertical-align: middle;
 }
+
 .badge {
   text-transform: capitalize;
 }
+
 .empty-state-icon {
   font-size: 4rem;
   color: var(--glass-text);

@@ -2,8 +2,8 @@
  * @file src/services/api/admin.api.js
  * @description API functions for all admin-only operations.
  */
-import { fetchWithAuth } from './apiClient';
-import { triggerDownload } from '@/utils/downloadUtils';
+import {fetchWithAuth} from './apiClient';
+import {triggerDownload} from '@/utils/downloadUtils';
 
 // --- Helper to normalize user data from the backend ---
 const normalizeUser = (user) => {
@@ -24,9 +24,9 @@ const normalizeUser = (user) => {
  * @param {object} [pageable={ page: 0, size: 20 }] - Pagination options.
  * @returns {Promise<Array<object>>} A list of clean UserDto objects.
  */
-export const getAdminUsers = async (pageable = { page: 0, size: 20 }) => {
+export const getAdminUsers = async (pageable = {page: 0, size: 20}) => {
   const params = new URLSearchParams(pageable);
-  const page = await fetchWithAuth(`/admin/users?${params.toString()}`, { method: 'GET' });
+  const page = await fetchWithAuth(`/admin/users?${params.toString()}`, {method: 'GET'});
   if (page && page.content) {
     // Normalize each user in the list before returning
     return page.content.map(normalizeUser);
@@ -40,7 +40,7 @@ export const getAdminUsers = async (pageable = { page: 0, size: 20 }) => {
  * @returns {Promise<object>} A clean UserDto object.
  */
 export const getAdminUserById = async (userId) => {
-  const user = await fetchWithAuth(`/admin/users/${userId}`, { method: 'GET' });
+  const user = await fetchWithAuth(`/admin/users/${userId}`, {method: 'GET'});
   return normalizeUser(user);
 };
 
@@ -49,7 +49,10 @@ export const getAdminUserById = async (userId) => {
  * @param {object} userData - The data for the new user.
  * @returns {Promise<object>} The created UserDto.
  */
-export const createAdminUser = (userData) => fetchWithAuth('/admin/users', { method: 'POST', body: userData });
+export const createAdminUser = (userData) => fetchWithAuth('/admin/users', {
+  method: 'POST',
+  body: userData
+});
 
 /**
  * Updates an existing user's details as an admin.
@@ -57,14 +60,17 @@ export const createAdminUser = (userData) => fetchWithAuth('/admin/users', { met
  * @param {object} userData - The new data for the user (e.g., roles, active status).
  * @returns {Promise<object>} The updated UserDto.
  */
-export const updateAdminUser = (userId, userData) => fetchWithAuth(`/admin/users/${userId}`, { method: 'PUT', body: userData });
+export const updateAdminUser = (userId, userData) => fetchWithAuth(`/admin/users/${userId}`, {
+  method: 'PUT',
+  body: userData
+});
 
 /**
  * Deactivates (soft deletes) a user.
  * @param {string|number} userId - The UUID of the user to deactivate.
  * @returns {Promise<void>}
  */
-export const deleteAdminUser = (userId) => fetchWithAuth(`/admin/users/${userId}`, { method: 'DELETE' });
+export const deleteAdminUser = (userId) => fetchWithAuth(`/admin/users/${userId}`, {method: 'DELETE'});
 
 
 // --- Application Settings ---
@@ -73,7 +79,7 @@ export const deleteAdminUser = (userId) => fetchWithAuth(`/admin/users/${userId}
  * Fetches all global application settings from the backend.
  * @returns {Promise<Array<{uuid: string, name: string, value: string, description: string}>>} The full list of setting objects.
  */
-export const getAdminSettings = () => fetchWithAuth('/admin/settings', { method: 'GET' });
+export const getAdminSettings = () => fetchWithAuth('/admin/settings', {method: 'GET'});
 
 /**
  * Updates multiple application settings at once.
@@ -93,7 +99,7 @@ export const updateAdminSettings = (settings) => {
  * Fetches the consolidated visitor and authentication statistics.
  * @returns {Promise<object>} A promise that resolves to the stats object.
  */
-export const getAdminStats = () => fetchWithAuth('/admin/stats', { method: 'GET' });
+export const getAdminStats = () => fetchWithAuth('/admin/stats', {method: 'GET'});
 
 
 // --- Site-wide Contact Messages ---
@@ -102,14 +108,14 @@ export const getAdminStats = () => fetchWithAuth('/admin/stats', { method: 'GET'
  * Fetches all received contact messages from all users.
  * @returns {Promise<Array<object>>} List of ContactMessageDto
  */
-export const getAdminContactMessages = () => fetchWithAuth('/admin/contact-messages', { method: 'GET' });
+export const getAdminContactMessages = () => fetchWithAuth('/admin/contact-messages', {method: 'GET'});
 
 /**
  * Deletes a specific contact message by its UUID.
  * @param {string} uuid - The UUID of the message.
  * @returns {Promise<void>}
  */
-export const deleteAdminContactMessage = (uuid) => fetchWithAuth(`/admin/contact-messages/${uuid}`, { method: 'DELETE' });
+export const deleteAdminContactMessage = (uuid) => fetchWithAuth(`/admin/contact-messages/${uuid}`, {method: 'DELETE'});
 
 
 // --- System Backup & Restore ---

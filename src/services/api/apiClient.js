@@ -1,4 +1,4 @@
-import { ApiError } from './ApiError';
+import {ApiError} from './ApiError';
 
 /**
  * @file src/services/api/apiClient.js
@@ -33,7 +33,7 @@ export async function fetchWithAuth(
   requiresAuth = true,
   isRetry = false
 ) {
-  const { responseType = 'json', ...fetchOptions } = options;
+  const {responseType = 'json', ...fetchOptions} = options;
 
   const headers = new Headers(fetchOptions.headers || {});
   if (requiresAuth && authService?.getAccessToken()) {

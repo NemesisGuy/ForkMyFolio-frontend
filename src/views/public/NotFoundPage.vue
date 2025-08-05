@@ -3,7 +3,8 @@
   <div class="not-found-page py-5 animated-gradient-background d-flex align-items-center">
     <div class="container" style="max-width: 600px;">
       <!-- The content is now wrapped in a beautiful, animated glass card -->
-      <div class="card glass-card shimmering animate-fade-in-up interactive-card-lift interactive-card-shadow-primary">
+      <div
+        class="card glass-card shimmering animate-fade-in-up interactive-card-lift interactive-card-shadow-primary">
         <div class="card-body text-center p-4 p-md-5">
           <h1 class="display-4 fw-bold text-primary">404</h1>
           <h2 class="display-5">Page Not Found</h2>
@@ -19,11 +20,13 @@
               src="https://media.giphy.com/media/Ju7l5y9osyymQ/giphy.gif"
               @error="imageError = true"
             >
-            <p v-if="imageError" class="text-muted small mt-2">(Well, it seems the GIF decided to give us up. Imagine a witty animation here.)</p>
+            <p v-if="imageError" class="text-muted small mt-2">(Well, it seems the GIF decided to
+              give us up. Imagine a witty animation here.)</p>
           </div>
 
           <!-- The button now has interactive classes -->
-          <router-link class="btn btn-primary btn-lg interactive-lift interactive-shadow-primary" to="/">
+          <router-link class="btn btn-primary btn-lg interactive-lift interactive-shadow-primary"
+                       to="/">
             Go Back to Home
           </router-link>
         </div>

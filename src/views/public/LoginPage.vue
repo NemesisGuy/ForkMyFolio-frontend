@@ -2,7 +2,8 @@
   <div class="login-page animated-gradient-background">
     <div class="container" style="max-width: 400px;">
       <!-- The interactive classes are correct -->
-      <div class="card glass-card shimmering animate-fade-in-up interactive-card-lift interactive-card-shadow-primary">
+      <div
+        class="card glass-card shimmering animate-fade-in-up interactive-card-lift interactive-card-shadow-primary">
         <div class="card-body p-4 p-md-5">
           <h1 class="card-title text-center mb-4 fs-3">Login</h1>
 
@@ -20,7 +21,8 @@
           <form novalidate @submit.prevent="handleLogin">
             <div class="mb-3">
               <label class="form-label" for="email">Email address</label>
-              <input id="email" v-model="credentials.email" :class="{'is-invalid': fieldErrors.email}"
+              <input id="email" v-model="credentials.email"
+                     :class="{'is-invalid': fieldErrors.email}"
                      class="form-control" required type="email">
               <div v-if="fieldErrors.email" class="invalid-feedback">{{ fieldErrors.email }}</div>
             </div>
@@ -34,7 +36,9 @@
                 }}
               </div>
             </div>
-            <button :disabled="isLoading" class="btn btn-primary w-100 interactive-lift interactive-shadow-primary" type="submit">
+            <button :disabled="isLoading"
+                    class="btn btn-primary w-100 interactive-lift interactive-shadow-primary"
+                    type="submit">
               <span v-if="isLoading" aria-hidden="true" class="spinner-border spinner-border-sm"
                     role="status"></span>
               {{ isLoading ? 'Logging in...' : 'Login' }}
@@ -101,7 +105,7 @@ let redirectPathOnSuccess = null;
 onMounted(() => {
   if (authService.isAuthenticated.value) {
     const userSlug = authService.user.value?.slug;
-    router.replace(route.query.redirect || { name: 'dashboard', params: { slug: userSlug } });
+    router.replace(route.query.redirect || {name: 'dashboard', params: {slug: userSlug}});
   }
 });
 
@@ -170,7 +174,7 @@ const handleLogin = async () => {
     // --- END OF FIX ---
 
     const userSlug = authService.user.value?.slug;
-    redirectPathOnSuccess = route.query.redirect || { name: 'dashboard', params: { slug: userSlug } };
+    redirectPathOnSuccess = route.query.redirect || {name: 'dashboard', params: {slug: userSlug}};
     loginSuccessMessage.value = "Login successful! Redirecting...";
     showLoginSuccessModal.value = true;
   } catch (error) {
@@ -241,16 +245,19 @@ const handleLogin = async () => {
   color: var(--bs-body-color);
   transition: all 0.3s ease;
 }
+
 .form-control:focus {
   background-color: rgba(var(--bs-body-bg-rgb), 0.7);
   color: var(--bs-body-color);
   border-color: var(--bs-primary);
   box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
 }
+
 .form-control.is-invalid {
   border-color: var(--bs-danger);
   background-color: rgba(var(--bs-danger-rgb), 0.1);
 }
+
 .invalid-feedback {
   color: var(--bs-danger);
   font-weight: 500;

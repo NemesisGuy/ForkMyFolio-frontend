@@ -4,14 +4,17 @@
       <div class="row justify-content-center">
         <div class="col-md-8">
           <LoadingModal :visible="isLoading"/>
-          <ErrorModal v-if="error" :visible="true" title="Error Loading Account" :message="error" @close="error = null" />
+          <ErrorModal v-if="error" :message="error" :visible="true" title="Error Loading Account"
+                      @close="error = null"/>
 
           <div v-if="!isLoading && user">
-            <div class="card glass-card shimmering p-0 animate-fade-in-up interactive-card-lift interactive-card-shadow-primary">
+            <div
+              class="card glass-card shimmering p-0 animate-fade-in-up interactive-card-lift interactive-card-shadow-primary">
               <div class="card-body p-4 p-md-5">
                 <div class="text-center mb-4">
                   <img v-if="fullProfileImageUrl" :src="fullProfileImageUrl"
-                       alt="Profile Picture" class="profile-image img-fluid rounded-circle shadow-lg">
+                       alt="Profile Picture"
+                       class="profile-image img-fluid rounded-circle shadow-lg">
                   <div v-else
                        class="profile-image-placeholder rounded-circle shadow-lg d-flex align-items-center justify-content-center">
                     <i class="bi bi-person-fill"></i>
@@ -44,11 +47,15 @@
                   </div>
                 </div>
 
-                <div class="d-flex flex-wrap justify-content-center mt-4 pt-4 border-top border-white border-opacity-10">
-                  <button class="btn btn-primary me-2 mb-2 interactive-lift interactive-shadow-primary" @click="editAccount">
+                <div
+                  class="d-flex flex-wrap justify-content-center mt-4 pt-4 border-top border-white border-opacity-10">
+                  <button
+                    class="btn btn-primary me-2 mb-2 interactive-lift interactive-shadow-primary"
+                    @click="editAccount">
                     <i class="bi bi-person-gear me-1"></i> Edit Account Details
                   </button>
-                  <button class="btn btn-outline-secondary mb-2 interactive-lift" @click="editPublicProfile">
+                  <button class="btn btn-outline-secondary mb-2 interactive-lift"
+                          @click="editPublicProfile">
                     <i class="bi bi-layout-text-sidebar-reverse me-1"></i> Edit Public Profile
                   </button>
                 </div>
@@ -62,9 +69,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import { useRouter } from 'vue-router';
-import { getMyAccount } from '@/services/api/user.api.js'; // Use the correct user-specific API
+import {computed, onMounted, ref} from 'vue';
+import {useRouter} from 'vue-router';
+import {getMyAccount} from '@/services/api/user.api.js'; // Use the correct user-specific API
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 
@@ -104,11 +111,11 @@ onMounted(async () => {
 
 // --- UPDATED: Navigate to the new editor pages ---
 const editAccount = () => {
-  router.push({ name: 'edit-account' });
+  router.push({name: 'edit-account'});
 };
 
 const editPublicProfile = () => {
-  router.push({ name: 'edit-public-profile' });
+  router.push({name: 'edit-public-profile'});
 };
 </script>
 

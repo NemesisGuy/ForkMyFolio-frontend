@@ -3,7 +3,7 @@
  * @description API functions for data backup and restore operations.
  * Adheres to the Nemesis Architecture Style Guide.
  */
-import { fetchWithAuth } from './apiClient';
+import {fetchWithAuth} from './apiClient';
 
 /**
  * Initiates a download of the full portfolio backup.
@@ -20,7 +20,7 @@ export const downloadBackup = async () => {
   const jsonString = JSON.stringify(backupData, null, 2);
 
   // 3. Create a Blob from the JSON string, which is required for file creation.
-  const blob = new Blob([jsonString], { type: 'application/json' });
+  const blob = new Blob([jsonString], {type: 'application/json'});
 
   // 4. Create a temporary URL to trigger the browser's download functionality.
   const url = window.URL.createObjectURL(blob);

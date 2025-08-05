@@ -96,6 +96,7 @@ const handleClose = () => {
   border-color: var(--bs-success);
   color: var(--bs-success);
 }
+
 .btn-outline-success:hover {
   background-color: var(--bs-success);
   color: #fff;

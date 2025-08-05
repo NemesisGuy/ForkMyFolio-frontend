@@ -9,12 +9,16 @@
       <div class="container content-container">
         <div class="card glass-card glass-card-floating p-4 p-md-5">
           <div class="text-center mb-4">
-            <div class="skeleton-line skeleton-title mx-auto" style="width: 60%; height: 45px;"></div>
+            <div class="skeleton-line skeleton-title mx-auto"
+                 style="width: 60%; height: 45px;"></div>
           </div>
           <div class="d-flex justify-content-center flex-wrap gap-2 mb-4">
-            <div class="skeleton-line me-1 mb-1" style="width: 80px; height: 30px; border-radius: 0.5rem;"></div>
-            <div class="skeleton-line me-1 mb-1" style="width: 100px; height: 30px; border-radius: 0.5rem;"></div>
-            <div class="skeleton-line me-1 mb-1" style="width: 70px; height: 30px; border-radius: 0.5rem;"></div>
+            <div class="skeleton-line me-1 mb-1"
+                 style="width: 80px; height: 30px; border-radius: 0.5rem;"></div>
+            <div class="skeleton-line me-1 mb-1"
+                 style="width: 100px; height: 30px; border-radius: 0.5rem;"></div>
+            <div class="skeleton-line me-1 mb-1"
+                 style="width: 70px; height: 30px; border-radius: 0.5rem;"></div>
           </div>
           <div class="project-description mb-5">
             <div class="skeleton-line skeleton-subtitle"></div>
@@ -22,8 +26,10 @@
             <div class="skeleton-line skeleton-subtitle" style="width: 75%;"></div>
           </div>
           <div class="d-flex flex-wrap justify-content-center gap-3 mb-5">
-            <div class="skeleton-line" style="width: 180px; height: 48px; border-radius: 0.75rem;"></div>
-            <div class="skeleton-line" style="width: 180px; height: 48px; border-radius: 0.75rem;"></div>
+            <div class="skeleton-line"
+                 style="width: 180px; height: 48px; border-radius: 0.75rem;"></div>
+            <div class="skeleton-line"
+                 style="width: 180px; height: 48px; border-radius: 0.75rem;"></div>
           </div>
           <div class="text-center">
             <div class="skeleton-line skeleton-subtitle mx-auto" style="width: 200px;"></div>
@@ -39,13 +45,16 @@
           <i class="bi bi-exclamation-triangle-fill text-warning mb-3" style="font-size: 3rem;"></i>
           <h5 class="card-title text-white mb-3">Error Loading Project</h5>
           <p class="card-text text-light opacity-75">
-            {{ error.message || 'Could not fetch the project details. It might not exist or there was a server error.' }}
+            {{
+              error.message || 'Could not fetch the project details. It might not exist or there was a server error.'
+            }}
           </p>
           <div class="d-flex justify-content-center gap-3 mt-4">
-            <router-link :to="{ name: 'projects-public', params: { slug: currentSlug } }" class="btn btn-outline-light glass-btn">
+            <router-link :to="{ name: 'projects-public', params: { slug: currentSlug } }"
+                         class="btn btn-outline-light glass-btn">
               <i class="bi bi-arrow-left me-2"></i>Back to Projects
             </router-link>
-            <button @click="retryLoad" class="btn btn-outline-primary glass-btn">
+            <button class="btn btn-outline-primary glass-btn" @click="retryLoad">
               <i class="bi bi-arrow-clockwise me-2"></i>Retry
             </button>
           </div>
@@ -55,13 +64,15 @@
 
     <div v-else-if="project">
       <!-- Hero Image Section -->
-      <div class="hero-image-container animate-fade-in" :style="{ backgroundImage: `url(${project.imageUrl})` }">
+      <div :style="{ backgroundImage: `url(${project.imageUrl})` }"
+           class="hero-image-container animate-fade-in">
         <div class="hero-overlay"></div>
       </div>
 
       <div class="container content-container">
         <!-- Main Content Card -->
-        <div class="card glass-card glass-card-floating p-4 p-md-5 animate-fade-in-up interactive-card-lift interactive-card-shadow-primary">
+        <div
+          class="card glass-card glass-card-floating p-4 p-md-5 animate-fade-in-up interactive-card-lift interactive-card-shadow-primary">
           <!-- Header -->
           <div class="text-center mb-4">
             <h1 class="display-4 fw-bold glass-title">{{ project.title }}</h1>
@@ -69,8 +80,10 @@
 
           <!-- Tech Stack -->
           <div v-if="project.skills && project.skills.length" class="text-center mb-4">
-            <span v-for="skill in project.skills" :key="skill.uuid" class="badge tech-badge me-2 mb-2">
-              <i v-if="skill.icon" :class="skill.icon" class="me-1"></i>{{ skill.name }}
+            <!-- THIS IS THE FIX: Use the centralized getIconClass function -->
+            <span v-for="skill in project.skills" :key="skill.uuid"
+                  class="badge tech-badge me-2 mb-2">
+              <i :class="getIconClass(skill)" class="me-1"></i>{{ skill.name }}
             </span>
           </div>
 
@@ -80,17 +93,21 @@
           </div>
 
           <!-- Links Section -->
-          <div v-if="project.liveUrl || project.repoUrl" class="d-flex flex-wrap justify-content-center gap-3 mb-5">
-            <a v-if="project.liveUrl" :href="project.liveUrl" target="_blank" class="btn glass-btn-primary btn-lg interactive-lift">
+          <div v-if="project.liveUrl || project.repoUrl"
+               class="d-flex flex-wrap justify-content-center gap-3 mb-5">
+            <a v-if="project.liveUrl" :href="project.liveUrl" class="btn glass-btn-primary btn-lg interactive-lift"
+               target="_blank">
               <i class="bi bi-box-arrow-up-right me-2"></i> Live Demo
             </a>
-            <a v-if="project.repoUrl" :href="project.repoUrl" target="_blank" class="btn glass-btn btn-lg interactive-lift">
+            <a v-if="project.repoUrl" :href="project.repoUrl" class="btn glass-btn btn-lg interactive-lift"
+               target="_blank">
               <i class="bi bi-github me-2"></i> Source Code
             </a>
           </div>
 
           <div class="text-center">
-            <router-link :to="{ name: 'projects-public', params: { slug: currentSlug } }" class="btn btn-link glass-subtitle">
+            <router-link :to="{ name: 'projects-public', params: { slug: currentSlug } }"
+                         class="btn btn-link glass-subtitle">
               <i class="bi bi-arrow-left me-1"></i> Back to All Projects
             </router-link>
           </div>
@@ -107,7 +124,8 @@
           <p class="card-text text-light opacity-75">
             The project you are looking for does not exist or has been moved.
           </p>
-          <router-link :to="{ name: 'projects-public', params: { slug: currentSlug } }" class="btn btn-outline-light glass-btn mt-4">
+          <router-link :to="{ name: 'projects-public', params: { slug: currentSlug } }"
+                       class="btn btn-outline-light glass-btn mt-4">
             <i class="bi bi-arrow-left me-2"></i>Back to All Projects
           </router-link>
         </div>
@@ -117,10 +135,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import { getPublicProjectById, ApiError } from '@/services/api/index.js';
+import {onMounted, ref} from 'vue';
+import {ApiError} from '@/services/api/index.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
-import { usePublicPortfolioStore } from '@/stores/publicPortfolioStore.js';
+import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore.js';
+// THIS IS THE FIX: Import the centralized icon service
+import {getIconClass} from '@/services/iconService.js';
 
 const props = defineProps({
   /**
@@ -139,15 +159,13 @@ const isLoading = ref(true);
 const error = ref(null);
 
 // Use the store to get both the data and the slug for the back-link.
-const { portfolio, currentSlug } = usePublicPortfolioStore();
+const {portfolio, currentSlug} = usePublicPortfolioStore();
 
 const loadProject = async () => {
   isLoading.value = true;
   error.value = null;
 
-  // --- THIS IS THE FIX ---
   // Case 1: The portfolio is already loaded in the store.
-  // This is the common path when navigating from the projects list.
   if (portfolio.value) {
     console.log('[ProjectDetails] Portfolio found in store. Searching for project...');
     const foundProject = portfolio.value.projects?.find(p => p.uuid === props.uuid);
@@ -155,21 +173,23 @@ const loadProject = async () => {
     if (foundProject) {
       project.value = foundProject;
     } else {
-      // Portfolio is loaded, but project isn't in it. This is a 404.
-      error.value = { message: `Project with ID ${props.uuid} not found in this portfolio.` };
+      error.value = {message: `Project with ID ${props.uuid} not found in this portfolio.`};
     }
-    isLoading.value = false; // We have our answer, stop loading.
+    isLoading.value = false;
     return;
   }
 
   // Case 2: The portfolio is NOT in the store (e.g., direct URL visit).
-  // Fall back to fetching the individual project directly from the API.
-  console.log('[ProjectDetails] Portfolio not in store. Fetching individual project...');
+  // This case is now deprecated in favor of the router guard fetching all data,
+  // but we keep it as a robust fallback.
+  console.warn('[ProjectDetails] Portfolio not in store. This should be handled by the router guard. Falling back to direct API call.');
   try {
+    // This direct API call is a fallback and not the primary way of loading data.
+    const {getPublicProjectById} = await import('@/services/api/index.js');
     project.value = await getPublicProjectById(props.uuid);
   } catch (err) {
     console.error(`Failed to fetch project with UUID ${props.uuid}:`, err);
-    error.value = err instanceof ApiError ? err : { message: 'An unexpected error occurred.' };
+    error.value = err instanceof ApiError ? err : {message: 'An unexpected error occurred.'};
   } finally {
     isLoading.value = false;
   }

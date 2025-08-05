@@ -1,8 +1,8 @@
 <template>
   <!-- Use v-if on LoadingModal to fully remove from DOM when done -->
-  <LoadingModal v-if="isLoading" />
+  <LoadingModal v-if="isLoading"/>
 
-  <div class="admin-pdf-settings-page py-5" v-show="!isLoading">
+  <div v-show="!isLoading" class="admin-pdf-settings-page py-5">
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-lg-10 col-xl-8">
@@ -23,17 +23,18 @@
               </div>
               <div class="card-body p-4">
                 <div class="mb-3">
-                  <label for="defaultPdfTemplate" class="form-label">
+                  <label class="form-label" for="defaultPdfTemplate">
                     Homepage Download Template
                   </label>
                   <p class="form-text text-muted mt-0 mb-2">
-                    Select the template that will be used when visitors click the download button on your homepage.
+                    Select the template that will be used when visitors click the download button on
+                    your homepage.
                   </p>
                   <select
                     id="defaultPdfTemplate"
                     v-model="selectedTemplate"
-                    class="form-select"
                     :disabled="isSaving"
+                    class="form-select"
                   >
                     <option disabled value="">Please select a template</option>
                     <option
@@ -50,23 +51,23 @@
 
             <div class="mt-4 text-end">
               <button
-                type="button"
-                class="btn btn-secondary me-2"
                 :disabled="!isDirty || isSaving"
+                class="btn btn-secondary me-2"
+                type="button"
                 @click="resetChanges"
               >
                 Reset
               </button>
               <button
-                type="submit"
-                class="btn btn-primary"
                 :disabled="!isDirty || isSaving"
+                class="btn btn-primary"
+                type="submit"
               >
                 <span
                   v-if="isSaving"
+                  aria-hidden="true"
                   class="spinner-border spinner-border-sm me-2"
                   role="status"
-                  aria-hidden="true"
                 ></span>
                 {{ isSaving ? 'Saving...' : 'Save Settings' }}
               </button>
@@ -78,27 +79,27 @@
 
     <SuccessModal
       :visible="showSuccessModal"
-      title="Settings Saved"
       message="Your PDF settings have been updated successfully."
+      title="Settings Saved"
       @close="showSuccessModal = false"
     />
     <ErrorModal
+      :message="errorMessage"
       :visible="showErrorModal"
       title="Save Failed"
-      :message="errorMessage"
       @close="showErrorModal = false"
     />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, nextTick } from 'vue';
+import {computed, nextTick, onMounted, ref} from 'vue';
 // --- THIS IS THE FIX ---
 // Import from the correct API modules to complete the refactor.
-import { getAdminSettings, updateAdminSettings } from '@/services/api/admin.api.js';
-import { publicApi } from '@/services/api/public.api.js';
-import { settingsService } from '@/services/settingsService.js';
-import { ApiError } from '@/services/api/index.js';
+import {getAdminSettings, updateAdminSettings} from '@/services/api/admin.api.js';
+import {publicApi} from '@/services/api/public.api.js';
+import {settingsService} from '@/services/settingsService.js';
+import {ApiError} from '@/services/api/index.js';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
@@ -159,7 +160,7 @@ onMounted(async () => {
     availableTemplates.value = templates;
   } catch (err) {
     console.error('Error loading settings:', err);
-    error.value = err instanceof ApiError ? err : { message: err.message || 'Unexpected error.' };
+    error.value = err instanceof ApiError ? err : {message: err.message || 'Unexpected error.'};
   } finally {
     await minDelay;
     isLoading.value = false;
@@ -214,6 +215,7 @@ const formatTemplateName = (key) => {
 .admin-pdf-settings-page h1 {
   font-weight: 300;
 }
+
 .form-text {
   font-size: 0.9rem;
 }

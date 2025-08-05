@@ -1,6 +1,6 @@
 // C:/Users/Reign/IdeaProjects/ForkMyFolio-frontend-vue/src/services/theme.js
 
-import { ref, watch } from 'vue';
+import {ref, watch} from 'vue';
 
 /**
  * A reactive service to manage and persist the application's theme.

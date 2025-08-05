@@ -11,14 +11,14 @@
         </p>
       </div>
 
-      <LoadingModal :visible="isLoading" />
+      <LoadingModal :visible="isLoading"/>
 
       <!-- Skeleton loader -->
       <div v-if="isLoading" class="row row-cols-1 row-cols-lg-2 g-4">
         <div v-for="n in 4"
              :key="n"
-             class="col animate-fade-in-up"
-             :style="{ 'animation-delay': (n * 0.05) + 's' }">
+             :style="{ 'animation-delay': (n * 0.05) + 's' }"
+             class="col animate-fade-in-up">
           <div class="card glass-card glass-card-floating h-100">
             <div class="card-body d-flex align-items-center p-4">
               <div class="skeleton-icon me-4"></div>
@@ -47,13 +47,16 @@
       <!-- Content -->
       <div v-else-if="qualifications.length > 0" class="row row-cols-1 row-cols-lg-2 g-4">
         <div v-for="(qual, index) in qualifications" :key="qual.uuid"
-             class="col animate-fade-in-up"
-             :style="{ 'animation-delay': (index * 0.1) + 0.2 + 's' }">
-          <div class="card glass-card glass-card-floating h-100 interactive-card-lift interactive-card-shadow-primary position-relative"
-               @click="selectQualification(qual)" role="button" tabindex="0" :aria-label="`View details for ${qual.qualificationName}`">
+             :style="{ 'animation-delay': (index * 0.1) + 0.2 + 's' }"
+             class="col animate-fade-in-up">
+          <div
+            :aria-label="`View details for ${qual.qualificationName}`"
+            class="card glass-card glass-card-floating h-100 interactive-card-lift interactive-card-shadow-primary position-relative" role="button" tabindex="0"
+            @click="selectQualification(qual)">
             <div class="card-body d-flex align-items-center p-4 position-relative">
               <div class="qual-icon me-4">
-                <img v-if="qual.institutionLogoUrl" :src="qual.institutionLogoUrl" :alt="`${qual.institutionName} Logo`" class="institution-logo">
+                <img v-if="qual.institutionLogoUrl" :alt="`${qual.institutionName} Logo`"
+                     :src="qual.institutionLogoUrl" class="institution-logo">
                 <i v-else class="bi bi-building"></i>
               </div>
               <div class="flex-grow-1">
@@ -102,8 +105,8 @@
             <h5 class="modal-title text-white">
               {{ selectedQualification.qualificationName }}
             </h5>
-            <button type="button"
-                    class="btn-close btn-close-white"
+            <button class="btn-close btn-close-white"
+                    type="button"
                     @click="closeModal">
             </button>
           </div>
@@ -121,28 +124,34 @@
                   <strong>Grade:</strong> {{ selectedQualification.grade }}
                 </p>
                 <p v-if="selectedQualification.level" class="text-light mb-2">
-                  <strong>Level:</strong> {{ selectedQualification.level.replace('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()) }}
+                  <strong>Level:</strong> {{
+                    selectedQualification.level.replace('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())
+                  }}
                 </p>
               </div>
               <div class="col-md-4 text-md-end mt-3 mt-md-0">
                 <div class="year-badge-large mb-3">
-                  <span v-if="selectedQualification.stillStudying">{{ selectedQualification.startYear }} - Present</span>
-                  <span v-else>{{ selectedQualification.startYear }} - {{ selectedQualification.completionYear }}</span>
+                  <span
+                    v-if="selectedQualification.stillStudying">{{ selectedQualification.startYear }} - Present</span>
+                  <span v-else>{{
+                      selectedQualification.startYear
+                    }} - {{ selectedQualification.completionYear }}</span>
                 </div>
               </div>
             </div>
             <!-- CORRECTED: This block was broken -->
-            <div class="mt-3 pt-3 border-top border-white border-opacity-10 d-flex justify-content-end gap-2 flex-wrap">
+            <div
+              class="mt-3 pt-3 border-top border-white border-opacity-10 d-flex justify-content-end gap-2 flex-wrap">
               <a v-if="selectedQualification.institutionWebsite"
                  :href="selectedQualification.institutionWebsite"
-                 target="_blank" rel="noopener noreferrer"
-                 class="btn btn-outline-secondary">
+                 class="btn btn-outline-secondary" rel="noopener noreferrer"
+                 target="_blank">
                 <i class="bi bi-globe me-2"></i> Institution Website
               </a>
               <a v-if="selectedQualification.credentialUrl"
                  :href="selectedQualification.credentialUrl"
-                 target="_blank" rel="noopener noreferrer"
-                 class="btn btn-primary">
+                 class="btn btn-primary" rel="noopener noreferrer"
+                 target="_blank">
                 <i class="bi bi-patch-check-fill me-2"></i> View Credential
               </a>
             </div>
@@ -154,11 +163,11 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { usePublicPortfolioStore } from '@/stores/publicPortfolioStore.js';
+import {computed, ref} from 'vue';
+import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 
-const { portfolio, isLoading, error } = usePublicPortfolioStore();
+const {portfolio, isLoading, error} = usePublicPortfolioStore();
 
 const qualifications = computed(() => {
   const quals = portfolio.value?.qualifications || [];

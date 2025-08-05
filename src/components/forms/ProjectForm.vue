@@ -4,7 +4,8 @@
       <div class="card-body p-4">
         <div class="mb-3">
           <label class="form-label" for="projectTitle">Title</label>
-          <input id="projectTitle" v-model="editableProjectData.title" :class="{'is-invalid': fieldErrors?.title}"
+          <input id="projectTitle" v-model="editableProjectData.title"
+                 :class="{'is-invalid': fieldErrors?.title}"
                  class="form-control" required
                  type="text">
           <div v-if="fieldErrors?.title" class="invalid-feedback">{{ fieldErrors.title }}</div>
@@ -23,7 +24,8 @@
 
         <div class="mb-3">
           <label class="form-label" for="projectTechStack">Tech Stack (comma-separated)</label>
-          <input id="projectTechStack" v-model="techStackString" :class="{'is-invalid': fieldErrors?.techStack}" class="form-control"
+          <input id="projectTechStack" v-model="techStackString"
+                 :class="{'is-invalid': fieldErrors?.techStack}" class="form-control"
                  type="text">
           <div class="form-text">Enter technologies separated by commas (e.g., Vue, Node.js,
             PostgreSQL).
@@ -36,7 +38,8 @@
 
         <div class="mb-3">
           <label class="form-label" for="projectImageUrl">Image URL</label>
-          <input id="projectImageUrl" v-model="editableProjectData.imageUrl" :class="{'is-invalid': fieldErrors?.imageUrl}"
+          <input id="projectImageUrl" v-model="editableProjectData.imageUrl"
+                 :class="{'is-invalid': fieldErrors?.imageUrl}"
                  class="form-control"
                  type="url">
           <div v-if="fieldErrors?.imageUrl" class="invalid-feedback">{{
@@ -48,7 +51,8 @@
         <div class="row">
           <div class="col-md-6 mb-3">
             <label class="form-label" for="projectRepoUrl">Repository URL</label>
-            <input id="projectRepoUrl" v-model="editableProjectData.repoUrl" :class="{'is-invalid': fieldErrors?.repoUrl}"
+            <input id="projectRepoUrl" v-model="editableProjectData.repoUrl"
+                   :class="{'is-invalid': fieldErrors?.repoUrl}"
                    class="form-control"
                    type="url">
             <div v-if="fieldErrors?.repoUrl" class="invalid-feedback">{{
@@ -58,7 +62,8 @@
           </div>
           <div class="col-md-6 mb-3">
             <label class="form-label" for="projectLiveUrl">Live URL</label>
-            <input id="projectLiveUrl" v-model="editableProjectData.liveUrl" :class="{'is-invalid': fieldErrors?.liveUrl}"
+            <input id="projectLiveUrl" v-model="editableProjectData.liveUrl"
+                   :class="{'is-invalid': fieldErrors?.liveUrl}"
                    class="form-control"
                    type="url">
             <div v-if="fieldErrors?.liveUrl" class="invalid-feedback">{{

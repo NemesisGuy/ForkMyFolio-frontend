@@ -3,7 +3,8 @@
   <div class="unauthorized-page py-5 animated-gradient-background d-flex align-items-center">
     <div class="container" style="max-width: 600px;">
       <!-- The content is now wrapped in a beautiful, animated glass card -->
-      <div class="card glass-card shimmering animate-fade-in-up interactive-card-lift interactive-card-shadow-primary">
+      <div
+        class="card glass-card shimmering animate-fade-in-up interactive-card-lift interactive-card-shadow-primary">
         <div class="card-body text-center p-4 p-md-5">
           <!-- The icon is now a consistent Bootstrap Icon -->
           <i class="bi bi-shield-lock-fill display-1 text-warning mb-3"></i>
@@ -16,7 +17,8 @@
             <router-link class="btn btn-outline-secondary btn-lg interactive-lift" to="/">
               Go to Homepage
             </router-link>
-            <router-link class="btn btn-primary btn-lg interactive-lift interactive-shadow-primary" to="/login">
+            <router-link class="btn btn-primary btn-lg interactive-lift interactive-shadow-primary"
+                         to="/login">
               Login
             </router-link>
           </div>

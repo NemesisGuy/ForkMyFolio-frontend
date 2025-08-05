@@ -10,8 +10,9 @@
       </div>
 
       <!-- Modals -->
-      <LoadingModal :visible="isLoading" />
-      <ErrorModal :visible="!!error" :message="error" title="An Error Occurred" @close="error = null" />
+      <LoadingModal :visible="isLoading"/>
+      <ErrorModal :message="error" :visible="!!error" title="An Error Occurred"
+                  @close="error = null"/>
 
       <!-- Main Content -->
       <div v-if="stats && !isLoading" class="animate-fade-in-up" style="animation-delay: 0.2s;">
@@ -19,28 +20,35 @@
         <h2 class="h4 mb-3 glass-text">Site Engagement</h2>
         <div class="row g-4">
           <div class="col-xl-3 col-md-6">
-            <StatCard title="Total Visits" :value="stats.totalVisits" icon="bi-eye-fill" />
+            <StatCard :value="stats.totalVisits" icon="bi-eye-fill" title="Total Visits"/>
           </div>
           <div class="col-xl-3 col-md-6">
-            <StatCard title="Project Section Views" :value="stats.projectsSectionViews" icon="bi-folder2-open" />
+            <StatCard :value="stats.projectsSectionViews" icon="bi-folder2-open"
+                      title="Project Section Views"/>
           </div>
           <div class="col-xl-3 col-md-6">
-            <StatCard title="Skills Section Views" :value="stats.skillsSectionViews" icon="bi-tools" />
+            <StatCard :value="stats.skillsSectionViews" icon="bi-tools"
+                      title="Skills Section Views"/>
           </div>
           <div class="col-xl-3 col-md-6">
-            <StatCard title="Experience Section Views" :value="stats.experienceSectionViews" icon="bi-briefcase-fill" />
+            <StatCard :value="stats.experienceSectionViews" icon="bi-briefcase-fill"
+                      title="Experience Section Views"/>
           </div>
           <div class="col-xl-3 col-md-6">
-            <StatCard title="Qualifications Views" :value="stats.qualificationsSectionViews" icon="bi-patch-check-fill" />
+            <StatCard :value="stats.qualificationsSectionViews" icon="bi-patch-check-fill"
+                      title="Qualifications Views"/>
           </div>
           <div class="col-xl-3 col-md-6">
-            <StatCard title="Testimonials Views" :value="stats.testimonialsSectionViews" icon="bi-chat-quote-fill" />
+            <StatCard :value="stats.testimonialsSectionViews" icon="bi-chat-quote-fill"
+                      title="Testimonials Views"/>
           </div>
           <div class="col-xl-3 col-md-6">
-            <StatCard title="Contact Submissions" :value="stats.contactMessageSubmissions" icon="bi-envelope-fill" />
+            <StatCard :value="stats.contactMessageSubmissions" icon="bi-envelope-fill"
+                      title="Contact Submissions"/>
           </div>
           <div class="col-xl-3 col-md-6">
-            <StatCard title="PDF Downloads" :value="stats.pdfDownloads" icon="bi-file-earmark-pdf-fill" />
+            <StatCard :value="stats.pdfDownloads" icon="bi-file-earmark-pdf-fill"
+                      title="PDF Downloads"/>
           </div>
         </div>
 
@@ -48,13 +56,16 @@
         <h2 class="h4 my-4 pt-3 glass-text">Authentication Events</h2>
         <div class="row g-4">
           <div class="col-xl-3 col-md-6">
-            <StatCard title="Successful Logins" :value="stats.loginSuccesses" icon="bi-box-arrow-in-right" />
+            <StatCard :value="stats.loginSuccesses" icon="bi-box-arrow-in-right"
+                      title="Successful Logins"/>
           </div>
           <div class="col-xl-3 col-md-6">
-            <StatCard title="Failed Logins" :value="stats.loginFailures" icon="bi-exclamation-triangle-fill" />
+            <StatCard :value="stats.loginFailures" icon="bi-exclamation-triangle-fill"
+                      title="Failed Logins"/>
           </div>
           <div class="col-xl-3 col-md-6">
-            <StatCard title="Successful Logouts" :value="stats.logoutSuccesses" icon="bi-box-arrow-left" />
+            <StatCard :value="stats.logoutSuccesses" icon="bi-box-arrow-left"
+                      title="Successful Logouts"/>
           </div>
         </div>
 
@@ -89,8 +100,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import { getAdminStats, getAdminProjects } from '@/services/api/admin.api.js';
+import {computed, onMounted, ref} from 'vue';
+import {getAdminProjects, getAdminStats} from '@/services/api/admin.api.js';
 import StatCard from '@/components/admin/StatCard.vue';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
@@ -146,12 +157,14 @@ onMounted(async () => {
   --bs-table-hover-color: var(--glass-text);
   --bs-table-hover-bg: var(--glass-bg-hover);
 }
+
 .glass-table thead th {
   background-color: rgba(var(--bs-body-color-rgb), 0.05);
   border-bottom: 2px solid var(--glass-border-hover);
   color: var(--glass-text);
   font-weight: 500;
 }
+
 .glass-table td, .glass-table th {
   border-color: var(--glass-border);
   vertical-align: middle;

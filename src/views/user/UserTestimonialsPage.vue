@@ -10,72 +10,92 @@
       </div>
 
       <!-- Modals -->
-      <LoadingModal :visible="isLoading" />
-      <ErrorModal :visible="!!error" :message="error" title="An Error Occurred" @close="error = null" />
-      <SuccessModal :visible="!!successMessage" :message="successMessage" title="Success" @close="successMessage = null" />
+      <LoadingModal :visible="isLoading"/>
+      <ErrorModal :message="error" :visible="!!error" title="An Error Occurred"
+                  @close="error = null"/>
+      <SuccessModal :message="successMessage" :visible="!!successMessage" title="Success"
+                    @close="successMessage = null"/>
       <ConfirmModal
+        :message="`Are you sure you want to delete the testimonial from '${testimonialToDelete?.authorName}'?`"
         :visible="!!testimonialToDelete"
         title="Confirm Deletion"
-        :message="`Are you sure you want to delete the testimonial from '${testimonialToDelete?.authorName}'?`"
-        @confirm="handleDeleteTestimonial"
         @close="testimonialToDelete = null"
+        @confirm="handleDeleteTestimonial"
       />
 
       <!-- Add/Edit Testimonial Modal -->
-      <div class="modal fade" id="testimonialModal" tabindex="-1" aria-labelledby="testimonialModalLabel" aria-hidden="true" ref="testimonialModalRef">
+      <div id="testimonialModal" ref="testimonialModalRef" aria-hidden="true"
+           aria-labelledby="testimonialModalLabel" class="modal fade" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
           <div class="modal-content glass-modal">
             <div class="modal-header">
-              <h5 class="modal-title" id="testimonialModalLabel">{{ isEditing ? 'Edit Testimonial' : 'Add New Testimonial' }}</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              <h5 id="testimonialModalLabel" class="modal-title">
+                {{ isEditing ? 'Edit Testimonial' : 'Add New Testimonial' }}</h5>
+              <button aria-label="Close" class="btn-close" data-bs-dismiss="modal"
+                      type="button"></button>
             </div>
             <div class="modal-body">
               <form @submit.prevent="handleFormSubmit">
                 <div class="mb-3">
-                  <label for="testimonialQuote" class="form-label">Quote</label>
-                  <textarea class="form-control" id="testimonialQuote" v-model="currentTestimonial.quote" rows="4" required></textarea>
+                  <label class="form-label" for="testimonialQuote">Quote</label>
+                  <textarea id="testimonialQuote" v-model="currentTestimonial.quote"
+                            class="form-control" required rows="4"></textarea>
                 </div>
                 <div class="row">
                   <div class="col-md-6 mb-3">
-                    <label for="testimonialAuthorName" class="form-label">Author's Name</label>
-                    <input type="text" class="form-control" id="testimonialAuthorName" v-model="currentTestimonial.authorName" required>
+                    <label class="form-label" for="testimonialAuthorName">Author's Name</label>
+                    <input id="testimonialAuthorName" v-model="currentTestimonial.authorName" class="form-control"
+                           required type="text">
                   </div>
                   <div class="col-md-6 mb-3">
-                    <label for="testimonialAuthorTitle" class="form-label">Author's Title (e.g., "CEO at Company")</label>
-                    <input type="text" class="form-control" id="testimonialAuthorTitle" v-model="currentTestimonial.authorTitle">
+                    <label class="form-label" for="testimonialAuthorTitle">Author's Title (e.g.,
+                      "CEO at Company")</label>
+                    <input id="testimonialAuthorTitle" v-model="currentTestimonial.authorTitle" class="form-control"
+                           type="text">
                   </div>
                 </div>
                 <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" role="switch" id="testimonialVisible" v-model="currentTestimonial.visible">
-                  <label class="form-check-label" for="testimonialVisible">Visible on public portfolio</label>
+                  <input id="testimonialVisible" v-model="currentTestimonial.visible" class="form-check-input"
+                         role="switch" type="checkbox">
+                  <label class="form-check-label" for="testimonialVisible">Visible on public
+                    portfolio</label>
                 </div>
               </form>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-              <button type="button" class="btn btn-primary" @click="handleFormSubmit">{{ isEditing ? 'Save Changes' : 'Add Testimonial' }}</button>
+              <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+              <button class="btn btn-primary" type="button" @click="handleFormSubmit">
+                {{ isEditing ? 'Save Changes' : 'Add Testimonial' }}
+              </button>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Testimonials List -->
-      <div v-if="!isLoading && testimonials.length > 0" class="card glass-card animate-fade-in-up" style="animation-delay: 0.1s;">
+      <div v-if="!isLoading && testimonials.length > 0" class="card glass-card animate-fade-in-up"
+           style="animation-delay: 0.1s;">
         <ul class="list-group list-group-flush">
           <li v-for="testimonial in testimonials" :key="testimonial.uuid" class="list-group-item">
             <div class="d-flex justify-content-between align-items-start">
               <blockquote class="blockquote mb-0">
                 <p class="quote-text">“{{ testimonial.quote }}”</p>
-                <footer class="blockquote-footer mt-2">{{ testimonial.authorName }} <cite v-if="testimonial.authorTitle" :title="testimonial.authorTitle">{{ testimonial.authorTitle }}</cite></footer>
+                <footer class="blockquote-footer mt-2">{{ testimonial.authorName }} <cite
+                  v-if="testimonial.authorTitle"
+                  :title="testimonial.authorTitle">{{ testimonial.authorTitle }}</cite></footer>
               </blockquote>
               <div class="actions d-flex align-items-center">
                 <div class="form-check form-switch me-3" title="Toggle Visibility">
-                  <input class="form-check-input" type="checkbox" role="switch" :checked="testimonial.visible" @change="handleVisibilityToggle(testimonial)">
+                  <input :checked="testimonial.visible" class="form-check-input" role="switch"
+                         type="checkbox"
+                         @change="handleVisibilityToggle(testimonial)">
                 </div>
-                <button class="btn btn-sm btn-outline-primary me-2" @click="openEditModal(testimonial)" title="Edit Testimonial">
+                <button class="btn btn-sm btn-outline-primary me-2"
+                        title="Edit Testimonial" @click="openEditModal(testimonial)">
                   <i class="bi bi-pencil-fill"></i>
                 </button>
-                <button class="btn btn-sm btn-outline-danger" @click="testimonialToDelete = testimonial" title="Delete Testimonial">
+                <button class="btn btn-sm btn-outline-danger"
+                        title="Delete Testimonial" @click="testimonialToDelete = testimonial">
                   <i class="bi bi-trash-fill"></i>
                 </button>
               </div>
@@ -85,25 +105,27 @@
       </div>
 
       <!-- Empty State -->
-      <div v-else-if="!isLoading" class="text-center p-5 glass-card animate-fade-in-up" style="animation-delay: 0.1s;">
+      <div v-else-if="!isLoading" class="text-center p-5 glass-card animate-fade-in-up"
+           style="animation-delay: 0.1s;">
         <div class="empty-state-icon mb-4">
           <i class="bi bi-chat-right-quote-fill"></i>
         </div>
         <h4 class="glass-title">No Testimonials Found</h4>
-        <p class="glass-subtitle">You haven't added any testimonials yet. Click the button above to get started!</p>
+        <p class="glass-subtitle">You haven't added any testimonials yet. Click the button above to
+          get started!</p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, reactive } from 'vue';
-import { testimonialsApi } from '@/services/api/user.api.js';
+import {onMounted, reactive, ref} from 'vue';
+import {testimonialsApi} from '@/services/api/user.api.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';
 import ConfirmModal from '@/components/common/modals/ConfirmModal.vue';
-import { Modal } from 'bootstrap';
+import {Modal} from 'bootstrap';
 
 // --- State ---
 const testimonials = ref([]);

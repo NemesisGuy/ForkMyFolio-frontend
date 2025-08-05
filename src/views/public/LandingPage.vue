@@ -2,14 +2,20 @@
   <div class="landing-page animated-gradient-background">
     <div class="container text-center py-5">
       <div class="animate-fade-in-up">
-        <img src="@/assets/forkmyfolio_logo_icon.png" alt="ForkMyFolio Logo" width="120" height="120" class="mb-4 rounded-circle shadow-lg">
+        <img alt="ForkMyFolio Logo" class="mb-4 rounded-circle shadow-lg" height="120"
+             src="@/assets/forkmyfolio_logo_icon.png" width="120">
         <h1 class="display-3 fw-bold text-gradient">Welcome to ForkMyFolio</h1>
         <p class="lead glass-subtitle my-4 mx-auto" style="max-width: 700px;">
-          The simplest way to create, manage, and share a professional developer portfolio. No coding required.
+          The simplest way to create, manage, and share a professional developer portfolio. No
+          coding required.
         </p>
         <div class="d-flex justify-content-center gap-3 flex-wrap">
-          <router-link :to="{ name: 'register' }" class="btn btn-primary btn-lg interactive-lift">Get Started for Free</router-link>
-          <router-link :to="{ name: 'login' }" class="btn btn-outline-light btn-lg interactive-lift">Login</router-link>
+          <router-link :to="{ name: 'register' }" class="btn btn-primary btn-lg interactive-lift">
+            Get Started for Free
+          </router-link>
+          <router-link :to="{ name: 'login' }"
+                       class="btn btn-outline-light btn-lg interactive-lift">Login
+          </router-link>
         </div>
       </div>
     </div>

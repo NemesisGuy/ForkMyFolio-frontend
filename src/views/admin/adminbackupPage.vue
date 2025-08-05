@@ -12,10 +12,13 @@
           <div class="flex-grow-1 ms-4">
             <h5 class="card-title glass-title">System Backup</h5>
             <p class="card-text glass-subtitle">
-              Download a complete backup of the entire system. This includes all users, portfolios, settings, and messages in a single JSON file.
+              Download a complete backup of the entire system. This includes all users, portfolios,
+              settings, and messages in a single JSON file.
             </p>
-            <button class="btn glass-btn-primary interactive-lift" @click="handleBackup" :disabled="isBackingUp">
-              <span v-if="isBackingUp" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            <button :disabled="isBackingUp" class="btn glass-btn-primary interactive-lift"
+                    @click="handleBackup">
+              <span v-if="isBackingUp" aria-hidden="true" class="spinner-border spinner-border-sm me-2"
+                    role="status"></span>
               <i v-else class="bi bi-download me-2"></i>
               {{ isBackingUp ? 'Generating...' : 'Download Backup' }}
             </button>
@@ -27,7 +30,8 @@
     <!-- System Restore Card -->
     <div class="card glass-card glass-card-floating border-danger interactive-card-lift">
       <div class="card-header bg-danger bg-opacity-10 border-bottom-0">
-        <h5 class="mb-0 text-danger fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>Destructive Operation</h5>
+        <h5 class="mb-0 text-danger fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>Destructive
+          Operation</h5>
       </div>
       <div class="card-body">
         <div class="d-flex align-items-center">
@@ -38,12 +42,16 @@
             <h5 class="card-title glass-title">System Restore</h5>
             <p class="card-text glass-subtitle">
               Restore the system from a previously generated backup file.
-              <strong class="text-danger">WARNING:</strong> This will wipe all existing data and replace it with the contents of the backup file. This action cannot be undone.
+              <strong class="text-danger">WARNING:</strong> This will wipe all existing data and
+              replace it with the contents of the backup file. This action cannot be undone.
             </p>
             <div class="input-group">
-              <input type="file" class="form-control glass-input" @change="handleFileSelect" accept=".json" ref="fileInput">
-              <button class="btn btn-danger" @click="handleRestore" :disabled="!selectedFile || isRestoring">
-                <span v-if="isRestoring" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              <input ref="fileInput" accept=".json" class="form-control glass-input"
+                     type="file" @change="handleFileSelect">
+              <button :disabled="!selectedFile || isRestoring" class="btn btn-danger"
+                      @click="handleRestore">
+                <span v-if="isRestoring" aria-hidden="true" class="spinner-border spinner-border-sm me-2"
+                      role="status"></span>
                 <i v-else class="bi bi-upload me-2"></i>
                 {{ isRestoring ? 'Restoring...' : 'Restore from File' }}
               </button>
@@ -56,21 +64,23 @@
       </div>
     </div>
 
-    <ErrorModal :visible="showErrorModal" :title="error.title" :message="error.message" @close="showErrorModal = false" />
-    <SuccessModal :visible="showSuccessModal" title="Operation Successful" :message="successMessage" @close="showSuccessModal = false" />
+    <ErrorModal :message="error.message" :title="error.title" :visible="showErrorModal"
+                @close="showErrorModal = false"/>
+    <SuccessModal :message="successMessage" :visible="showSuccessModal" title="Operation Successful"
+                  @close="showSuccessModal = false"/>
     <ConfirmModal
-        :visible="showConfirmModal"
-        title="Confirm System Restore"
-        message="Are you absolutely sure you want to restore the system from this backup? This will permanently delete all current data. This action cannot be undone."
-        @confirm="proceedWithRestore"
-        @close="showConfirmModal = false"
+      :visible="showConfirmModal"
+      message="Are you absolutely sure you want to restore the system from this backup? This will permanently delete all current data. This action cannot be undone."
+      title="Confirm System Restore"
+      @close="showConfirmModal = false"
+      @confirm="proceedWithRestore"
     />
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { downloadSystemBackup, restoreSystemBackup } from '@/services/api/admin.api.js';
+import {ref} from 'vue';
+import {downloadSystemBackup, restoreSystemBackup} from '@/services/api/admin.api.js';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';
 import ConfirmModal from '@/components/common/modals/ConfirmModal.vue';
@@ -84,7 +94,7 @@ const fileInput = ref(null);
 const showErrorModal = ref(false);
 const showSuccessModal = ref(false);
 const showConfirmModal = ref(false);
-const error = ref({ title: '', message: '' });
+const error = ref({title: '', message: ''});
 const successMessage = ref('');
 
 const handleFileSelect = (event) => {
@@ -95,7 +105,7 @@ const handleFileSelect = (event) => {
   } else {
     selectedFile.value = null;
     fileName.value = '';
-    error.value = { title: 'Invalid File', message: 'Please select a valid .json backup file.' };
+    error.value = {title: 'Invalid File', message: 'Please select a valid .json backup file.'};
     showErrorModal.value = true;
   }
 };
@@ -107,7 +117,10 @@ const handleBackup = async () => {
     // The browser handles the download, so no success modal is needed unless we want to confirm the start.
   } catch (err) {
     console.error("Backup failed:", err);
-    error.value = { title: 'Backup Failed', message: err.message || 'Could not generate the system backup. Please check the server logs.' };
+    error.value = {
+      title: 'Backup Failed',
+      message: err.message || 'Could not generate the system backup. Please check the server logs.'
+    };
     showErrorModal.value = true;
   } finally {
     isBackingUp.value = false;
@@ -116,7 +129,7 @@ const handleBackup = async () => {
 
 const handleRestore = () => {
   if (!selectedFile.value) {
-    error.value = { title: 'No File Selected', message: 'Please select a backup file to restore.' };
+    error.value = {title: 'No File Selected', message: 'Please select a backup file to restore.'};
     showErrorModal.value = true;
     return;
   }
@@ -142,7 +155,10 @@ const proceedWithRestore = async () => {
     fileName.value = '';
   } catch (err) {
     console.error("Restore failed:", err);
-    error.value = { title: 'Restore Failed', message: err.message || 'Could not restore the system from the backup. Please ensure the file is valid and check server logs.' };
+    error.value = {
+      title: 'Restore Failed',
+      message: err.message || 'Could not restore the system from the backup. Please ensure the file is valid and check server logs.'
+    };
     showErrorModal.value = true;
   } finally {
     isRestoring.value = false;

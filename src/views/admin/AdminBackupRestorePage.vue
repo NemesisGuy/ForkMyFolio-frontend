@@ -5,14 +5,17 @@
       <div class="text-center mb-5 animate-fade-in-up">
         <h1 class="display-5 fw-light glass-text">System Backup & Restore</h1>
         <p class="lead glass-subtitle" style="animation-delay: 0.1s;">
-          Create a full system backup or restore the entire application from a previously saved file.
+          Create a full system backup or restore the entire application from a previously saved
+          file.
         </p>
       </div>
 
       <!-- Modals -->
-      <LoadingModal :visible="isLoading" />
-      <ErrorModal :visible="!!error" :message="error" title="An Error Occurred" @close="error = null" />
-      <SuccessModal :visible="!!successMessage" :message="successMessage" title="Success" @close="handleSuccessClose" />
+      <LoadingModal :visible="isLoading"/>
+      <ErrorModal :message="error" :visible="!!error" title="An Error Occurred"
+                  @close="error = null"/>
+      <SuccessModal :message="successMessage" :visible="!!successMessage" title="Success"
+                    @close="handleSuccessClose"/>
 
       <div class="row g-4 justify-content-center">
         <!-- Backup Card -->
@@ -24,9 +27,11 @@
               </div>
               <h5 class="card-title glass-title">Download System Backup</h5>
               <p class="card-text glass-subtitle small flex-grow-1">
-                Generate and download a full backup of all users and their portfolio data as a single JSON file.
+                Generate and download a full backup of all users and their portfolio data as a
+                single JSON file.
               </p>
-              <button class="btn btn-primary mt-auto interactive-lift" @click="handleDownloadBackup" :disabled="isLoading">
+              <button :disabled="isLoading" class="btn btn-primary mt-auto interactive-lift"
+                      @click="handleDownloadBackup">
                 Download System Data
               </button>
             </div>
@@ -43,18 +48,20 @@
               <h5 class="card-title glass-title">Restore from Backup</h5>
               <p class="card-text glass-subtitle small flex-grow-1">
                 Select a valid system backup JSON file to restore all data.
-                <strong class="text-danger d-block mt-2">Warning: This will overwrite the entire system's data.</strong>
+                <strong class="text-danger d-block mt-2">Warning: This will overwrite the entire
+                  system's data.</strong>
               </p>
               <div class="mt-auto">
                 <input
-                  type="file"
-                  class="form-control"
                   ref="fileInput"
-                  @change="handleFileSelect"
-                  accept="application/json"
                   :disabled="isLoading"
+                  accept="application/json"
+                  class="form-control"
+                  type="file"
+                  @change="handleFileSelect"
                 />
-                <button class="btn btn-warning mt-3 w-100 interactive-lift" @click="handleRestoreBackup" :disabled="!selectedFile || isLoading">
+                <button :disabled="!selectedFile || isLoading"
+                        class="btn btn-warning mt-3 w-100 interactive-lift" @click="handleRestoreBackup">
                   Restore System from File
                 </button>
               </div>
@@ -67,10 +74,10 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import {ref} from 'vue';
+import {useRouter} from 'vue-router';
 // Use the dedicated backup API functions
-import { downloadBackup, ingestBackup } from '@/services/api/backup.api.js';
+import {downloadBackup, ingestBackup} from '@/services/api/backup.api.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';
@@ -123,7 +130,7 @@ const handleRestoreBackup = async () => {
 
 const handleSuccessClose = () => {
   successMessage.value = null;
-  router.push({ name: 'admin' });
+  router.push({name: 'admin'});
 };
 </script>
 
@@ -131,6 +138,7 @@ const handleSuccessClose = () => {
 .admin-backup-restore-page .display-5 {
   font-weight: 300;
 }
+
 .form-control {
   background-color: rgba(var(--bs-body-bg-rgb), 0.5);
   border: 1px solid rgba(var(--bs-body-color-rgb), 0.1);

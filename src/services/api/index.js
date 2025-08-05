@@ -8,6 +8,7 @@ export * from './public.api';
 export * from './admin.api';
 export * from './auth.api';
 export * from './user.api';
+export * from './skill.api'; // <-- ADDED
 
 // Also export the custom error class for convenience
-export { ApiError } from './ApiError';
+export {ApiError} from './ApiError';

@@ -15,6 +15,8 @@
   --glass-backdrop: rgba(255, 255, 255, 0.1);
   --glass-shimmer: rgba(255, 255, 255, 0.4);
   --glass-reflection: rgba(255, 255, 255, 0.6);
+  /* FIX: Add a dedicated variable for modals for better control */
+  --glass-bg-modal: rgba(255, 255, 255, 0.45);
 }
 
 /* Dark mode glassmorphic variables */
@@ -29,12 +31,18 @@
   --glass-backdrop: rgba(0, 0, 0, 0.2);
   --glass-shimmer: rgba(255, 255, 255, 0.15);
   --glass-reflection: rgba(255, 255, 255, 0.1);
+  /* FIX: Add a dedicated variable for modals for better control */
+  --glass-bg-modal: rgba(16, 16, 16, 0.55);
 }
 
 /* --- Keyframes --- */
 @keyframes glassShimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 /* ==========================================================================
@@ -59,9 +67,8 @@
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid var(--glass-border);
   border-radius: 1.5rem;
-  box-shadow:
-    0 8px 32px var(--glass-shadow),
-    inset 0 1px 0 var(--glass-border);
+  box-shadow: 0 8px 32px var(--glass-shadow),
+  inset 0 1px 0 var(--glass-border);
   transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
   color: var(--glass-text);
 }
@@ -69,9 +76,8 @@
 .glass-card:hover {
   background: var(--glass-bg-hover);
   border-color: var(--glass-border-hover);
-  box-shadow:
-    0 16px 48px var(--glass-shadow),
-    inset 0 1px 0 var(--glass-border-hover);
+  box-shadow: 0 16px 48px var(--glass-shadow),
+  inset 0 1px 0 var(--glass-border-hover);
 }
 
 /* Glass reflection effect */
@@ -133,14 +139,14 @@
 
 /* --- Glass Modal --- */
 .glass-modal {
-  background: var(--glass-bg);
+  /* FIX: Use the new, dedicated modal background variable */
+  background: var(--glass-bg-modal);
   backdrop-filter: blur(30px) saturate(200%);
   -webkit-backdrop-filter: blur(30px) saturate(200%);
   border: 1px solid var(--glass-border);
   border-radius: 2rem;
-  box-shadow:
-    0 25px 80px var(--glass-shadow),
-    inset 0 1px 0 var(--glass-border);
+  box-shadow: 0 25px 80px var(--glass-shadow),
+  inset 0 1px 0 var(--glass-border);
   color: var(--glass-text);
 }
 

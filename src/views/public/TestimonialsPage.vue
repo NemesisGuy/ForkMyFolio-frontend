@@ -3,21 +3,21 @@
     <div class="container">
       <div class="text-center mb-5">
         <h1 class="display-4 fw-bold animate-fade-in-up glass-text">
-          <i class="bi bi-chat-left-quote" aria-hidden="true"></i> Testimonials
+          <i aria-hidden="true" class="bi bi-chat-left-quote"></i> Testimonials
         </h1>
         <p class="lead animate-fade-in-up glass-subtitle" style="animation-delay: 0.1s;">
           What colleagues and clients are saying about my work.
         </p>
       </div>
 
-      <LoadingModal :visible="isLoading" />
+      <LoadingModal :visible="isLoading"/>
 
       <!-- A skeleton loader that mimics the new testimonial card style -->
       <div v-if="isLoading" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         <div v-for="n in 6"
              :key="n"
-             class="col animate-fade-in-up"
-             :style="{ 'animation-delay': (n * 0.05) + 's' }">
+             :style="{ 'animation-delay': (n * 0.05) + 's' }"
+             class="col animate-fade-in-up">
           <div class="card glass-card glass-card-floating h-100">
             <div class="card-body d-flex flex-column">
               <div class="flex-grow-1">
@@ -26,8 +26,10 @@
                 <div class="skeleton-line skeleton-grade" style="width: 70%;"></div>
               </div>
               <div class="mt-auto text-end">
-                <div class="skeleton-line skeleton-title" style="width: 60%; margin-left: auto;"></div>
-                <div class="skeleton-line skeleton-subtitle" style="width: 80%; margin-left: auto;"></div>
+                <div class="skeleton-line skeleton-title"
+                     style="width: 60%; margin-left: auto;"></div>
+                <div class="skeleton-line skeleton-subtitle"
+                     style="width: 80%; margin-left: auto;"></div>
               </div>
             </div>
           </div>
@@ -46,21 +48,24 @@
       </div>
 
       <!-- State for when a portfolio is loaded and has testimonials -->
-      <div v-else-if="testimonials.length > 0" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      <div v-else-if="testimonials.length > 0"
+           class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         <div v-for="(testimonial, index) in testimonials"
              :key="testimonial.uuid"
-             class="col animate-fade-in-up"
-             :style="{ 'animation-delay': (index * 0.1 + 0.2) + 's' }">
-          <div class="card glass-card glass-card-floating h-100 interactive-card-lift interactive-card-shadow-primary">
+             :style="{ 'animation-delay': (index * 0.1 + 0.2) + 's' }"
+             class="col animate-fade-in-up">
+          <div
+            class="card glass-card glass-card-floating h-100 interactive-card-lift interactive-card-shadow-primary">
             <div class="card-body d-flex flex-column">
-              <i class="bi bi-quote card-quote-icon" aria-hidden="true"></i>
+              <i aria-hidden="true" class="bi bi-quote card-quote-icon"></i>
               <figure class="mb-0 d-flex flex-column flex-grow-1">
                 <blockquote class="blockquote mb-4 flex-grow-1">
                   <p class="glass-description">{{ testimonial.quote }}</p>
                 </blockquote>
                 <figcaption class="blockquote-footer mt-auto text-end">
                   <strong class="d-block glass-title">{{ testimonial.authorName }}</strong>
-                  <cite :title="testimonial.authorTitle" class="glass-subtitle">{{ testimonial.authorTitle }}</cite>
+                  <cite :title="testimonial.authorTitle"
+                        class="glass-subtitle">{{ testimonial.authorTitle }}</cite>
                 </figcaption>
               </figure>
             </div>
@@ -89,12 +94,12 @@
  * @file src/views/public/TestimonialsPage.vue
  * @description A page to display testimonials. It now consumes data from a central store.
  */
-import { computed } from 'vue';
-import { usePublicPortfolioStore } from '@/stores/publicPortfolioStore.js';
+import {computed} from 'vue';
+import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 
 // Use the store to get reactive state.
-const { portfolio, isLoading, error } = usePublicPortfolioStore();
+const {portfolio, isLoading, error} = usePublicPortfolioStore();
 
 // The testimonials are now a computed property derived from the central store.
 const testimonials = computed(() => portfolio.value?.testimonials || []);

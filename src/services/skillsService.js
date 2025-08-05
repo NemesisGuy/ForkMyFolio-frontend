@@ -8,10 +8,10 @@
  * Used for select dropdowns and consistent ordering.
  */
 export const SKILL_LEVELS = [
-  { value: 'EXPERT', text: 'Expert' },
-  { value: 'ADVANCED', text: 'Advanced' },
-  { value: 'INTERMEDIATE', text: 'Intermediate' },
-  { value: 'BEGINNER', text: 'Beginner' }
+  {value: 'EXPERT', text: 'Expert'},
+  {value: 'ADVANCED', text: 'Advanced'},
+  {value: 'INTERMEDIATE', text: 'Intermediate'},
+  {value: 'BEGINNER', text: 'Beginner'}
 ];
 
 /**
@@ -56,13 +56,13 @@ export const groupSkills = (skills) => {
 
     // Format the levels for the current category, filtering out empty ones.
     const categoryLevels = [
-      { name: 'Expert', skills: levels.EXPERT },
-      { name: 'Advanced', skills: levels.ADVANCED },
-      { name: 'Intermediate', skills: levels.INTERMEDIATE },
-      { name: 'Beginner', skills: levels.BEGINNER },
+      {name: 'Expert', skills: levels.EXPERT},
+      {name: 'Advanced', skills: levels.ADVANCED},
+      {name: 'Intermediate', skills: levels.INTERMEDIATE},
+      {name: 'Beginner', skills: levels.BEGINNER},
     ].filter(level => level.skills.length > 0);
 
-    return { category, levels: categoryLevels };
+    return {category, levels: categoryLevels};
   });
 
   // Sort the final categories alphabetically.

@@ -16,12 +16,12 @@
 
 <script setup>
 defineProps({
-  title: { type: String, required: true },
-  value: { type: [String, Number], required: true },
+  title: {type: String, required: true},
+  value: {type: [String, Number], required: true},
   /**
    * The Bootstrap Icon class name (e.g., 'bi-eye-fill').
    */
-  icon: { type: String, required: true },
+  icon: {type: String, required: true},
 });
 </script>
 

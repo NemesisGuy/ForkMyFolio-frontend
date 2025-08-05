@@ -1,7 +1,7 @@
 // src/services/initAuth.js
-import { authService } from './authService';
-import { setAuthService } from './api/apiClient';
-import { settingsService } from './settingsService';
+import {authService} from './authService';
+import {setAuthService} from './api/apiClient';
+import {settingsService} from './settingsService';
 
 // First, inject the authService into the apiClient to resolve the circular dependency.
 setAuthService(authService);

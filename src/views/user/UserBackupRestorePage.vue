@@ -10,9 +10,11 @@
       </div>
 
       <!-- Loading and Error Modals -->
-      <LoadingModal :visible="isLoading" />
-      <ErrorModal :visible="!!error" :message="error" title="An Error Occurred" @close="error = null" />
-      <SuccessModal :visible="!!successMessage" :message="successMessage" title="Success" @close="handleSuccessClose" />
+      <LoadingModal :visible="isLoading"/>
+      <ErrorModal :message="error" :visible="!!error" title="An Error Occurred"
+                  @close="error = null"/>
+      <SuccessModal :message="successMessage" :visible="!!successMessage" title="Success"
+                    @close="handleSuccessClose"/>
 
       <div class="row g-4 justify-content-center">
         <!-- Backup Card -->
@@ -24,9 +26,11 @@
               </div>
               <h5 class="card-title glass-title">Download Backup</h5>
               <p class="card-text glass-subtitle small flex-grow-1">
-                Generate and download a full backup of your projects, skills, experience, and other portfolio data as a single JSON file.
+                Generate and download a full backup of your projects, skills, experience, and other
+                portfolio data as a single JSON file.
               </p>
-              <button class="btn btn-primary mt-auto interactive-lift" @click="handleDownloadBackup" :disabled="isLoading">
+              <button :disabled="isLoading" class="btn btn-primary mt-auto interactive-lift"
+                      @click="handleDownloadBackup">
                 Download My Data
               </button>
             </div>
@@ -43,18 +47,20 @@
               <h5 class="card-title glass-title">Restore from Backup</h5>
               <p class="card-text glass-subtitle small flex-grow-1">
                 Select a valid portfolio backup JSON file to restore your data.
-                <strong class="text-danger d-block mt-2">Warning: This will overwrite your current portfolio data.</strong>
+                <strong class="text-danger d-block mt-2">Warning: This will overwrite your current
+                  portfolio data.</strong>
               </p>
               <div class="mt-auto">
                 <input
-                  type="file"
-                  class="form-control"
                   ref="fileInput"
-                  @change="handleFileSelect"
-                  accept="application/json"
                   :disabled="isLoading"
+                  accept="application/json"
+                  class="form-control"
+                  type="file"
+                  @change="handleFileSelect"
                 />
-                <button class="btn btn-warning mt-3 w-100 interactive-lift" @click="handleRestoreBackup" :disabled="!selectedFile || isLoading">
+                <button :disabled="!selectedFile || isLoading"
+                        class="btn btn-warning mt-3 w-100 interactive-lift" @click="handleRestoreBackup">
                   Restore from File
                 </button>
               </div>
@@ -67,9 +73,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { downloadMyBackup, restoreMyBackup } from '@/services/api/user.api.js';
+import {ref} from 'vue';
+import {useRouter} from 'vue-router';
+import {downloadMyBackup, restoreMyBackup} from '@/services/api/user.api.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';
@@ -134,7 +140,7 @@ const handleRestoreBackup = async () => {
 const handleSuccessClose = () => {
   successMessage.value = null;
   // Redirect to dashboard to see the restored data
-  router.push({ name: 'dashboard', params: { slug: props.slug } });
+  router.push({name: 'dashboard', params: {slug: props.slug}});
 };
 </script>
 
