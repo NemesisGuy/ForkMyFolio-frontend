@@ -8,7 +8,8 @@
   ]">
     <div class="container-fluid">
       <router-link class="navbar-brand d-flex align-items-center" to="/">
-        <img alt="ForkMyFolio Logo" class="d-inline-block align-text-top me-2 rounded-circle" height="45"
+        <img alt="ForkMyFolio Logo" class="d-inline-block align-text-top me-2 rounded-circle"
+             height="45"
              src="../../assets/forkmyfolio_logo_icon.png" width="45">
         ForkMyFolio
       </router-link>
@@ -40,7 +41,8 @@
           <!-- Public portfolio links that appear based on the current context -->
           <li v-if="settingsService.isEnabled.value('portfolio.projects.show') && currentSlug"
               class="nav-item">
-            <router-link :to="{ name: 'projects-public', params: { slug: currentSlug } }" active-class="active"
+            <router-link :to="{ name: 'projects-public', params: { slug: currentSlug } }"
+                         active-class="active"
                          class="nav-link"
                          @click="collapseNavbar">
               Projects
@@ -48,7 +50,8 @@
           </li>
           <li v-if="settingsService.isEnabled.value('portfolio.skills.show') && currentSlug"
               class="nav-item">
-            <router-link :to="{ name: 'skills-public', params: { slug: currentSlug } }" active-class="active"
+            <router-link :to="{ name: 'skills-public', params: { slug: currentSlug } }"
+                         active-class="active"
                          class="nav-link"
                          @click="collapseNavbar">
               Skills
@@ -56,7 +59,8 @@
           </li>
           <li v-if="settingsService.isEnabled.value('portfolio.experience.show') && currentSlug"
               class="nav-item">
-            <router-link :to="{ name: 'experience-public', params: { slug: currentSlug } }" active-class="active"
+            <router-link :to="{ name: 'experience-public', params: { slug: currentSlug } }"
+                         active-class="active"
                          class="nav-link"
                          @click="collapseNavbar">
               Experience
@@ -64,7 +68,8 @@
           </li>
           <li v-if="settingsService.isEnabled.value('portfolio.testimonials.show') && currentSlug"
               class="nav-item">
-            <router-link :to="{ name: 'testimonials-public', params: { slug: currentSlug } }" active-class="active"
+            <router-link :to="{ name: 'testimonials-public', params: { slug: currentSlug } }"
+                         active-class="active"
                          class="nav-link"
                          @click="collapseNavbar">
               Testimonials
@@ -72,7 +77,8 @@
           </li>
           <li v-if="settingsService.isEnabled.value('portfolio.qualifications.show') && currentSlug"
               class="nav-item">
-            <router-link :to="{ name: 'qualifications-public', params: { slug: currentSlug } }" active-class="active"
+            <router-link :to="{ name: 'qualifications-public', params: { slug: currentSlug } }"
+                         active-class="active"
                          class="nav-link"
                          @click="collapseNavbar">
               Qualifications
@@ -80,7 +86,8 @@
           </li>
           <li v-if="settingsService.isEnabled.value('portfolio.contact.enabled') && currentSlug"
               class="nav-item">
-            <router-link :to="{ name: 'contact', params: { slug: currentSlug } }" active-class="active"
+            <router-link :to="{ name: 'contact', params: { slug: currentSlug } }"
+                         active-class="active"
                          class="nav-link"
                          @click="collapseNavbar">
               Contact
@@ -121,7 +128,8 @@
 
             <li class="nav-item dropdown">
               <a id="navbarUserDropdown" aria-expanded="false"
-                 class="nav-link dropdown-toggle d-flex align-items-center" data-bs-toggle="dropdown"
+                 class="nav-link dropdown-toggle d-flex align-items-center"
+                 data-bs-toggle="dropdown"
                  href="#" role="button">
                 <img v-if="authService.user.value?.profileImageUrl"
                      :src="authService.user.value.profileImageUrl" alt="Avatar"
@@ -132,23 +140,26 @@
               <ul aria-labelledby="navbarUserDropdown"
                   class="dropdown-menu dropdown-menu-end glass-dropdown">
                 <li>
-                  <router-link :to="{ name: 'dashboard', params: { slug: authService.user.value.slug } }"
-                               class="dropdown-item"
-                               @click="handleUserMenuClick(authService.user.value.slug)">
+                  <router-link
+                    :to="{ name: 'dashboard', params: { slug: authService.user.value.slug } }"
+                    class="dropdown-item"
+                    @click="handleUserMenuClick(authService.user.value.slug)">
                     <i class="bi bi-grid-1x2-fill me-2"></i>My Dashboard
                   </router-link>
                 </li>
                 <li>
-                  <router-link :to="{ name: 'profile', params: { slug: authService.user.value.slug } }"
-                               class="dropdown-item"
-                               @click="handleUserMenuClick(authService.user.value.slug)">
+                  <router-link
+                    :to="{ name: 'profile', params: { slug: authService.user.value.slug } }"
+                    class="dropdown-item"
+                    @click="handleUserMenuClick(authService.user.value.slug)">
                     <i class="bi bi-person-badge-fill me-2"></i>My Profile
                   </router-link>
                 </li>
                 <li v-if="authService.user.value?.slug">
-                  <router-link :to="{ name: 'portfolio-home', params: { slug: authService.user.value.slug } }"
-                               class="dropdown-item"
-                               @click="handleUserMenuClick(authService.user.value.slug)">
+                  <router-link
+                    :to="{ name: 'portfolio-home', params: { slug: authService.user.value.slug } }"
+                    class="dropdown-item"
+                    @click="handleUserMenuClick(authService.user.value.slug)">
                     <i class="bi bi-house-door-fill me-2"></i>My Public Page
                   </router-link>
                 </li>
@@ -156,16 +167,18 @@
                   <hr class="dropdown-divider">
                 </li>
                 <li>
-                  <router-link :to="{ name: 'display-settings', params: { slug: authService.user.value.slug } }"
-                               class="dropdown-item"
-                               @click="handleUserMenuClick(authService.user.value.slug)">
+                  <router-link
+                    :to="{ name: 'display-settings', params: { slug: authService.user.value.slug } }"
+                    class="dropdown-item"
+                    @click="handleUserMenuClick(authService.user.value.slug)">
                     <i class="bi bi-toggles me-2"></i>Display Settings
                   </router-link>
                 </li>
                 <li>
-                  <router-link :to="{ name: 'pdf-settings', params: { slug: authService.user.value.slug } }"
-                               class="dropdown-item"
-                               @click="handleUserMenuClick(authService.user.value.slug)">
+                  <router-link
+                    :to="{ name: 'pdf-settings', params: { slug: authService.user.value.slug } }"
+                    class="dropdown-item"
+                    @click="handleUserMenuClick(authService.user.value.slug)">
                     <i class="bi bi-file-earmark-pdf-fill me-2"></i>PDF Settings
                   </router-link>
                 </li>
@@ -271,8 +284,6 @@ watch(
       if (currentSlug.value) { // Only clear if there's something to clear
         console.log(`[Navbar] No effective slug. Clearing portfolio context.`);
         clearPortfolio();
-        // Also reset settings to global defaults
-        settingsService.initialize('default');
       }
     }
   },

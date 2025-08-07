@@ -59,7 +59,8 @@
           <i class="bi bi-lock-fill text-danger mb-2" style="font-size: 2rem;"></i>
           <h5 class="card-title text-white mb-2">This Portfolio is Private</h5>
           <p class="card-text text-light opacity-75">
-            The owner has set this portfolio to private. It is not currently accessible to the public.
+            The owner has set this portfolio to private. It is not currently accessible to the
+            public.
           </p>
         </div>
       </div>

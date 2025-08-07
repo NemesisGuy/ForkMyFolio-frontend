@@ -45,7 +45,8 @@
                   </div>
                   <div class="col-12">
                     <label class="form-label" for="summary">Summary / Bio</label>
-                    <textarea id="summary" v-model="formState.summary" class="form-control" placeholder="A passionate developer with experience in..."
+                    <textarea id="summary" v-model="formState.summary" class="form-control"
+                              placeholder="A passionate developer with experience in..."
                               rows="6"></textarea>
                   </div>
                   <div class="col-md-6">
@@ -93,7 +94,8 @@
                   </div>
                   <div class="col-md-6">
                     <label class="form-label" for="resumeImageUrl">Resume Preview Image URL</label>
-                    <input id="resumeImageUrl" v-model="formState.resumeImageUrl" class="form-control"
+                    <input id="resumeImageUrl" v-model="formState.resumeImageUrl"
+                           class="form-control"
                            placeholder="Link to a preview image of the resume"
                            type="url">
                   </div>
@@ -107,7 +109,8 @@
                   <div class="col-12">
                     <label class="form-label" for="coverLetterTemplate">Default Cover Letter</label>
                     <textarea id="coverLetterTemplate" v-model="formState.coverLetterTemplate"
-                              class="form-control" placeholder="Dear Hiring Manager, I am writing to express my keen interest in..."
+                              class="form-control"
+                              placeholder="Dear Hiring Manager, I am writing to express my keen interest in..."
                               rows="8"></textarea>
                     <div class="form-text">This can be displayed on your home page as a template for
                       visitors.

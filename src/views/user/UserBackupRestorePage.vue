@@ -11,9 +11,9 @@
 
       <!-- Loading and Error Modals -->
       <LoadingModal :visible="isLoading"/>
-      <ErrorModal :message="error" :visible="!!error" title="An Error Occurred"
+      <ErrorModal :message="error || ''" :visible="!!error" title="An Error Occurred"
                   @close="error = null"/>
-      <SuccessModal :message="successMessage" :visible="!!successMessage" title="Success"
+      <SuccessModal :message="successMessage || ''" :visible="!!successMessage" title="Success"
                     @close="handleSuccessClose"/>
 
       <div class="row g-4 justify-content-center">
@@ -60,7 +60,8 @@
                   @change="handleFileSelect"
                 />
                 <button :disabled="!selectedFile || isLoading"
-                        class="btn btn-warning mt-3 w-100 interactive-lift" @click="handleRestoreBackup">
+                        class="btn btn-warning mt-3 w-100 interactive-lift"
+                        @click="handleRestoreBackup">
                   Restore from File
                 </button>
               </div>

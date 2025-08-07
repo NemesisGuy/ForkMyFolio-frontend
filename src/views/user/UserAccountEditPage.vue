@@ -28,7 +28,8 @@
                   <!-- CORRECTED: Added profileImageUrl field to match the DTO -->
                   <div class="col-12">
                     <label class="form-label" for="profileImageUrl">Profile Image URL</label>
-                    <input id="profileImageUrl" v-model="accountData.profileImageUrl" class="form-control"
+                    <input id="profileImageUrl" v-model="accountData.profileImageUrl"
+                           class="form-control"
                            placeholder="https://example.com/path/to/image.jpg"
                            type="url">
                     <div class="form-text">Provide a direct URL to your profile picture. This is not

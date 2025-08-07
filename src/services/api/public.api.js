@@ -12,6 +12,41 @@ export const getPortfolioBySlug = (slug) => {
   return fetchWithAuth(`/portfolios/${slug}`, {method: 'GET'}, false);
 };
 
+/**
+ * Fetches a user's public projects by their slug.
+ * @param {string} slug - The user's portfolio slug.
+ * @returns {Promise<Array<object>>} A list of project objects.
+ */
+export const getPortfolioProjects = (slug) => fetchWithAuth(`/portfolios/${slug}/projects`, {method: 'GET'}, false);
+
+/**
+ * Fetches a user's public skills by their slug.
+ * @param {string} slug - The user's portfolio slug.
+ * @returns {Promise<Array<object>>} A list of skill objects.
+ */
+export const getPortfolioSkills = (slug) => fetchWithAuth(`/portfolios/${slug}/skills`, {method: 'GET'}, false);
+
+/**
+ * Fetches a user's public experiences by their slug.
+ * @param {string} slug - The user's portfolio slug.
+ * @returns {Promise<Array<object>>} A list of experience objects.
+ */
+export const getPortfolioExperience = (slug) => fetchWithAuth(`/portfolios/${slug}/experience`, {method: 'GET'}, false);
+
+/**
+ * Fetches a user's public qualifications by their slug.
+ * @param {string} slug - The user's portfolio slug.
+ * @returns {Promise<Array<object>>} A list of qualification objects.
+ */
+export const getPortfolioQualifications = (slug) => fetchWithAuth(`/portfolios/${slug}/qualifications`, {method: 'GET'}, false);
+
+/**
+ * Fetches a user's public testimonials by their slug.
+ * @param {string} slug - The user's portfolio slug.
+ * @returns {Promise<Array<object>>} A list of testimonial objects.
+ */
+export const getPortfolioTestimonials = (slug) => fetchWithAuth(`/portfolios/${slug}/testimonials`, {method: 'GET'}, false);
+
 export const getPortfolioSettings = (slug) => {
   return fetchWithAuth(`/portfolios/${slug}/settings`, {method: 'GET'}, false);
 };
@@ -142,6 +177,11 @@ export const downloadPortfolioAsPdf = (templateName) => {
  */
 export const publicApi = {
   getPortfolioBySlug,
+  getPortfolioProjects,
+  getPortfolioSkills,
+  getPortfolioExperience,
+  getPortfolioQualifications,
+  getPortfolioTestimonials,
   getPortfolioSettings,
   getGlobalSettings,
   sendContactMessage,

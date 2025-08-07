@@ -55,7 +55,8 @@
                     <i :class="iconForLevel(skill.level)"/>
                   </div>
                   <h5 class="card-title">{{ skill.name }}</h5>
-                  <div :data-level="skill.level.toLowerCase()" :title="skill.level.charAt(0).toUpperCase() + skill.level.slice(1).toLowerCase()"
+                  <div :data-level="skill.level.toLowerCase()"
+                       :title="skill.level.charAt(0).toUpperCase() + skill.level.slice(1).toLowerCase()"
                        class="proficiency-indicator">
                   </div>
                 </div>

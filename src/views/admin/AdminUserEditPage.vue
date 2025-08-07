@@ -4,7 +4,8 @@
       <div class="row justify-content-center">
         <div class="col-lg-8 col-md-10">
           <LoadingModal :visible="isLoading || isSaving"/>
-          <SuccessModal :visible="showSuccess" message="The user's details have been updated successfully."
+          <SuccessModal :visible="showSuccess"
+                        message="The user's details have been updated successfully."
                         title="User Updated"
                         @close="closeSuccessModal"/>
           <ErrorModal v-if="error" :message="error" :visible="true" title="Update Failed"
@@ -51,12 +52,14 @@
                   <div class="col-md-6">
                     <label class="form-label">Roles</label>
                     <div class="form-check">
-                      <input id="roleUser" v-model="userData.roles" class="form-check-input" disabled
+                      <input id="roleUser" v-model="userData.roles" class="form-check-input"
+                             disabled
                              type="checkbox" value="USER">
                       <label class="form-check-label" for="roleUser">User (Default)</label>
                     </div>
                     <div class="form-check">
-                      <input id="roleAdmin" v-model="userData.roles" class="form-check-input" type="checkbox"
+                      <input id="roleAdmin" v-model="userData.roles" class="form-check-input"
+                             type="checkbox"
                              value="ADMIN">
                       <label class="form-check-label" for="roleAdmin">Admin</label>
                     </div>
@@ -64,7 +67,8 @@
                   <div class="col-md-6">
                     <label class="form-label">Account Status</label>
                     <div class="form-check form-switch">
-                      <input id="userActive" v-model="userData.active" class="form-check-input" role="switch"
+                      <input id="userActive" v-model="userData.active" class="form-check-input"
+                             role="switch"
                              type="checkbox">
                       <label class="form-check-label"
                              for="userActive">{{ userData.active ? 'Active' : 'Inactive' }}</label>

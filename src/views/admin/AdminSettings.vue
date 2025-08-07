@@ -69,7 +69,8 @@
                 Reset
               </button>
               <button :disabled="!isDirty || isSaving" class="btn btn-primary" type="submit">
-                <span v-if="isSaving" aria-hidden="true" class="spinner-border spinner-border-sm me-2"
+                <span v-if="isSaving" aria-hidden="true"
+                      class="spinner-border spinner-border-sm me-2"
                       role="status"></span>
                 {{ isSaving ? 'Saving...' : 'Save Changes' }}
               </button>

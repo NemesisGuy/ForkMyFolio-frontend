@@ -17,7 +17,8 @@
             </p>
             <button :disabled="isBackingUp" class="btn glass-btn-primary interactive-lift"
                     @click="handleBackup">
-              <span v-if="isBackingUp" aria-hidden="true" class="spinner-border spinner-border-sm me-2"
+              <span v-if="isBackingUp" aria-hidden="true"
+                    class="spinner-border spinner-border-sm me-2"
                     role="status"></span>
               <i v-else class="bi bi-download me-2"></i>
               {{ isBackingUp ? 'Generating...' : 'Download Backup' }}
@@ -50,7 +51,8 @@
                      type="file" @change="handleFileSelect">
               <button :disabled="!selectedFile || isRestoring" class="btn btn-danger"
                       @click="handleRestore">
-                <span v-if="isRestoring" aria-hidden="true" class="spinner-border spinner-border-sm me-2"
+                <span v-if="isRestoring" aria-hidden="true"
+                      class="spinner-border spinner-border-sm me-2"
                       role="status"></span>
                 <i v-else class="bi bi-upload me-2"></i>
                 {{ isRestoring ? 'Restoring...' : 'Restore from File' }}

@@ -5,7 +5,7 @@
  * in one part of the app (e.g., UserSettingsPage), other parts (e.g., Navbar)
  * react to the changes instantly.
  */
-import {computed, ref} from 'vue';
+import {computed, ref, watch} from 'vue';
 import {publicApi} from '@/services/api/public.api.js';
 import {settingsApi} from '@/services/api/user.api.js';
 import {authService} from './authService';
@@ -14,37 +14,27 @@ import {authService} from './authService';
 // The internal state is a key-value map: { "SHOW_PROJECTS": "true", ... }
 const settings = ref({});
 const isLoading = ref(true);
-const isInitialized = ref(false); // <-- ADDED: Flag to track initialization status.
 
 /**
- * Initializes the settings from the backend based on the current context.
- * This should be called when the application loads or the route changes.
- * @param {string|null} slug - The user slug for a public portfolio page. If null, fetches for the current context.
+ * Fetches settings from the backend based on the current authentication state
+ * and applies them to the reactive `settings` ref.
+ * This is the single source of truth for fetching application-level settings.
+ * @private
  */
-async function initializeSettings(slug = null) {
+async function _fetchAndApplySettings() {
   isLoading.value = true;
-  isInitialized.value = false;
+  console.log(`[SettingsService] Fetching settings. User is authenticated: ${authService.isAuthenticated.value}`);
   try {
-    let settingsArray = [];
-    if (slug && slug !== 'default') {
-      // We are on a specific user's public portfolio page.
-      settingsArray = await publicApi.getPortfolioSettings(slug);
-    } else if (authService.isAuthenticated.value && !slug) {
-      // The logged-in user is browsing their own dashboard area (e.g., /my-projects).
-      settingsArray = await settingsApi.getAll();
-    } else {
-      // This handles the main landing page (slug is 'default') or other
-      // generic public pages where global settings should apply.
-      settingsArray = await publicApi.getGlobalSettings();
-    }
-    // Normalize the array from the API into the service's internal map format.
+    const settingsArray = authService.isAuthenticated.value
+      ? await settingsApi.getAll() // Fetch user-specific settings
+      : await publicApi.getGlobalSettings(); // Fetch global default settings
+
     updateSettings(settingsArray);
   } catch (err) {
-    console.error('Failed to initialize settings:', err);
+    console.error('Failed to fetch settings:', err);
     settings.value = {}; // Reset to a safe default
   } finally {
     isLoading.value = false;
-    isInitialized.value = true; // <-- ADDED: Mark as initialized even on failure to prevent loops.
   }
 }
 
@@ -58,25 +48,34 @@ function updateSettings(settingsArray) {
     console.error('[SettingsService] updateSettings received invalid data:', settingsArray);
     return;
   }
-  // Create a mutable copy of the current settings map.
-  const newSettingsMap = {...settings.value};
+  // Normalize the array into a key-value map.
+  const newSettingsMap = settingsArray.reduce((acc, setting) => {
+    acc[setting.name] = setting.value;
+    return acc;
+  }, {});
 
-  // Iterate over the incoming list and update/add values.
-  settingsArray.forEach(setting => {
-    newSettingsMap[setting.name] = setting.value;
-  });
-
-  // Assign the merged map back to the reactive ref to trigger updates across the app.
   settings.value = newSettingsMap;
   console.log('[SettingsService] Settings state updated:', settings.value);
 }
 
+// --- Reactive Logic ---
+// Watch for changes in authentication state (login/logout).
+// When the user logs in or out, automatically refetch the correct settings.
+watch(authService.isAuthenticated, (isNowAuthenticated, wasPreviouslyAuthenticated) => {
+  // Only refetch if the state has actually changed to avoid redundant calls on startup.
+  if (isNowAuthenticated !== wasPreviouslyAuthenticated) {
+    _fetchAndApplySettings();
+  }
+});
+
 // --- Exported Service ---
 export const settingsService = {
   isLoading,
-  isInitialized, // <-- ADDED: Export the new flag.
   settings,
-  initialize: initializeSettings,
+  // The initialize function is now just a simple trigger for the first load,
+  // called by initAuth.js.
+  initialize: _fetchAndApplySettings,
+  // This is used by pages like UserSettingsPage to push changes directly.
   updateSettings,
   /**
    * A computed property that returns a function to check if a feature is enabled.

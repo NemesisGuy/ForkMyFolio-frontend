@@ -72,14 +72,16 @@
                   </div>
                   <div class="col-md-6">
                     <label class="form-label" for="resumeImageUrl">Resume Preview Image URL</label>
-                    <input id="resumeImageUrl" v-model="profileData.resumeImageUrl" class="form-control"
+                    <input id="resumeImageUrl" v-model="profileData.resumeImageUrl"
+                           class="form-control"
                            placeholder="URL to an image of your resume"
                            type="url">
                   </div>
                   <div class="col-12">
                     <label class="form-label" for="coverLetterTemplate">Cover Letter
                       Template</label>
-                    <textarea id="coverLetterTemplate" v-model="profileData.coverLetterTemplate" class="form-control"
+                    <textarea id="coverLetterTemplate" v-model="profileData.coverLetterTemplate"
+                              class="form-control"
                               placeholder="A generic cover letter template you can reuse."
                               rows="8"></textarea>
                   </div>

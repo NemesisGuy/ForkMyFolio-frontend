@@ -12,9 +12,9 @@
 
       <!-- Modals -->
       <LoadingModal :visible="isLoading"/>
-      <ErrorModal :message="error" :visible="!!error" title="An Error Occurred"
+      <ErrorModal :message="error || ''" :visible="!!error" title="An Error Occurred"
                   @close="error = null"/>
-      <SuccessModal :message="successMessage" :visible="!!successMessage" title="Success"
+      <SuccessModal :message="successMessage || ''" :visible="!!successMessage" title="Success"
                     @close="successMessage = null"/>
       <ConfirmModal
         :message="`Are you sure you want to delete the qualification '${qualificationToDelete?.qualificationName}'?`"
@@ -24,112 +24,13 @@
         @confirm="handleDeleteQualification"
       />
 
-      <!-- Add/Edit Qualification Modal -->
-      <div id="qualificationModal" ref="qualificationModalRef" aria-hidden="true"
-           aria-labelledby="qualificationModalLabel" class="modal fade" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content glass-modal">
-            <div class="modal-header">
-              <h5 id="qualificationModalLabel" class="modal-title">
-                {{ isEditing ? 'Edit Qualification' : 'Add New Qualification' }}</h5>
-              <button aria-label="Close" class="btn-close" data-bs-dismiss="modal"
-                      type="button"></button>
-            </div>
-            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
-              <form @submit.prevent="handleFormSubmit">
-                <div class="row">
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label" for="qualName">Qualification / Degree</label>
-                    <input id="qualName" v-model="currentQualification.qualificationName" class="form-control"
-                           required type="text">
-                  </div>
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label" for="qualLevel">Level</label>
-                    <select id="qualLevel" v-model="currentQualification.level" class="form-select"
-                            required>
-                      <option disabled value="">Select a level</option>
-                      <option v-for="level in QUALIFICATION_LEVELS" :key="level.value"
-                              :value="level.value">{{ level.text }}
-                      </option>
-                    </select>
-                  </div>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label" for="qualInstitution">Institution</label>
-                  <input id="qualInstitution" v-model="currentQualification.institutionName" class="form-control"
-                         required type="text">
-                </div>
-                <div class="mb-3">
-                  <label class="form-label" for="qualFieldOfStudy">Field of Study (Optional)</label>
-                  <input id="qualFieldOfStudy" v-model="currentQualification.fieldOfStudy" class="form-control"
-                         type="text">
-                </div>
-                <div class="row">
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label" for="qualStartYear">Start Year</label>
-                    <input id="qualStartYear" v-model.number="currentQualification.startYear" :max="new Date().getFullYear() + 5"
-                           :min="1900" class="form-control" required
-                           type="number">
-                  </div>
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label" for="qualCompletionYear">Completion Year</label>
-                    <input id="qualCompletionYear" v-model.number="currentQualification.completionYear" :disabled="currentQualification.stillStudying"
-                           :max="new Date().getFullYear() + 10"
-                           :min="1900" class="form-control"
-                           type="number">
-                  </div>
-                </div>
-                <div class="form-check form-switch mb-3">
-                  <input id="qualStillStudying" v-model="currentQualification.stillStudying" class="form-check-input"
-                         role="switch" type="checkbox">
-                  <label class="form-check-label" for="qualStillStudying">I am still studying for
-                    this qualification</label>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label" for="qualGrade">Grade / Result (Optional)</label>
-                  <input id="qualGrade" v-model="currentQualification.grade" class="form-control"
-                         type="text">
-                </div>
-                <hr class="my-4">
-                <h6 class="text-muted mb-3">Optional Links</h6>
-                <div class="mb-3">
-                  <label class="form-label" for="qualInstitutionLogoUrl">Institution Logo
-                    URL</label>
-                  <input id="qualInstitutionLogoUrl" v-model="currentQualification.institutionLogoUrl" class="form-control"
-                         placeholder="https://..."
-                         type="url">
-                </div>
-                <div class="mb-3">
-                  <label class="form-label" for="qualInstitutionWebsite">Institution Website
-                    URL</label>
-                  <input id="qualInstitutionWebsite" v-model="currentQualification.institutionWebsite" class="form-control"
-                         placeholder="https://..."
-                         type="url">
-                </div>
-                <div class="mb-3">
-                  <label class="form-label" for="qualCredentialUrl">Credential URL</label>
-                  <input id="qualCredentialUrl" v-model="currentQualification.credentialUrl" class="form-control"
-                         placeholder="https://..." type="url">
-                  <div class="form-text">A link to a digital certificate or verification page.</div>
-                </div>
-                <hr class="my-4">
-                <div class="form-check form-switch mb-3">
-                  <input id="qualVisible" v-model="currentQualification.visible" class="form-check-input" role="switch"
-                         type="checkbox">
-                  <label class="form-check-label" for="qualVisible">Visible on public
-                    portfolio</label>
-                </div>
-              </form>
-            </div>
-            <div class="modal-footer">
-              <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
-              <button class="btn btn-primary" type="button" @click="handleFormSubmit">
-                {{ isEditing ? 'Save Changes' : 'Add Qualification' }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <!-- REFACTOR: The modal is now a self-contained component -->
+      <QualificationFormModal
+        ref="qualificationFormModalRef"
+        :is-editing="isEditing"
+        :qualification="currentQualificationForModal"
+        @save="handleSaveQualification"
+      />
 
       <!-- Qualifications List -->
       <div v-if="!isLoading && qualifications.length > 0" class="card glass-card animate-fade-in-up"
@@ -150,10 +51,8 @@
               <small v-if="qual.grade" class="text-muted">Grade: {{ qual.grade }}</small>
             </div>
             <div class="actions d-flex align-items-center">
-              <div class="form-check form-switch me-3" title="Toggle Visibility">
-                <input :checked="qual.visible" class="form-check-input" role="switch"
-                       type="checkbox" @change="handleVisibilityToggle(qual)">
-              </div>
+              <VisibilityToggle :is-loading="qual.isVisibilityLoading" :visible="qual.visible"
+                                class="me-3" @toggle="handleVisibilityToggle(qual)"/>
               <button class="btn btn-sm btn-outline-primary me-2" title="Edit Qualification"
                       @click="openEditModal(qual)">
                 <i class="bi bi-pencil-fill"></i>
@@ -182,25 +81,14 @@
 </template>
 
 <script setup>
-import {onMounted, reactive, ref, watch} from 'vue';
+import {onMounted, ref} from 'vue';
 import {qualificationsApi} from '@/services/api/user.api.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';
 import ConfirmModal from '@/components/common/modals/ConfirmModal.vue';
-import {Modal} from 'bootstrap';
-
-const QUALIFICATION_LEVELS = [
-  {value: 'DOCTORATE', text: 'Doctorate (PhD)'},
-  {value: 'MASTERS', text: 'Master\'s Degree'},
-  {value: 'POSTGRADUATE_DIPLOMA', text: 'Postgraduate Diploma'},
-  {value: 'BACHELORS', text: 'Bachelor\'s Degree'},
-  {value: 'ASSOCIATE_DEGREE', text: 'Associate Degree'},
-  {value: 'DIPLOMA', text: 'Diploma'},
-  {value: 'CERTIFICATE', text: 'Certificate'},
-  {value: 'HIGH_SCHOOL', text: 'High School / Secondary'},
-  {value: 'OTHER', text: 'Other'},
-];
+import QualificationFormModal from '@/components/user/QualificationFormModal.vue';
+import VisibilityToggle from '@/components/common/VisibilityToggle.vue';
 
 // --- State ---
 const qualifications = ref([]);
@@ -209,43 +97,14 @@ const error = ref(null);
 const successMessage = ref(null);
 const qualificationToDelete = ref(null);
 
-// For the Add/Edit Modal
-const qualificationModalRef = ref(null);
-let qualificationModalInstance = null;
+// --- Modal State ---
+const qualificationFormModalRef = ref(null);
 const isEditing = ref(false);
-
-const initialQualificationState = () => ({
-  uuid: null,
-  qualificationName: '',
-  institutionName: '',
-  institutionLogoUrl: '',
-  institutionWebsite: '',
-  fieldOfStudy: '',
-  level: '',
-  startYear: new Date().getFullYear() - 4,
-  completionYear: new Date().getFullYear(), // Default, can be nulled
-  stillStudying: false,
-  grade: '',
-  credentialUrl: '',
-  visible: true,
-});
-const currentQualification = reactive(initialQualificationState());
-
-// Watcher to handle the 'stillStudying' case
-watch(() => currentQualification.stillStudying, (isStudying) => {
-  if (isStudying) {
-    currentQualification.completionYear = null;
-  } else if (currentQualification.completionYear === null) {
-    currentQualification.completionYear = new Date().getFullYear();
-  }
-});
+const currentQualificationForModal = ref(null);
 
 // --- Lifecycle Hooks ---
 onMounted(async () => {
   await fetchQualifications();
-  if (qualificationModalRef.value) {
-    qualificationModalInstance = new Modal(qualificationModalRef.value);
-  }
 });
 
 // --- Data Fetching ---
@@ -254,11 +113,13 @@ const fetchQualifications = async () => {
     isLoading.value = true;
     error.value = null;
     const fetched = await qualificationsApi.getAll();
-    qualifications.value = fetched.sort((a, b) => {
-      const yearA = a.startYear || 0;
-      const yearB = b.startYear || 0;
-      return yearB - yearA;
-    });
+    qualifications.value = fetched
+      .map(q => ({...q, isVisibilityLoading: false})) // Add loading state
+      .sort((a, b) => {
+        const yearA = a.startYear || 0;
+        const yearB = b.startYear || 0;
+        return yearB - yearA;
+      });
   } catch (err) {
     console.error("Failed to fetch user qualifications:", err);
     error.value = err.message || 'An unexpected error occurred while fetching your qualifications.';
@@ -269,24 +130,15 @@ const fetchQualifications = async () => {
 
 // --- Modal Handling ---
 const openAddModal = () => {
-  Object.assign(currentQualification, initialQualificationState());
   isEditing.value = false;
-  qualificationModalInstance?.show();
+  currentQualificationForModal.value = null;
+  qualificationFormModalRef.value?.show();
 };
 
 const openEditModal = (qual) => {
   isEditing.value = true;
-  Object.assign(currentQualification, qual);
-  qualificationModalInstance?.show();
-};
-
-// --- CRUD Operations ---
-const handleFormSubmit = async () => {
-  if (isEditing.value) {
-    await handleUpdateQualification();
-  } else {
-    await handleAddQualification();
-  }
+  currentQualificationForModal.value = JSON.parse(JSON.stringify(qual));
+  qualificationFormModalRef.value?.show();
 };
 
 const buildPayload = (qual) => ({
@@ -305,35 +157,24 @@ const buildPayload = (qual) => ({
   visible: qual.visible
 });
 
-const handleAddQualification = async () => {
+const handleSaveQualification = async (qualificationData) => {
   isLoading.value = true;
   error.value = null;
-  try {
-    const payload = buildPayload(currentQualification);
-    await qualificationsApi.create(payload);
-    await fetchQualifications();
-    successMessage.value = `Qualification '${payload.qualificationName}' was added successfully.`;
-    qualificationModalInstance?.hide();
-  } catch (err) {
-    console.error("Failed to add qualification:", err);
-    error.value = err.message || 'An error occurred while adding the qualification.';
-  } finally {
-    isLoading.value = false;
-  }
-};
+  qualificationFormModalRef.value?.hide();
 
-const handleUpdateQualification = async () => {
-  isLoading.value = true;
-  error.value = null;
   try {
-    const payload = buildPayload(currentQualification);
-    await qualificationsApi.update(currentQualification.uuid, payload);
+    const payload = buildPayload(qualificationData);
+    if (isEditing.value) {
+      await qualificationsApi.update(qualificationData.uuid, payload);
+      successMessage.value = `Qualification '${payload.qualificationName}' was updated successfully.`;
+    } else {
+      await qualificationsApi.create(payload);
+      successMessage.value = `Qualification '${payload.qualificationName}' was added successfully.`;
+    }
     await fetchQualifications();
-    successMessage.value = `Qualification '${payload.qualificationName}' was updated successfully.`;
-    qualificationModalInstance?.hide();
   } catch (err) {
-    console.error("Failed to update qualification:", err);
-    error.value = err.message || 'An error occurred while updating the qualification.';
+    console.error("Failed to save qualification:", err);
+    error.value = err.message || 'An error occurred while saving the qualification.';
   } finally {
     isLoading.value = false;
   }
@@ -358,6 +199,7 @@ const handleDeleteQualification = async () => {
 };
 
 const handleVisibilityToggle = async (qual) => {
+  qual.isVisibilityLoading = true;
   const originalVisibility = qual.visible;
   qual.visible = !qual.visible;
 
@@ -369,6 +211,8 @@ const handleVisibilityToggle = async (qual) => {
     qual.visible = originalVisibility;
     console.error("Failed to update visibility:", err);
     error.value = err.message || 'An error occurred while updating visibility.';
+  } finally {
+    qual.isVisibilityLoading = false;
   }
 };
 </script>
@@ -404,9 +248,5 @@ const handleVisibilityToggle = async (qual) => {
 .empty-state-icon {
   font-size: 4rem;
   color: var(--glass-text);
-}
-
-.form-check-input {
-  cursor: pointer;
 }
 </style>

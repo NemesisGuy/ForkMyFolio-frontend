@@ -47,9 +47,33 @@ export function usePublicPortfolioStore() {
     isPrivate.value = false; // Reset privacy flag on each new fetch
 
     try {
-      // This single API call gets the entire portfolio response
-      const response = await publicApi.getPortfolioBySlug(slug);
-      portfolio.value = response;
+      // Use Promise.all to fetch all parts of the portfolio in parallel for performance.
+      const [
+        profileData,
+        projects,
+        skills,
+        experiences,
+        qualifications,
+        testimonials,
+      ] = await Promise.all([
+        publicApi.getPortfolioBySlug(slug), // Gets the base user/profile info
+        publicApi.getPortfolioProjects(slug),
+        publicApi.getPortfolioSkills(slug),
+        publicApi.getPortfolioExperience(slug),
+        publicApi.getPortfolioQualifications(slug),
+        publicApi.getPortfolioTestimonials(slug),
+      ]);
+
+      // Combine all the fetched data into a single portfolio object in the store.
+      portfolio.value = {
+        ...profileData, // Contains the base user and profile details
+        projects,
+        userSkills: skills, // The backend returns skills, but components might expect userSkills
+        experiences,
+        qualifications,
+        testimonials,
+      };
+
       currentSlug.value = slug; // Set the new slug after a successful fetch
     } catch (e) {
       // Handle errors, with special handling for the 403 (Forbidden) status

@@ -1,5 +1,5 @@
 <template>
-  <LoadingModal v-if="isLoading" />
+  <LoadingModal v-if="isLoading"/>
 
   <div v-if="!isLoading" class="user-settings-page py-5 animated-gradient-background">
     <div class="container">
@@ -7,7 +7,8 @@
         <div class="col-lg-10 col-xl-8">
           <h1 class="display-5 mb-4 glass-text animate-fade-in-up">Display Settings</h1>
           <p class="lead glass-subtitle mb-5 animate-fade-in-up" style="animation-delay: 0.1s;">
-            Use the master switch to make your entire portfolio public or private. Then, fine-tune which sections are visible.
+            Use the master switch to make your entire portfolio public or private. Then, fine-tune
+            which sections are visible.
           </p>
 
           <!-- Error State -->
@@ -27,11 +28,13 @@
               <div class="card-body p-4 d-flex justify-content-between align-items-center">
                 <div>
                   <h6 class="mb-0">
-                    <i :class="isPortfolioPublic ? 'bi-unlock-fill text-success' : 'bi-lock-fill text-danger'"
-                       class="bi me-2"></i>
+                    <i
+                      :class="isPortfolioPublic ? 'bi-unlock-fill text-success' : 'bi-lock-fill text-danger'"
+                      class="bi me-2"></i>
                     Portfolio is {{ isPortfolioPublic ? 'Public' : 'Private' }}
                   </h6>
-                  <small class="text-muted">This is the main on/off switch for your entire public portfolio.</small>
+                  <small class="text-muted">This is the main on/off switch for your entire public
+                    portfolio.</small>
                 </div>
                 <div class="form-check form-switch form-switch-lg">
                   <input
@@ -44,7 +47,8 @@
                     @change="handleVisibilityChange"
                   >
                   <label class="form-check-label" for="visibilityToggle">
-                    <span v-if="isVisibilityLoading" class="spinner-border spinner-border-sm"></span>
+                    <span v-if="isVisibilityLoading"
+                          class="spinner-border spinner-border-sm"></span>
                   </label>
                 </div>
               </div>
@@ -125,11 +129,15 @@
 </template>
 
 <script setup>
-import { nextTick, onMounted, ref } from 'vue';
-import { settingsApi, getMyPublicProfile, updateMyProfileVisibility } from '@/services/api/user.api.js';
-import { settingsService } from '@/services/settingsService.js';
-import { notificationService } from '@/services/notificationService.js';
-import { ApiError } from '@/services/api/index.js';
+import {nextTick, onMounted, ref} from 'vue';
+import {
+  getMyPublicProfile,
+  settingsApi,
+  updateMyProfileVisibility
+} from '@/services/api/user.api.js';
+import {settingsService} from '@/services/settingsService.js';
+import {notificationService} from '@/services/notificationService.js';
+import {ApiError} from '@/services/api/index.js';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
@@ -150,12 +158,12 @@ const showErrorModal = ref(false);
 const errorMessage = ref('');
 
 const settingDefinitions = [
-  { key: 'portfolio.projects.show', label: 'Projects Section' },
-  { key: 'portfolio.skills.show', label: 'Skills Section' },
-  { key: 'portfolio.experience.show', label: 'Experience Section' },
-  { key: 'portfolio.qualifications.show', label: 'Qualifications Section' },
-  { key: 'portfolio.testimonials.show', label: 'Testimonials Section' },
-  { key: 'portfolio.contact.enabled', label: 'Contact Form' },
+  {key: 'portfolio.projects.show', label: 'Projects Section'},
+  {key: 'portfolio.skills.show', label: 'Skills Section'},
+  {key: 'portfolio.experience.show', label: 'Experience Section'},
+  {key: 'portfolio.qualifications.show', label: 'Qualifications Section'},
+  {key: 'portfolio.testimonials.show', label: 'Testimonials Section'},
+  {key: 'portfolio.contact.enabled', label: 'Contact Form'},
 ];
 
 const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
@@ -173,8 +181,9 @@ onMounted(async () => {
     ]);
 
     // --- Process Profile Visibility ---
-    // This is correct: the GET endpoint returns a 'public' field.
-    isPortfolioPublic.value = profileStatus.public;
+    // FIX: The backend DTO serializes the field as 'isPublic', not 'public'.
+    // This ensures the toggle switch correctly reflects the state from the database.
+    isPortfolioPublic.value = profileStatus.isPublic;
 
     // --- Process Section Settings ---
     const settingsMap = new Map(userEffectiveSettings.map(s => [s.name, s]));
@@ -194,7 +203,7 @@ onMounted(async () => {
 
   } catch (err) {
     console.error('Error loading settings page data:', err);
-    error.value = err instanceof ApiError ? err : { message: err.message || 'Unexpected error.' };
+    error.value = err instanceof ApiError ? err : {message: err.message || 'Unexpected error.'};
   } finally {
     await minDelay;
     isLoading.value = false;
@@ -208,7 +217,7 @@ const handleVisibilityChange = async () => {
   try {
     // FIX: The update payload MUST send 'isPublic' to match the backend's validation requirement.
     // The error message you provided is the source of truth.
-    await updateMyProfileVisibility({ isPublic: newValue });
+    await updateMyProfileVisibility({isPublic: newValue});
     notificationService.add({
       type: 'success',
       message: `Your portfolio is now ${newValue ? 'public' : 'private'}.`

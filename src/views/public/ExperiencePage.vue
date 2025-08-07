@@ -87,12 +87,11 @@
               <div v-if="exp.skills && exp.skills.length > 0" class="mt-4">
                 <h6 class="skills-title">Skills Used</h6>
                 <div class="d-flex flex-wrap gap-2">
-                  <!-- THIS IS THE FIX: Use the centralized getIconClass function -->
-                  <span v-for="skill in exp.skills" :key="skill.uuid"
-                        class="badge skill-badge d-flex align-items-center">
-                    <i :class="[getIconClass(skill), 'me-2']"></i>
-                    {{ skill.name }}
-                  </span>
+                  <SkillBadge
+                    v-for="skill in exp.skills" 
+                    :key="skill.skillId"
+                    :skill="skill"
+                  />
                 </div>
               </div>
             </div>
@@ -136,17 +135,22 @@ import {computed} from 'vue';
 import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore.js';
 import {authService} from '@/services/authService.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
-// THIS IS THE FIX: Import the centralized icon service
-import {getIconClass} from '@/services/iconService.js';
+import SkillBadge from '@/components/common/SkillBadge.vue';
 
 // Get all necessary reactive properties from the store.
 const {portfolio, isLoading, error, currentSlug} = usePublicPortfolioStore();
 
 // Experiences are a computed property from the store's portfolio.
 const experiences = computed(() => {
-  const exps = portfolio.value?.experiences || [];
-  // Sort by displayOrder ascending (lower number first)
-  return exps.sort((a, b) => (a.displayOrder || 999) - (b.displayOrder || 999));
+  // The backend now sends fully enriched experience objects, including the proficiency level
+  // for each skill. The previous client-side enrichment logic is no longer necessary and
+  // was causing this bug by overwriting the correct level with `undefined`.
+  // FIX: The public page should only display experiences that are marked as visible.
+  // The portfolio store contains all experiences, so we filter them here.
+  const rawExperiences = (portfolio.value?.experiences || []).filter(e => e.visible);
+
+  // We just need to sort the experiences by date and return them.
+  return [...rawExperiences].sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
 });
 
 // Check if the currently logged-in user is the owner of this portfolio.
@@ -186,20 +190,8 @@ const formatDate = (dateString) => {
 
 .achievements-title, .skills-title {
   font-weight: 600;
-  color: var(--glass-subtitle);
+  color: var(--glass-text-secondary);
   margin-bottom: 0.5rem;
-}
-
-.skill-badge {
-  background-color: rgba(var(--bs-primary-rgb), 0.15);
-  color: var(--bs-primary);
-  font-weight: 500;
-  padding: 0.4em 0.75em;
-}
-
-.skill-badge i {
-  font-size: 1.1em; /* Make icon slightly larger than text */
-  line-height: 1;
 }
 
 .company-logo, .company-logo-placeholder {
@@ -217,7 +209,7 @@ const formatDate = (dateString) => {
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
-  color: var(--glass-subtitle);
+  color: var(--glass-text-secondary);
 }
 
 .company-logo-link {
@@ -261,7 +253,9 @@ const formatDate = (dateString) => {
   bottom: 0;
   left: 50%;
   width: 3px;
-  background-image: linear-gradient(to bottom, transparent, var(--glass-border-hover), transparent);
+  /* FIX: The previous color was not visible enough. Using a text-based color variable
+     ensures it has proper contrast in both light and dark modes. */
+  background-image: linear-gradient(to bottom, transparent, var(--glass-text-secondary), transparent);
   transform: translateX(-50%);
   border-radius: 3px;
 }
@@ -325,16 +319,18 @@ const formatDate = (dateString) => {
 
 .timeline-item:nth-child(odd)::before {
   right: 32.5px;
-  border-top: 1px solid var(--glass-border);
-  border-right: 1px solid var(--glass-border);
+  /* FIX: Use a theme-aware color with better contrast for the arrow. */
+  border-top: 1px solid var(--glass-text-secondary);
+  border-right: 1px solid var(--glass-text-secondary);
   border-left: none;
   border-bottom: none;
 }
 
 .timeline-item:nth-child(even)::before {
   left: 32.5px;
-  border-left: 1px solid var(--glass-border);
-  border-bottom: 1px solid var(--glass-border);
+  /* FIX: Use a theme-aware color with better contrast for the arrow. */
+  border-left: 1px solid var(--glass-text-secondary);
+  border-bottom: 1px solid var(--glass-text-secondary);
   border-top: none;
   border-right: none;
 }

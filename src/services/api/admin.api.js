@@ -45,16 +45,6 @@ export const getAdminUserById = async (userId) => {
 };
 
 /**
- * Creates a new user via the admin panel.
- * @param {object} userData - The data for the new user.
- * @returns {Promise<object>} The created UserDto.
- */
-export const createAdminUser = (userData) => fetchWithAuth('/admin/users', {
-  method: 'POST',
-  body: userData
-});
-
-/**
  * Updates an existing user's details as an admin.
  * @param {string|number} userId - The UUID of the user to update.
  * @param {object} userData - The new data for the user (e.g., roles, active status).
@@ -72,6 +62,11 @@ export const updateAdminUser = (userId, userData) => fetchWithAuth(`/admin/users
  */
 export const deleteAdminUser = (userId) => fetchWithAuth(`/admin/users/${userId}`, {method: 'DELETE'});
 
+/**
+ * Fetches a list of all projects in the system.
+ * @returns {Promise<Array<object>>} A list of all projects.
+ */
+export const getAdminProjects = () => fetchWithAuth('/admin/projects', {method: 'GET'});
 
 // --- Application Settings ---
 

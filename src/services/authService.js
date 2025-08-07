@@ -3,7 +3,7 @@
  * @description Manages authentication state, including login, logout, token storage, and session initialization.
  * This service acts as the central hub for authentication logic.
  */
-import {computed, ref} from 'vue';
+import {ref} from 'vue';
 
 // Import the specific API functions
 import {
@@ -13,16 +13,12 @@ import {
   register as apiRegister
 } from './api/auth.api';
 import {getMyAccount} from './api/user.api';
-// --- THIS IS THE FIX ---
-// We need to import the services we want to reset on logout.
-import {publicApi} from './api/public.api';
-import {settingsService} from './settingsService.js';
-import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore.js';
+import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore';
 
 // --- Reactive State ---
 const isAuthenticated = ref(false);
 const user = ref(null);
-const settings = ref({}); // Reactive store for application settings
+// This isLoading flag now specifically tracks the initial authentication process.
 const isLoading = ref(true);
 let accessToken = null;
 
@@ -78,24 +74,12 @@ async function logout() {
   try {
     await apiLogout();
   } catch (e) {
-    console.error("[AuthService] Backend logout failed, clearing state anyway.", e);
+    console.error('[AuthService] Backend logout failed, clearing state anyway.', e);
   } finally {
     _clearAuthState();
-
-    // --- THIS IS THE FIX ---
-    // After clearing authentication, we must reset the application's context
-    // to the default state for a public, non-logged-in visitor.
-
-    // 1. Reset the public portfolio store to clear the previous user's data.
+    // Reset the portfolio store to clear any previous user's data.
     const portfolioStore = usePublicPortfolioStore();
-    portfolioStore.portfolio.value = null;
-    portfolioStore.currentSlug.value = null;
-    portfolioStore.error.value = null;
-
-    // 2. Re-initialize the settings service to load the global defaults.
-    //    This ensures the navbar shows the correct links for the landing page.
-    await settingsService.initialize('default');
-    // --- END OF FIX ---
+    portfolioStore.clearPortfolio();
   }
 }
 
@@ -127,7 +111,7 @@ async function refreshToken() {
       console.log('[AuthService] Token refresh successful.');
       resolve(true);
     } catch (e) {
-      console.error("[AuthService] Token refresh failed:", e.message);
+      console.error('[AuthService] Token refresh failed:', e.message);
       _clearAuthState();
       reject(e);
     } finally {
@@ -140,47 +124,31 @@ async function refreshToken() {
 }
 
 /**
- * Initializes the auth service on app startup.
- * This now includes fetching critical application settings.
+ * Initializes the authentication state on application startup.
+ * It attempts to restore a session by refreshing the token and fetching user data.
+ * Settings are handled separately by the settingsService.
  */
 async function initAuth() {
   console.log('[AuthService] Initializing session...');
+  isLoading.value = true;
   try {
-    // Fetch settings and attempt to refresh the token in parallel.
-    // The UI needs settings regardless of auth state.
-    // --- THIS IS THE FIX ---
-    // We now call the correct function from the imported `publicApi` object.
-    const settingsPromise = publicApi.getGlobalSettings().then(fetchedSettings => {
-      // Normalize settings from an array of {name, value} to an object {name: value}
-      const normalized = fetchedSettings.reduce((acc, setting) => {
-        acc[setting.name] = setting.value;
-        return acc;
-      }, {});
-      settings.value = normalized;
-      console.log('[AuthService] Application settings loaded.');
-    });
-
-    const authPromise = refreshToken().then(async () => {
-      if (isAuthenticated.value) {
-        // If session is valid, fetch the latest user data to ensure it's fresh
-        const freshUserAccount = await getMyAccount();
-        _updateAuthState(accessToken, freshUserAccount);
-        console.log('[AuthService] Session restored and user data refreshed.');
-      }
-    }).catch(() => {
-      console.log('[AuthService] No active session found or refresh failed.');
-      _clearAuthState(); // Ensure clean state if auth part fails
-    });
-
-    // Wait for both initialization tasks to complete.
-    await Promise.all([settingsPromise, authPromise]);
-
+    // Attempt to refresh the token to see if a session exists.
+    await refreshToken();
+    if (isAuthenticated.value) {
+      // If the session is valid, fetch the latest user data to ensure it's fresh.
+      const freshUserAccount = await getMyAccount();
+      _updateAuthState(accessToken, freshUserAccount);
+      console.log('[AuthService] Session restored and user data refreshed.');
+    }
   } catch (error) {
-    console.error('[AuthService] A critical error occurred during initialization.', error);
-    _clearAuthState(); // Ensure clean state if anything fails
+    // This catch block handles failures from refreshToken(), which already calls _clearAuthState.
+    // We just need to log that no active session was found.
+    console.log('[AuthService] No active session found or refresh failed.');
   } finally {
     isLoading.value = false;
-    console.log(`[AuthService] Session initialized. User is ${isAuthenticated.value ? 'authenticated' : 'not authenticated'}.`);
+    console.log(
+      `[AuthService] Session initialization complete. User is ${isAuthenticated.value ? 'authenticated' : ' not authenticated'}.`
+    );
   }
 }
 
@@ -188,7 +156,6 @@ export const authService = {
   // State
   isAuthenticated,
   user,
-  settings: computed(() => settings.value), // Expose settings as a readonly computed property
   isLoading,
   // Getters
   getAccessToken: () => accessToken,

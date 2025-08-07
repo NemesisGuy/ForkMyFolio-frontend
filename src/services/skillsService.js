@@ -1,5 +1,5 @@
 /**
- * @file src/services/skillsService.js
+ * @file services/skillsService.js
  * @description Service for skill-related business logic and shared constants.
  */
 
@@ -14,6 +14,14 @@ export const SKILL_LEVELS = [
   {value: 'BEGINNER', text: 'Beginner'}
 ];
 
+/**
+ * A map of skill level keys to their display names (e.g., 'EXPERT' -> 'Expert').
+ * Derived from SKILL_LEVELS for consistency.
+ */
+const SKILL_LEVEL_MAP = Object.fromEntries(SKILL_LEVELS.map(l => [l.value, l.text]));
+
+/** An array of skill level keys in order of proficiency. Used for sorting. */
+export const SKILL_LEVEL_ORDER = SKILL_LEVELS.map(l => l.value);
 /**
  * Groups an array of skills by category, and then by proficiency level within each category.
  *
@@ -55,16 +63,55 @@ export const groupSkills = (skills) => {
     });
 
     // Format the levels for the current category, filtering out empty ones.
-    const categoryLevels = [
-      {name: 'Expert', skills: levels.EXPERT},
-      {name: 'Advanced', skills: levels.ADVANCED},
-      {name: 'Intermediate', skills: levels.INTERMEDIATE},
-      {name: 'Beginner', skills: levels.BEGINNER},
-    ].filter(level => level.skills.length > 0);
+    const categoryLevels = SKILL_LEVEL_ORDER.map(levelKey => ({
+      name: SKILL_LEVEL_MAP[levelKey],
+      skills: levels[levelKey] || []
+    })).filter(level => level.skills.length > 0);
 
     return {category, levels: categoryLevels};
   });
 
   // Sort the final categories alphabetically.
   return groupedResult.sort((a, b) => a.category.localeCompare(b.category));
+};
+
+/**
+ * Groups an array of skills by their proficiency level.
+ *
+ * @param {Array<object>} skills - The array of skill objects to group. Each must have a 'level'.
+ * @returns {Array<{name: string, levelKey: string, skills: Array<object>}>} An array of grouped skills, sorted by proficiency.
+ */
+export const groupSkillsByLevel = (skills) => {
+  if (!skills || skills.length === 0) {
+    return [];
+  }
+
+  const grouped = skills.reduce((acc, skill) => {
+    // Ensure every skill has a valid level, defaulting to 'INTERMEDIATE'.
+    const level = skill.level || 'INTERMEDIATE';
+
+    // Find the group for the current skill's level.
+    let group = acc.find(g => g.levelKey === level);
+
+    // If the group doesn't exist, create it.
+    if (!group) {
+      group = {
+        name: SKILL_LEVEL_MAP[level] || 'Intermediate',
+        levelKey: level,
+        skills: []
+      };
+      acc.push(group);
+    }
+
+    // Ensure the skill object in the view has a non-null level.
+    group.skills.push({...skill, level});
+    return acc;
+  }, []);
+
+  // Sort the final groups according to the predefined proficiency order.
+  return grouped.sort((a, b) => {
+    const orderA = SKILL_LEVEL_ORDER.indexOf(a.levelKey);
+    const orderB = SKILL_LEVEL_ORDER.indexOf(b.levelKey);
+    return orderA - orderB;
+  });
 };

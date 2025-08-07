@@ -61,7 +61,8 @@
                   @change="handleFileSelect"
                 />
                 <button :disabled="!selectedFile || isLoading"
-                        class="btn btn-warning mt-3 w-100 interactive-lift" @click="handleRestoreBackup">
+                        class="btn btn-warning mt-3 w-100 interactive-lift"
+                        @click="handleRestoreBackup">
                   Restore System from File
                 </button>
               </div>

@@ -11,9 +11,9 @@
 
       <!-- Common Modals -->
       <LoadingModal :visible="isLoading"/>
-      <ErrorModal :message="error" :visible="!!error" title="An Error Occurred"
+      <ErrorModal :message="error || ''" :visible="!!error" title="An Error Occurred"
                   @close="error = null"/>
-      <SuccessModal :message="successMessage" :visible="!!successMessage" title="Success"
+      <SuccessModal :message="successMessage || ''" :visible="!!successMessage" title="Success"
                     @close="successMessage = null"/>
       <ConfirmModal
         :message="`Are you sure you want to delete the entry for '${experienceToDelete?.jobTitle} at ${experienceToDelete?.companyName}'?`"
@@ -26,7 +26,7 @@
       <!-- The new, self-contained form modal component -->
       <ExperienceFormModal
         ref="experienceFormModalRef"
-        :available-skills="userSkills"
+        :available-skills="platformSkills"
         :experience="currentExperience"
         @save="handleSaveExperience"
       />
@@ -36,46 +36,50 @@
         <div v-for="(exp, index) in experiences" :key="exp.uuid"
              :style="{ 'animation-delay': (index * 0.15) + 's' }"
              class="timeline-item animate-fade-in-up">
-          <div class="timeline-content card glass-card h-100">
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-start">
-                <div>
-                  <h5 class="card-title glass-title">{{ exp.jobTitle }}</h5>
-                  <h6 class="card-subtitle mb-2 glass-subtitle">{{ exp.companyName }}</h6>
-                  <p class="card-text glass-text-secondary small mb-3">
-                    <i class="bi bi-calendar-event me-1"></i>
-                    {{ formatDate(exp.startDate) }} -
-                    {{ exp.endDate ? formatDate(exp.endDate) : 'Present' }}
-                    <br>
-                    <i class="bi bi-geo-alt-fill me-1"></i>
-                    {{ exp.location }}
-                  </p>
+          <div class="timeline-content card glass-card h-100 p-0">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <div class="d-flex align-items-center text-truncate">
+                <img v-if="exp.companyLogoUrl" :alt="`${exp.companyName} Logo`"
+                     :src="exp.companyLogoUrl" class="company-logo-header me-2">
+                <div v-else class="company-logo-placeholder-header me-2">
+                  <i class="bi bi-building"></i>
                 </div>
-                <div class="actions d-flex align-items-center">
-                  <div class="form-check form-switch me-3" title="Toggle Visibility">
-                    <input :checked="exp.visible" class="form-check-input" role="switch"
-                           type="checkbox" @change="handleVisibilityToggle(exp)">
-                  </div>
-                  <button class="btn btn-sm btn-outline-primary me-2" title="Edit Experience"
-                          @click="openEditModal(exp)">
-                    <i class="bi bi-pencil-fill"></i>
-                  </button>
-                  <button class="btn btn-sm btn-outline-danger" title="Delete Experience"
-                          @click="experienceToDelete = exp">
-                    <i class="bi bi-trash-fill"></i>
-                  </button>
-                </div>
+                <h6 :title="exp.companyName" class="mb-0 glass-subtitle text-truncate">{{
+                    exp.companyName
+                  }}</h6>
               </div>
+              <div class="actions d-flex align-items-center flex-shrink-0">
+                <div class="form-check form-switch me-3" title="Toggle Visibility">
+                  <input :checked="exp.visible" class="form-check-input" role="switch"
+                         type="checkbox" @change="handleVisibilityToggle(exp)">
+                </div>
+                <button class="btn btn-sm btn-outline-primary me-2" title="Edit Experience"
+                        @click="openEditModal(exp)">
+                  <i class="bi bi-pencil-fill"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger" title="Delete Experience"
+                        @click="experienceToDelete = exp">
+                  <i class="bi bi-trash-fill"></i>
+                </button>
+              </div>
+            </div>
+            <div class="card-body">
+              <h5 class="card-title glass-title">{{ exp.jobTitle }}</h5>
+              <p class="card-text glass-text-secondary small mb-3">
+                <i class="bi bi-calendar-event me-1"></i>
+                {{ formatDate(exp.startDate) }} -
+                {{ exp.endDate ? formatDate(exp.endDate) : 'Present' }}
+                <br>
+                <i class="bi bi-geo-alt-fill me-1"></i>
+                {{ exp.location }}
+              </p>
               <p v-if="exp.description"
                  class="card-text glass-description description-text mt-2 mb-0"
                  v-html="exp.description"></p>
               <div v-if="exp.skills && exp.skills.length > 0" class="mt-3 pt-3 border-top-glass">
                 <div class="d-flex flex-wrap gap-2">
-                  <span v-for="skill in exp.skills" :key="skill.uuid"
-                        class="badge skill-badge-small">
-                    <i :class="getIconClass(skill)" class="me-1"></i>
-                    {{ skill.name }}
-                  </span>
+                  <!-- REFACTOR: Use the SkillBadge component for consistency -->
+                  <SkillBadge v-for="skill in exp.skills" :key="skill.skillId" :skill="skill"/>
                 </div>
               </div>
             </div>
@@ -97,7 +101,8 @@
 
 <script setup>
 import {onMounted, ref} from 'vue';
-import {experiencesApi, skillsApi} from '@/services/api/user.api.js';
+import {experiencesApi} from '@/services/api/user.api.js';
+import {platformSkillApi} from '@/services/api/skill.api.js';
 import {getIconClass} from '@/services/iconService.js';
 import {Modal} from 'bootstrap';
 
@@ -107,10 +112,12 @@ import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';
 import ConfirmModal from '@/components/common/modals/ConfirmModal.vue';
 import ExperienceFormModal from '@/components/user/ExperienceFormModal.vue'; // The new modal component
+import SkillBadge from '@/components/common/SkillBadge.vue';
+import VisibilityToggle from '@/components/common/VisibilityToggle.vue';
 
 // --- State for this page ---
 const experiences = ref([]);
-const userSkills = ref([]);
+const platformSkills = ref([]);
 const isLoading = ref(true);
 const error = ref(null);
 const successMessage = ref(null);
@@ -123,8 +130,11 @@ let formModalInstance = null;
 
 // --- Lifecycle ---
 onMounted(async () => {
-  skillsApi.getAll().then(skills => userSkills.value = skills).catch(e => console.error("Failed to load skills", e));
-  await fetchExperiences();
+  // Fetch experiences and all available skills in parallel for faster loading.
+  await Promise.all([
+    fetchExperiences(),
+    fetchPlatformSkills()
+  ]);
   // We need to get the instance from the child component's ref, which is named 'modalRef' inside that component
   if (experienceFormModalRef.value?.modalRef) {
     formModalInstance = new Modal(experienceFormModalRef.value.modalRef);
@@ -146,11 +156,31 @@ const fetchExperiences = async () => {
     isLoading.value = true;
     error.value = null;
     const fetched = await experiencesApi.getAll();
-    experiences.value = fetched.sort((a, b) => (a.displayOrder || 999) - (b.displayOrder || 999));
+    // FIX: Implement a more robust sorting logic. It now sorts by displayOrder first,
+    // and then by start date (newest first) as a secondary criterion. This handles the
+    // case where all display orders are 0, sorting them chronologically.
+    experiences.value = fetched.sort((a, b) => {
+      const orderA = a.displayOrder ?? 999;
+      const orderB = b.displayOrder ?? 999;
+      if (orderA !== orderB) {
+        return orderA - orderB;
+      }
+      return new Date(b.startDate) - new Date(a.startDate);
+    });
   } catch (err) {
     error.value = err.message || 'An unexpected error occurred.';
   } finally {
     isLoading.value = false;
+  }
+};
+
+const fetchPlatformSkills = async () => {
+  try {
+    // FIX: Fetch all available skills for the suggestion box, not just the user's skills.
+    platformSkills.value = await platformSkillApi.getAll();
+  } catch (err) {
+    console.error("Failed to load platform skills for suggestions:", err);
+    // Non-critical error, the form will still work but without suggestions.
   }
 };
 
@@ -235,18 +265,27 @@ const handleVisibilityToggle = async (exp) => {
   border-top: 1px solid var(--glass-border);
 }
 
-.skill-badge-small {
-  background-color: rgba(var(--bs-primary-rgb), 0.1);
-  color: var(--bs-primary);
-  border: 1px solid rgba(var(--bs-primary-rgb), 0.2);
-  font-weight: 500;
-  padding: 0.3em 0.6em;
-  font-size: 0.8em;
+.card-header {
+  background-color: rgba(var(--bs-body-color-rgb), 0.03);
+  border-bottom: 1px solid var(--glass-border);
+  padding: 0.75rem 1.25rem;
 }
 
-.skill-badge-small i {
-  font-size: 1em;
-  line-height: 1;
+.company-logo-header, .company-logo-placeholder-header {
+  width: 32px;
+  height: 32px;
+  border-radius: 0.35rem;
+  object-fit: contain;
+  flex-shrink: 0;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.company-logo-placeholder-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: var(--glass-text-secondary);
 }
 
 /* --- Timeline Styling --- */
@@ -374,7 +413,8 @@ const handleVisibilityToggle = async (exp) => {
     left: 0;
   }
 
-  .timeline-item::after {
+
+    .timeline-item::after {
     left: 2.5px;
   }
 

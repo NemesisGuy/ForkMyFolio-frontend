@@ -80,9 +80,23 @@
             <i class="bi bi-chat-quote"></i>
           </div>
           <h4 class="card-title glass-title mb-3">No Testimonials Yet</h4>
-          <p class="card-text glass-subtitle mb-4">
-            This user has not added any testimonials yet.
+          <!-- Generic message for public visitors -->
+          <p v-if="!isOwner" class="card-text glass-subtitle mb-4">
+            This user has not added any testimonials yet. Please check back later.
           </p>
+
+          <!-- Helpful tip for the portfolio owner -->
+          <div v-else class="alert alert-info mt-3">
+            <p class="mb-1"><strong>Hey there!</strong> It looks like you don't have any testimonials
+              visible on your public page.</p>
+            <p class="mb-0">
+              Go to your
+              <router-link :to="{ name: 'my-testimonials', params: { slug: currentSlug } }">
+                Testimonial Management
+              </router-link>
+              page to add new entries.
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -90,19 +104,24 @@
 </template>
 
 <script setup>
-/**
- * @file src/views/public/TestimonialsPage.vue
- * @description A page to display testimonials. It now consumes data from a central store.
- */
 import {computed} from 'vue';
 import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore.js';
+import {authService} from '@/services/authService.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 
 // Use the store to get reactive state.
-const {portfolio, isLoading, error} = usePublicPortfolioStore();
+const {portfolio, isLoading, error, currentSlug} = usePublicPortfolioStore();
 
 // The testimonials are now a computed property derived from the central store.
-const testimonials = computed(() => portfolio.value?.testimonials || []);
+// FIX: The public page should only display testimonials that are marked as visible.
+// The portfolio store contains all testimonials (visible and hidden), so we must
+// filter them here on the client side.
+const testimonials = computed(() => (portfolio.value?.testimonials || []).filter(t => t.visible));
+
+// Check if the currently logged-in user is the owner of this portfolio.
+const isOwner = computed(() => {
+  return authService.isAuthenticated.value && authService.user.value?.slug === currentSlug.value;
+});
 </script>
 
 <style scoped>

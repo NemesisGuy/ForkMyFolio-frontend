@@ -76,7 +76,8 @@
 
                     <!-- PRIORITY DROPDOWN -->
                     <div class="btn-group" role="group">
-                      <button aria-expanded="false" class="btn btn-sm btn-outline-primary dropdown-toggle"
+                      <button aria-expanded="false"
+                              class="btn btn-sm btn-outline-primary dropdown-toggle"
                               data-bs-toggle="dropdown" title="Set Priority" type="button"
                               @click.stop>
                         <i class="bi bi-flag-fill"></i>

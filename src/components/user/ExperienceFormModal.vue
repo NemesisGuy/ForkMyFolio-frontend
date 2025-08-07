@@ -20,7 +20,8 @@
               </div>
               <div class="col-md-4 mb-3">
                 <label class="form-label" for="expDisplayOrder">Display Order</label>
-                <input id="expDisplayOrder" v-model.number="formState.displayOrder" class="form-control"
+                <input id="expDisplayOrder" v-model.number="formState.displayOrder"
+                       class="form-control"
                        type="number">
               </div>
             </div>
@@ -66,7 +67,8 @@
               </div>
               <div class="col-md-6 mb-3">
                 <label class="form-label" for="expEndDate">End Date</label>
-                <input id="expEndDate" v-model="formState.endDate" :disabled="formState.isCurrentJob" class="form-control"
+                <input id="expEndDate" v-model="formState.endDate"
+                       :disabled="formState.isCurrentJob" class="form-control"
                        type="date">
               </div>
             </div>
@@ -105,13 +107,15 @@
               </div>
               <div class="col-md-6 mb-3">
                 <label class="form-label" for="expCompanyLogoUrl">Company Logo URL</label>
-                <input id="expCompanyLogoUrl" v-model="formState.companyLogoUrl" class="form-control"
+                <input id="expCompanyLogoUrl" v-model="formState.companyLogoUrl"
+                       class="form-control"
                        placeholder="https://..." type="url">
               </div>
             </div>
             <hr class="my-4">
             <div class="form-check form-switch mb-3">
-              <input id="expVisible" v-model="formState.visible" class="form-check-input" role="switch"
+              <input id="expVisible" v-model="formState.visible" class="form-check-input"
+                     role="switch"
                      type="checkbox">
               <label class="form-check-label" for="expVisible">Visible on public portfolio</label>
             </div>

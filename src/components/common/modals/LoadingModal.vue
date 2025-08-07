@@ -1,6 +1,12 @@
 <template>
   <teleport to="body">
-    <div v-if="visible" class="loading-modal-overlay">
+    <!--
+      FIX: By adding `v-bind="$attrs"`, any non-prop attributes (like the `class`
+      attribute passed from ProjectDetailsPage) are applied directly to this div.
+      This, combined with `inheritAttrs: false` in the script, resolves the
+      "extraneous non-props attributes" warning.
+    -->
+    <div v-if="visible" v-bind="$attrs" class="loading-modal-overlay">
       <!-- Backdrop with blur effect -->
       <div class="loading-modal-backdrop"></div>
       <!-- Spinner Container -->
@@ -18,6 +24,13 @@
  * @description A full-screen, glassmorphic loading modal component.
  * Displays a blurred, semi-transparent overlay and a centered, glowing spinner.
  */
+
+// FIX: Disable automatic attribute inheritance. This allows us to manually
+// apply attributes to the correct element in the template, which is necessary
+// because the component's root is conditional (`v-if`).
+defineOptions({
+  inheritAttrs: false,
+});
 
 defineProps({
   /**

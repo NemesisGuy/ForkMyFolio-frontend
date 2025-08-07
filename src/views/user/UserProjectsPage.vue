@@ -11,9 +11,9 @@
 
       <!-- Modals -->
       <LoadingModal :visible="isLoading"/>
-      <ErrorModal :message="error" :visible="!!error" title="An Error Occurred"
+      <ErrorModal :message="error || ''" :visible="!!error" title="An Error Occurred"
                   @close="error = null"/>
-      <SuccessModal :message="successMessage" :visible="!!successMessage" title="Success"
+      <SuccessModal :message="successMessage || ''" :visible="!!successMessage" title="Success"
                     @close="successMessage = null"/>
       <ProjectFormModal
         :project="currentProject"
@@ -50,27 +50,31 @@
               <p class="card-text glass-description flex-grow-1">
                 {{ project.description || 'No description provided.' }}</p>
               <!-- Tech Stack & Visibility -->
-              <div class="mt-auto pt-3">
-                <div v-if="project.skills && project.skills.length" class="mb-2">
-                  <!-- THIS IS THE FIX: Use the centralized getIconClass function -->
-                  <span v-for="skill in project.skills" :key="skill.uuid"
-                        class="badge tech-badge me-1 mb-1">
-                    <i :class="getIconClass(skill)" class="me-1"></i>{{ skill.name }}
-                  </span>
+              <div class="mt-auto pt-3 d-flex flex-column">
+                <!-- REFACTOR: Use the SkillBadge component for consistency and maintainability. -->
+                <div v-if="project.skills && project.skills.length"
+                     class="mb-2 d-flex flex-wrap gap-2">
+                 <SkillBadge v-for="skill in project.skills" :key="skill.skillId" :skill="skill"/>
                 </div>
-                <span :class="['badge', project.visible ? 'bg-success' : 'bg-secondary']">
-                  {{ project.visible ? 'Visible' : 'Hidden' }}
-                </span>
+                <div class="d-flex align-items-center justify-content-between mt-2">
+                  <span :class="['badge', project.visible ? 'bg-success' : 'bg-secondary']">
+                    {{ project.visible ? 'Visible' : 'Hidden' }}
+                  </span>
+                  <VisibilityToggle :is-loading="project.isVisibilityLoading" :visible="project.visible"
+                                    @toggle="handleVisibilityToggle(project)"/>
+                </div>
               </div>
             </div>
             <!-- Actions & Links -->
             <div class="card-footer d-flex justify-content-between align-items-center">
               <div>
-                <a v-if="project.liveUrl" :href="project.liveUrl" class="btn btn-sm btn-outline-light me-1"
+                <a v-if="project.liveUrl" :href="project.liveUrl"
+                   class="btn btn-sm btn-outline-light me-1"
                    target="_blank" title="Live Demo">
                   <i class="bi bi-box-arrow-up-right"></i>
                 </a>
-                <a v-if="project.repoUrl" :href="project.repoUrl" class="btn btn-sm btn-outline-light"
+                <a v-if="project.repoUrl" :href="project.repoUrl"
+                   class="btn btn-sm btn-outline-light"
                    target="_blank" title="Source Code">
                   <i class="bi bi-github"></i>
                 </a>
@@ -113,8 +117,9 @@ import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';
 import ConfirmModal from '@/components/common/modals/ConfirmModal.vue';
 import ProjectFormModal from '@/components/user/ProjectFormModal.vue';
-// THIS IS THE FIX: Import the centralized icon service
-import {getIconClass} from '@/services/iconService.js';
+// REFACTOR: Import the reusable SkillBadge component for consistency.
+import VisibilityToggle from '@/components/common/VisibilityToggle.vue';
+import SkillBadge from '@/components/common/SkillBadge.vue';
 
 // --- Component State ---
 const projects = ref([]);
@@ -140,7 +145,9 @@ const fetchProjects = async () => {
   try {
     isLoading.value = true;
     const fetchedProjects = await projectsApi.getAll();
-    projects.value = fetchedProjects.sort((a, b) => (a.displayOrder || 999) - (b.displayOrder || 999));
+    projects.value = fetchedProjects
+      .map(p => ({...p, isVisibilityLoading: false})) // Add loading state for the toggle
+      .sort((a, b) => (a.displayOrder || 999) - (b.displayOrder || 999));
   } catch (err) {
     console.error("Failed to fetch user projects:", err);
     error.value = err.message || 'An unexpected error occurred while fetching projects.';
@@ -189,6 +196,24 @@ const closeConfirmModal = () => {
 };
 
 // --- CRUD Operations ---
+
+/**
+ * Creates a clean payload object suitable for the project API endpoints.
+ * It strips out any frontend-only state (like `isVisibilityLoading`) and
+ * transforms the `skills` array from objects to a simple array of names.
+ * @param {object} project - The project object from the component's state.
+ * @returns {object} A clean data transfer object for the API.
+ */
+const buildProjectPayload = (project) => {
+  return {
+    // All fields from the ProjectDto are included
+    ...project,
+    // The `skills` array is transformed from an array of objects to an array of strings.
+    skills: project.skills ? project.skills.map(skill => skill.name) : [],
+    // Frontend-only state like this is implicitly excluded.
+  };
+};
+
 const handleSaveProject = async (projectData) => {
   isLoading.value = true;
   closeFormModal();
@@ -214,19 +239,45 @@ const handleSaveProject = async (projectData) => {
 
 const handleDeleteProject = async () => {
   if (!projectToDelete.value) return;
+
+  // FIX: Capture the project object before closing the modal.
+  // The closeConfirmModal() function sets projectToDelete to null, which was
+  // causing the subsequent API call to fail because it couldn't find the UUID.
+  const projectToDeleteRef = projectToDelete.value;
   isLoading.value = true;
   closeConfirmModal();
+
   try {
-    await projectsApi.remove(projectToDelete.value.uuid);
+    // Use the captured reference for the API call.
+    await projectsApi.remove(projectToDeleteRef.uuid);
     successMessage.value = 'Project deleted successfully.';
     // Optimistically remove from the local array for a faster UI response
-    projects.value = projects.value.filter(p => p.uuid !== projectToDelete.value.uuid);
+    projects.value = projects.value.filter(p => p.uuid !== projectToDeleteRef.uuid);
     await refreshPublicData(); // Refresh the public data store
   } catch (err) {
     console.error("Failed to delete project:", err);
     error.value = err.message || 'An error occurred while deleting the project.';
   } finally {
     isLoading.value = false;
+  }
+};
+
+const handleVisibilityToggle = async (project) => {
+  project.isVisibilityLoading = true;
+  const originalVisibility = project.visible;
+  project.visible = !project.visible; // Optimistic update
+
+  try {
+    // FIX: Use the helper function to build a clean payload for the API.
+    const payload = buildProjectPayload(project);
+    await projectsApi.update(project.uuid, payload);
+    successMessage.value = `Visibility for '${project.title}' updated.`;
+    await refreshPublicData();
+  } catch (err) {
+    project.visible = originalVisibility; // Revert on error
+    error.value = err.message || 'Failed to update visibility.';
+  } finally {
+    project.isVisibilityLoading = false;
   }
 };
 </script>
@@ -258,14 +309,6 @@ const handleDeleteProject = async () => {
   justify-content: center;
   color: var(--glass-text-secondary);
   font-size: 3rem;
-}
-
-.tech-badge {
-  font-weight: 500;
-  padding: 0.4em 0.7em;
-  background-color: rgba(var(--bs-primary-rgb), 0.1) !important;
-  color: var(--bs-primary) !important;
-  border: 1px solid rgba(var(--bs-primary-rgb), 0.2);
 }
 
 .animate-fade-in-up {

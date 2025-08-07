@@ -10,13 +10,26 @@ const faBrandIcons = new Set([
   'fa-github', 'fa-linkedin', 'fa-docker', 'fa-bootstrap'
 ]);
 
-// Fallback icons for skills that have no icon defined at all.
-const levelIcons = {
-  EXPERT: 'bi bi-trophy-fill text-success',
-  ADVANCED: 'bi bi-lightning-charge-fill text-info',
-  INTERMEDIATE: 'bi bi-tools text-primary',
-  BEGINNER: 'bi bi-lightbulb-fill text-warning',
-  DEFAULT: 'bi bi-gear-wide-connected text-muted',
+// Theme-based color classes for different proficiency levels.
+const levelColorClasses = {
+  EXPERT: 'text-success',
+  ADVANCED: 'text-info',
+  /*
+    FIX: The standard 'text-primary' color was too close to the skill badge's background.
+    Using 'text-primary-emphasis' provides a darker shade of blue, improving contrast and readability.
+  */
+  INTERMEDIATE: 'text-primary-emphasis',
+  BEGINNER: 'text-warning',
+  DEFAULT: 'text-muted',
+};
+
+// Fallback icons for skills that have no specific icon defined.
+const levelDefaultIcons = {
+  EXPERT: 'bi bi-trophy-fill',
+  ADVANCED: 'bi bi-lightning-charge-fill',
+  INTERMEDIATE: 'bi bi-tools',
+  BEGINNER: 'bi bi-lightbulb-fill',
+  DEFAULT: 'bi bi-gear-wide-connected',
 };
 
 /**
@@ -28,30 +41,52 @@ const levelIcons = {
 export const getIconClass = (skill) => {
   // Ensure skill object exists to prevent errors
   if (!skill) {
-    return levelIcons.DEFAULT;
+    return `${levelDefaultIcons.DEFAULT} ${levelColorClasses.DEFAULT}`;
   }
 
-  const {icon, level} = skill;
+  // FIX: Only apply a color class if a proficiency level is explicitly provided.
+  // On pages like Experience or Projects, skills don't have a level, so the icon
+  // should inherit its color from the badge itself, rather than being forced to 'muted'.
+  const level = skill.level; // Don't default to 'DEFAULT' if level is missing.
+  const colorClass = level ? (levelColorClasses[level] || levelColorClasses.DEFAULT) : '';
+  let baseIconClass;
 
-  // 1. If no icon is provided in the data, fall back to a level-based icon.
-  if (!icon) {
-    return levelIcons[level] || levelIcons.DEFAULT;
-  }
-
-  // 2. If the icon class is already modern (Devicon, Bootstrap, or FA v6), use it directly.
-  if (icon.startsWith('devicon-') || icon.startsWith('bi-') || icon.includes(' ')) {
-    return icon;
-  }
-
-  // 3. If it's a legacy Font Awesome class (e.g., "fa-java"), add the correct v6 prefix.
-  if (icon.startsWith('fa-')) {
-    if (faBrandIcons.has(icon)) {
-      return `fa-brands ${icon}`; // e.g., "fa-brands fa-java"
+  // 1. If no specific icon is provided, use the default icon for the skill's level.
+  if (!skill.icon) {
+    // Use the provided level, or fallback to default if level is invalid/missing.
+    baseIconClass = levelDefaultIcons[level] || levelDefaultIcons.DEFAULT;
+  } else {
+    // 2. A specific icon is provided, so format it correctly.
+    if (skill.icon.startsWith('devicon-') || skill.icon.startsWith('bi-') || skill.icon.includes(' ')) {
+      baseIconClass = skill.icon;
     }
-    // Assume all other legacy 'fa-' icons are solid.
-    return `fa-solid ${icon}`; // e.g., "fa-solid fa-leaf"
+    // 3. If it's a legacy Font Awesome class (e.g., "fa-java"), add the correct v6 prefix.
+    else if (skill.icon.startsWith('fa-')) {
+      baseIconClass = faBrandIcons.has(skill.icon) ? `fa-brands ${skill.icon}` : `fa-solid ${skill.icon}`;
+    }
+    // 4. If the format is unknown, return it as-is.
+    else {
+      baseIconClass = skill.icon;
+    }
   }
 
-  // 4. If the format is unknown, return it as-is.
-  return icon;
+  // 5. Combine the final icon class with its level-based color class.
+  return `${baseIconClass} ${colorClass}`.trim();
+};
+
+const categoryIcons = {
+  'Frontend': 'bi bi-display-fill',
+  'Backend': 'bi bi-server',
+  'Programming Language': 'bi bi-code-slash',
+  'Framework': 'bi bi-box-seam-fill',
+  'DevOps': 'bi bi-cloud-arrow-up-fill',
+  'Database': 'bi bi-stack',
+  'Methodology': 'bi bi-diagram-3-fill',
+  'default': 'bi bi-tag-fill'
+};
+
+export const getCategoryIcon = (category) => {
+  if (!category) return '';
+  const key = Object.keys(categoryIcons).find(k => k.toLowerCase() === category.toLowerCase().trim());
+  return categoryIcons[key] || categoryIcons.default;
 };

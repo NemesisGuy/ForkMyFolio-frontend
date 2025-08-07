@@ -97,9 +97,24 @@
             <i class="bi bi-tools"></i>
           </div>
           <h4 class="card-title glass-title mb-3">No Skills Yet</h4>
-          <p class="card-text glass-subtitle mb-4">
+
+          <!-- Generic message for public visitors -->
+          <p v-if="!isOwner" class="card-text glass-subtitle mb-4">
             The toolbox is being organized. Please check back later for a list of skills.
           </p>
+
+          <!-- Helpful tip for the portfolio owner -->
+          <div v-else class="alert alert-info mt-3">
+            <p class="mb-1"><strong>Hey there!</strong> It looks like you don't have any skills
+              visible on your public page.</p>
+            <p class="mb-0">
+              Go to your
+              <router-link :to="{ name: 'my-skills', params: { slug: currentSlug } }">Skill
+                Management
+              </router-link>
+              page to add new skills or make existing ones visible.
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -109,11 +124,27 @@
 <script setup>
 import {computed, onMounted, onUpdated} from 'vue';
 import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore.js';
+import {authService} from '@/services/authService.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
+// REFACTOR: Import business logic from centralized services for consistency and maintainability.
+import {getIconClass, getCategoryIcon} from '@/services/iconService.js';
+import {groupSkillsByLevel} from '@/services/skillsService.js';
+
 import {Tooltip} from 'bootstrap';
 
-const {portfolio, isLoading, error} = usePublicPortfolioStore();
-const skills = computed(() => portfolio.value?.skills || []);
+const {portfolio, isLoading, error, currentSlug} = usePublicPortfolioStore();
+// FIX: The portfolio store populates the `userSkills` property, not `skills`.
+// This was the reason no data was being displayed on the page.
+// By changing `portfolio.value?.skills` to `portfolio.value?.userSkills`,
+// the component now correctly reads the skill data fetched from the API.
+// FIX: The public page should only display skills that are marked as visible.
+// The portfolio store contains all user skills, so we filter them here.
+const skills = computed(() => (portfolio.value?.userSkills || []).filter(s => s.visible));
+
+// Check if the currently logged-in user is the owner of this portfolio.
+const isOwner = computed(() => {
+  return authService.isAuthenticated.value && authService.user.value?.slug === currentSlug.value;
+});
 
 // --- Tooltip Initialization ---
 onMounted(() => initializeTooltips());
@@ -133,117 +164,9 @@ function initializeTooltips() {
   });
 }
 
-// --- Icon Rendering Logic ---
-
-// Smart icon class renderer (handles FA, Devicon, etc.)
-const faBrandIcons = new Set([
-  'fa-java', 'fa-js', 'fa-vuejs', 'fa-react', 'fa-angular', 'fa-node-js',
-  'fa-python', 'fa-php', 'fa-html5', 'fa-css3-alt', 'fa-git-alt',
-  'fa-github', 'fa-linkedin', 'fa-docker', 'fa-bootstrap'
-]);
-
-const levelColorClasses = {
-  EXPERT: 'text-success',
-  ADVANCED: 'text-info',
-  INTERMEDIATE: 'text-primary',
-  BEGINNER: 'text-warning',
-  DEFAULT: 'text-muted',
-};
-
-const levelDefaultIcons = {
-  EXPERT: 'bi bi-trophy-fill',
-  ADVANCED: 'bi bi-lightning-charge-fill',
-  INTERMEDIATE: 'bi bi-tools',
-  BEGINNER: 'bi bi-lightbulb-fill',
-  DEFAULT: 'bi bi-gear-wide-connected',
-};
-
-const getIconClass = (skill) => {
-  const icon = skill.icon;
-  const level = skill.level || 'DEFAULT';
-  const colorClass = levelColorClasses[level] || levelColorClasses.DEFAULT;
-
-  let baseIconClass;
-
-  if (!icon) {
-    // If no specific icon is provided, use the default icon for the level.
-    baseIconClass = levelDefaultIcons[level] || levelDefaultIcons.DEFAULT;
-  } else {
-    // A specific icon is provided, so format it correctly.
-    if (icon.startsWith('devicon-') || icon.startsWith('bi-') || icon.includes(' ')) {
-      baseIconClass = icon;
-    } else if (icon.startsWith('fa-')) {
-      baseIconClass = faBrandIcons.has(icon) ? `fa-brands ${icon}` : `fa-solid ${icon}`;
-    } else {
-      baseIconClass = icon;
-    }
-  }
-
-  // Combine the icon shape with the level-based color.
-  return `${baseIconClass} ${colorClass}`;
-};
-
-const categoryIcons = {
-  'Frontend': 'bi bi-display-fill',
-  'Backend': 'bi bi-server',
-  'Programming Language': 'bi bi-code-slash',
-  'Framework': 'bi bi-box-seam-fill',
-  'DevOps': 'bi bi-cloud-arrow-up-fill',
-  'Database': 'bi bi-stack',
-  'Methodology': 'bi bi-diagram-3-fill',
-  'default': 'bi bi-tag-fill'
-};
-const getCategoryIcon = (category) => {
-  if (!category) return '';
-  const key = Object.keys(categoryIcons).find(k => k.toLowerCase() === category.toLowerCase().trim());
-  return categoryIcons[key] || categoryIcons.default;
-};
-
-
-// --- Data Grouping ---
-const SKILL_LEVELS = {
-  EXPERT: 'Expert',
-  ADVANCED: 'Advanced',
-  INTERMEDIATE: 'Intermediate',
-  BEGINNER: 'Beginner',
-};
-const groupedByLevel = computed(() => {
-  if (!skills.value || skills.value.length === 0) return [];
-
-  return skills.value.reduce((acc, skill) => {
-    // Ensure every skill has a valid level, defaulting to 'INTERMEDIATE'.
-    const level = skill.level || 'INTERMEDIATE';
-
-    // Find the group for the current skill's level.
-    let group = acc.find(g => g.levelKey === level);
-
-    // If the group doesn't exist, create it.
-    if (!group) {
-      group = {
-        name: SKILL_LEVELS[level] || 'Intermediate',
-        levelKey: level,
-        skills: []
-      };
-      acc.push(group);
-    }
-
-    // FIX: Create a new skill object for the view with a guaranteed, non-null level.
-    // This prevents the template from ever receiving a null value for 'skill.level'.
-    const skillForView = {
-      ...skill,
-      level: level,
-    };
-    group.skills.push(skillForView);
-
-    return acc;
-  }, [])
-    // Sort the groups according to the predefined order.
-    .sort((a, b) => {
-      const orderA = Object.keys(SKILL_LEVELS).indexOf(a.levelKey);
-      const orderB = Object.keys(SKILL_LEVELS).indexOf(b.levelKey);
-      return orderA - orderB;
-    });
-});
+// REFACTOR: The grouping logic is now handled by the centralized skillsService,
+// and icon logic is handled by iconService. This component is now much simpler.
+const groupedByLevel = computed(() => groupSkillsByLevel(skills.value));
 </script>
 
 <style scoped>
@@ -293,7 +216,11 @@ const groupedByLevel = computed(() => {
   animation: beat-fade-effect 1s ease-in-out infinite;
 }
 
-.card-text {
+/*
+  FIX: The selector is now more specific to target only the description text inside skill cards.
+  This prevents the style from incorrectly applying to the empty state message, which also uses the .card-text class.
+*/
+.skill-col .card-text {
   font-size: 0.75rem;
   line-height: 1.4;
   min-height: 2.8em;

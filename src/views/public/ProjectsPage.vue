@@ -81,13 +81,13 @@
                   }}{{ project.description?.length > 180 ? '...' : '' }}
                 </p>
 
-                <div v-if="project.skills && project.skills.length" class="mt-auto pt-2">
-                  <!-- THIS IS THE FIX: Use the centralized getIconClass function -->
-                  <span v-for="skill in project.skills" :key="skill.uuid"
-                        class="badge tech-badge me-1 mb-1">
-                    <i :class="getIconClass(skill)" class="me-1"></i>
-                    {{ skill.name }}
-                  </span>
+                <div v-if="project.skills && project.skills.length"
+                     class="mt-auto pt-2 d-flex flex-wrap gap-2">
+                  <SkillBadge
+                    v-for="skill in project.skills"
+                    :key="skill.skillId"
+                    :skill="skill"
+                  />
                 </div>
               </div>
             </div>
@@ -131,15 +131,16 @@ import {computed} from 'vue';
 import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore.js';
 import {authService} from '@/services/authService.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
-// THIS IS THE FIX: Import the centralized icon service
-import {getIconClass} from '@/services/iconService.js';
+import SkillBadge from '@/components/common/SkillBadge.vue';
 
 // Use the central store for all data
 const {portfolio, isLoading, error, currentSlug} = usePublicPortfolioStore();
 
 // Projects are now a computed property from the store's portfolio
 const projects = computed(() => {
-  const projs = portfolio.value?.projects || [];
+  // FIX: The public page should only display projects that are marked as visible.
+  // The portfolio store contains all projects, so we filter them here.
+  const projs = (portfolio.value?.projects || []).filter(p => p.visible);
   // Sort by displayOrder ascending (lower number first)
   return projs.sort((a, b) => (a.displayOrder || 999) - (b.displayOrder || 999));
 });
@@ -176,10 +177,22 @@ const isOwner = computed(() => {
   color: inherit;
   border-radius: 1rem;
   /* The interactive classes will apply their transitions */
+  /* Add will-change to hint the browser about upcoming transformations for smoother animations. */
+  will-change: transform, box-shadow;
 }
 
 .project-card-link:hover {
   color: inherit;
+}
+
+/*
+  PERFORMANCE FIX:
+  The global 'interactive-card-shadow-primary' class has a very heavy box-shadow
+  animation which can cause lag. We override it here with a simpler,
+  more performant shadow that still provides a nice "lift" effect.
+*/
+.project-card-link.interactive-card-shadow-primary:hover {
+  box-shadow: 0 12px 35px rgba(var(--bs-primary-rgb), 0.25) !important;
 }
 
 .card-img-container {
@@ -195,10 +208,12 @@ const isOwner = computed(() => {
   height: 100%;
   object-fit: cover;
   transition: transform 0.4s ease;
+  /* Hint to the browser that this property will be animated. */
+  will-change: transform;
 }
 
 .project-card-link:hover .card-img-top {
-  transform: scale(1.1);
+  transform: scale(1.05); /* Reduced scale for better performance and a subtler effect. */
 }
 
 .project-image-placeholder {
@@ -227,6 +242,8 @@ const isOwner = computed(() => {
   opacity: 0;
   transition: opacity 0.4s ease;
   pointer-events: none;
+  /* Hint to the browser that this property will be animated. */
+  will-change: opacity;
 }
 
 .project-card-link:hover .card-img-overlay {
@@ -245,16 +262,6 @@ const isOwner = computed(() => {
 
 .card-img-overlay .text {
   font-weight: 500;
-}
-
-
-/* --- Badge Styling --- */
-.tech-badge {
-  font-weight: 500;
-  padding: 0.4em 0.7em;
-  background-color: rgba(var(--bs-primary-rgb), 0.1) !important;
-  color: var(--bs-primary) !important;
-  border: 1px solid rgba(var(--bs-primary-rgb), 0.2);
 }
 
 .empty-state-icon {

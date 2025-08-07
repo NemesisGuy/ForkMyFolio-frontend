@@ -69,7 +69,10 @@
   border-radius: 1.5rem;
   box-shadow: 0 8px 32px var(--glass-shadow),
   inset 0 1px 0 var(--glass-border);
-  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  /* FIX: Avoid 'transition: all' for performance. Transition only specific, animatable properties. */
+  transition-property: transform, background, border-color, box-shadow;
+  transition-duration: 0.4s;
+  transition-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
   color: var(--glass-text);
 }
 

@@ -11,9 +11,9 @@
 
       <!-- Modals -->
       <LoadingModal :visible="isLoading"/>
-      <ErrorModal :message="error" :visible="!!error" title="An Error Occurred"
+      <ErrorModal :message="error || ''" :visible="!!error" title="An Error Occurred"
                   @close="error = null"/>
-      <SuccessModal :message="successMessage" :visible="!!successMessage" title="Success"
+      <SuccessModal :message="successMessage || ''" :visible="!!successMessage" title="Success"
                     @close="successMessage = null"/>
       <ConfirmModal
         :message="`Are you sure you want to delete the testimonial from '${testimonialToDelete?.authorName}'?`"
@@ -23,54 +23,13 @@
         @confirm="handleDeleteTestimonial"
       />
 
-      <!-- Add/Edit Testimonial Modal -->
-      <div id="testimonialModal" ref="testimonialModalRef" aria-hidden="true"
-           aria-labelledby="testimonialModalLabel" class="modal fade" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-          <div class="modal-content glass-modal">
-            <div class="modal-header">
-              <h5 id="testimonialModalLabel" class="modal-title">
-                {{ isEditing ? 'Edit Testimonial' : 'Add New Testimonial' }}</h5>
-              <button aria-label="Close" class="btn-close" data-bs-dismiss="modal"
-                      type="button"></button>
-            </div>
-            <div class="modal-body">
-              <form @submit.prevent="handleFormSubmit">
-                <div class="mb-3">
-                  <label class="form-label" for="testimonialQuote">Quote</label>
-                  <textarea id="testimonialQuote" v-model="currentTestimonial.quote"
-                            class="form-control" required rows="4"></textarea>
-                </div>
-                <div class="row">
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label" for="testimonialAuthorName">Author's Name</label>
-                    <input id="testimonialAuthorName" v-model="currentTestimonial.authorName" class="form-control"
-                           required type="text">
-                  </div>
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label" for="testimonialAuthorTitle">Author's Title (e.g.,
-                      "CEO at Company")</label>
-                    <input id="testimonialAuthorTitle" v-model="currentTestimonial.authorTitle" class="form-control"
-                           type="text">
-                  </div>
-                </div>
-                <div class="form-check form-switch">
-                  <input id="testimonialVisible" v-model="currentTestimonial.visible" class="form-check-input"
-                         role="switch" type="checkbox">
-                  <label class="form-check-label" for="testimonialVisible">Visible on public
-                    portfolio</label>
-                </div>
-              </form>
-            </div>
-            <div class="modal-footer">
-              <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
-              <button class="btn btn-primary" type="button" @click="handleFormSubmit">
-                {{ isEditing ? 'Save Changes' : 'Add Testimonial' }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <!-- REFACTOR: The modal is now a self-contained component -->
+      <TestimonialFormModal
+        ref="testimonialFormModalRef"
+        :is-editing="isEditing"
+        :testimonial="currentTestimonialForModal"
+        @save="handleSaveTestimonial"
+      />
 
       <!-- Testimonials List -->
       <div v-if="!isLoading && testimonials.length > 0" class="card glass-card animate-fade-in-up"
@@ -85,11 +44,9 @@
                   :title="testimonial.authorTitle">{{ testimonial.authorTitle }}</cite></footer>
               </blockquote>
               <div class="actions d-flex align-items-center">
-                <div class="form-check form-switch me-3" title="Toggle Visibility">
-                  <input :checked="testimonial.visible" class="form-check-input" role="switch"
-                         type="checkbox"
-                         @change="handleVisibilityToggle(testimonial)">
-                </div>
+                <VisibilityToggle :is-loading="testimonial.isVisibilityLoading"
+                                  :visible="testimonial.visible"
+                                  class="me-3" @toggle="handleVisibilityToggle(testimonial)"/>
                 <button class="btn btn-sm btn-outline-primary me-2"
                         title="Edit Testimonial" @click="openEditModal(testimonial)">
                   <i class="bi bi-pencil-fill"></i>
@@ -119,13 +76,14 @@
 </template>
 
 <script setup>
-import {onMounted, reactive, ref} from 'vue';
+import {onMounted, ref} from 'vue';
 import {testimonialsApi} from '@/services/api/user.api.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
+import VisibilityToggle from '@/components/common/VisibilityToggle.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';
 import ConfirmModal from '@/components/common/modals/ConfirmModal.vue';
-import {Modal} from 'bootstrap';
+import TestimonialFormModal from '@/components/user/TestimonialFormModal.vue';
 
 // --- State ---
 const testimonials = ref([]);
@@ -134,25 +92,14 @@ const error = ref(null);
 const successMessage = ref(null);
 const testimonialToDelete = ref(null);
 
-// For the Add/Edit Modal
-const testimonialModalRef = ref(null);
-let testimonialModalInstance = null;
+// --- Modal State ---
+const testimonialFormModalRef = ref(null);
 const isEditing = ref(false);
-const initialTestimonialState = () => ({
-  uuid: null,
-  quote: '',
-  authorName: '',
-  authorTitle: '',
-  visible: true,
-});
-const currentTestimonial = reactive(initialTestimonialState());
+const currentTestimonialForModal = ref(null);
 
 // --- Lifecycle Hooks ---
 onMounted(async () => {
   await fetchTestimonials();
-  if (testimonialModalRef.value) {
-    testimonialModalInstance = new Modal(testimonialModalRef.value);
-  }
 });
 
 // --- Data Fetching ---
@@ -160,7 +107,8 @@ const fetchTestimonials = async () => {
   try {
     isLoading.value = true;
     error.value = null;
-    testimonials.value = await testimonialsApi.getAll();
+    const rawTestimonials = await testimonialsApi.getAll();
+    testimonials.value = rawTestimonials.map(t => ({...t, isVisibilityLoading: false}));
   } catch (err) {
     console.error("Failed to fetch user testimonials:", err);
     error.value = err.message || 'An unexpected error occurred while fetching your testimonials.';
@@ -171,30 +119,18 @@ const fetchTestimonials = async () => {
 
 // --- Modal Handling ---
 const openAddModal = () => {
-  Object.assign(currentTestimonial, initialTestimonialState());
   isEditing.value = false;
-  testimonialModalInstance?.show();
+  currentTestimonialForModal.value = null; // Signal to the modal to use its initial state
+  testimonialFormModalRef.value?.show();
 };
 
 const openEditModal = (testimonial) => {
   isEditing.value = true;
-  currentTestimonial.uuid = testimonial.uuid;
-  currentTestimonial.quote = testimonial.quote;
-  currentTestimonial.authorName = testimonial.authorName;
-  currentTestimonial.authorTitle = testimonial.authorTitle;
-  currentTestimonial.visible = testimonial.visible;
-  testimonialModalInstance?.show();
+  currentTestimonialForModal.value = testimonial;
+  testimonialFormModalRef.value?.show();
 };
 
 // --- CRUD Operations ---
-const handleFormSubmit = async () => {
-  if (isEditing.value) {
-    await handleUpdateTestimonial();
-  } else {
-    await handleAddTestimonial();
-  }
-};
-
 const buildPayload = (testimonial) => {
   return {
     quote: testimonial.quote,
@@ -204,35 +140,29 @@ const buildPayload = (testimonial) => {
   };
 };
 
-const handleAddTestimonial = async () => {
+const handleSaveTestimonial = async (testimonialData) => {
   isLoading.value = true;
   error.value = null;
-  try {
-    const payload = buildPayload(currentTestimonial);
-    await testimonialsApi.create(payload);
-    await fetchTestimonials();
-    successMessage.value = `Testimonial from '${payload.authorName}' was added successfully.`;
-    testimonialModalInstance?.hide();
-  } catch (err) {
-    console.error("Failed to add testimonial:", err);
-    error.value = err.message || 'An error occurred while adding the testimonial.';
-  } finally {
-    isLoading.value = false;
-  }
-};
+  testimonialFormModalRef.value?.hide();
 
-const handleUpdateTestimonial = async () => {
-  isLoading.value = true;
-  error.value = null;
   try {
-    const payload = buildPayload(currentTestimonial);
-    await testimonialsApi.update(currentTestimonial.uuid, payload);
-    await fetchTestimonials();
-    successMessage.value = `Testimonial from '${payload.authorName}' was updated successfully.`;
-    testimonialModalInstance?.hide();
+    // This helper function creates a clean data object for the API.
+    const payload = buildPayload(testimonialData);
+
+    if (isEditing.value) {
+      // Update an existing testimonial
+      await testimonialsApi.update(testimonialData.uuid, payload);
+      successMessage.value = `Testimonial from '${payload.authorName}' was updated successfully.`;
+    } else {
+      // Create a new testimonial
+      await testimonialsApi.create(payload);
+      successMessage.value = `Testimonial from '${payload.authorName}' was added successfully.`;
+    }
+
+    await fetchTestimonials(); // Refresh the list with the latest data
   } catch (err) {
-    console.error("Failed to update testimonial:", err);
-    error.value = err.message || 'An error occurred while updating the testimonial.';
+    console.error("Failed to save testimonial:", err);
+    error.value = err.message || 'An error occurred while saving the testimonial.';
   } finally {
     isLoading.value = false;
   }
@@ -256,6 +186,7 @@ const handleDeleteTestimonial = async () => {
 };
 
 const handleVisibilityToggle = async (testimonial) => {
+  testimonial.isVisibilityLoading = true;
   const originalVisibility = testimonial.visible;
   testimonial.visible = !testimonial.visible; // Optimistic update
 
@@ -267,6 +198,8 @@ const handleVisibilityToggle = async (testimonial) => {
     testimonial.visible = originalVisibility; // Revert on error
     console.error("Failed to update visibility:", err);
     error.value = err.message || 'An error occurred while updating visibility.';
+  } finally {
+    testimonial.isVisibilityLoading = false;
   }
 };
 </script>
