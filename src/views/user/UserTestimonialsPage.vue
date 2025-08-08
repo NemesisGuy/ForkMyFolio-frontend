@@ -16,8 +16,8 @@
       <SuccessModal :message="successMessage || ''" :visible="!!successMessage" title="Success"
                     @close="successMessage = null"/>
       <ConfirmModal
+        ref="confirmModalRef"
         :message="`Are you sure you want to delete the testimonial from '${testimonialToDelete?.authorName}'?`"
-        :visible="!!testimonialToDelete"
         title="Confirm Deletion"
         @close="testimonialToDelete = null"
         @confirm="handleDeleteTestimonial"
@@ -52,7 +52,7 @@
                   <i class="bi bi-pencil-fill"></i>
                 </button>
                 <button class="btn btn-sm btn-outline-danger"
-                        title="Delete Testimonial" @click="testimonialToDelete = testimonial">
+                        title="Delete Testimonial" @click="openDeleteConfirm(testimonial)">
                   <i class="bi bi-trash-fill"></i>
                 </button>
               </div>
@@ -78,6 +78,8 @@
 <script setup>
 import {onMounted, ref} from 'vue';
 import {testimonialsApi} from '@/services/api/user.api.js';
+import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore.js';
+import {authService} from '@/services/authService.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 import VisibilityToggle from '@/components/common/VisibilityToggle.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
@@ -96,6 +98,16 @@ const testimonialToDelete = ref(null);
 const testimonialFormModalRef = ref(null);
 const isEditing = ref(false);
 const currentTestimonialForModal = ref(null);
+
+// --- Store and Services ---
+const portfolioStore = usePublicPortfolioStore();
+
+const refreshPublicData = async () => {
+  const userSlug = authService.user.value?.slug;
+  if (userSlug) {
+    await portfolioStore.fetchPortfolio(userSlug, true);
+  }
+};
 
 // --- Lifecycle Hooks ---
 onMounted(async () => {
@@ -126,8 +138,14 @@ const openAddModal = () => {
 
 const openEditModal = (testimonial) => {
   isEditing.value = true;
-  currentTestimonialForModal.value = testimonial;
+  // Pass a deep copy to the modal to prevent direct mutation of the list item
+  currentTestimonialForModal.value = JSON.parse(JSON.stringify(testimonial));
   testimonialFormModalRef.value?.show();
+};
+
+const openDeleteConfirm = (testimonial) => {
+  testimonialToDelete.value = testimonial;
+  confirmModalRef.value?.show();
 };
 
 // --- CRUD Operations ---
@@ -160,6 +178,7 @@ const handleSaveTestimonial = async (testimonialData) => {
     }
 
     await fetchTestimonials(); // Refresh the list with the latest data
+    await refreshPublicData();
   } catch (err) {
     console.error("Failed to save testimonial:", err);
     error.value = err.message || 'An error occurred while saving the testimonial.';
@@ -170,19 +189,22 @@ const handleSaveTestimonial = async (testimonialData) => {
 
 const handleDeleteTestimonial = async () => {
   if (!testimonialToDelete.value) return;
+  const testimonialToDeleteRef = testimonialToDelete.value;
   isLoading.value = true;
   error.value = null;
+  confirmModalRef.value?.hide();
   try {
-    await testimonialsApi.remove(testimonialToDelete.value.uuid);
-    await fetchTestimonials();
-    successMessage.value = `Testimonial from '${testimonialToDelete.value.authorName}' was deleted successfully.`;
+    await testimonialsApi.remove(testimonialToDeleteRef.uuid);
+    // Optimistically remove from the local array for a faster UI response
+    testimonials.value = testimonials.value.filter(t => t.uuid !== testimonialToDeleteRef.uuid);
+    await refreshPublicData();
+    successMessage.value = `Testimonial from '${testimonialToDeleteRef.authorName}' was deleted successfully.`;
   } catch (err) {
     console.error("Failed to delete testimonial:", err);
     error.value = err.message || 'An error occurred while deleting the testimonial.';
   } finally {
     isLoading.value = false;
-    testimonialToDelete.value = null;
-  }
+  } // The @close event on the modal will reset testimonialToDelete.
 };
 
 const handleVisibilityToggle = async (testimonial) => {
@@ -194,6 +216,7 @@ const handleVisibilityToggle = async (testimonial) => {
     const payload = buildPayload(testimonial);
     await testimonialsApi.update(testimonial.uuid, payload);
     successMessage.value = `Visibility for testimonial from '${testimonial.authorName}' updated.`;
+    await refreshPublicData();
   } catch (err) {
     testimonial.visible = originalVisibility; // Revert on error
     console.error("Failed to update visibility:", err);

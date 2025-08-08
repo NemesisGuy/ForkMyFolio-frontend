@@ -16,17 +16,17 @@
       <SuccessModal :message="successMessage || ''" :visible="!!successMessage" title="Success"
                     @close="successMessage = null"/>
       <ProjectFormModal
+        ref="projectFormModalRef"
         :project="currentProject"
-        :visible="isFormModalVisible"
-        @close="closeFormModal"
+        :user-skills="userSkills"
         @save="handleSaveProject"
       />
       <ConfirmModal
-        :visible="isConfirmModalVisible"
+        ref="confirmModalRef"
         message="Are you sure you want to delete this project? This action cannot be undone."
         title="Confirm Deletion"
         type="danger"
-        @close="closeConfirmModal"
+        @close="projectToDelete = null"
         @confirm="handleDeleteProject"
       />
 
@@ -109,7 +109,7 @@
 
 <script setup>
 import {onMounted, ref} from 'vue';
-import {projectsApi} from '@/services/api/user.api.js';
+import {projectsApi, skillsApi} from '@/services/api/user.api.js';
 import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore.js';
 import {authService} from '@/services/authService.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
@@ -123,12 +123,13 @@ import SkillBadge from '@/components/common/SkillBadge.vue';
 
 // --- Component State ---
 const projects = ref([]);
+const userSkills = ref([]);
 const isLoading = ref(true);
 const error = ref(null);
 const successMessage = ref(null);
 
-const isFormModalVisible = ref(false);
-const isConfirmModalVisible = ref(false);
+const projectFormModalRef = ref(null);
+const confirmModalRef = ref(null);
 const currentProject = ref(null); // For editing or adding
 const projectToDelete = ref(null); // For deletion confirmation
 
@@ -137,7 +138,10 @@ const portfolioStore = usePublicPortfolioStore();
 
 // --- Lifecycle Hooks ---
 onMounted(async () => {
-  await fetchProjects();
+  await Promise.all([
+    fetchProjects(),
+    fetchUserSkills(),
+  ]);
 });
 
 // --- API Functions ---
@@ -153,6 +157,16 @@ const fetchProjects = async () => {
     error.value = err.message || 'An unexpected error occurred while fetching projects.';
   } finally {
     isLoading.value = false;
+  }
+};
+
+const fetchUserSkills = async () => {
+  try {
+    userSkills.value = await skillsApi.getAll();
+  } catch (err) {
+    console.error("Failed to fetch user skills for project form:", err);
+    // Non-critical error, so we don't block the page from loading.
+    // The form will still work, just without skill suggestions.
   }
 };
 
@@ -172,27 +186,18 @@ const refreshPublicData = async () => {
 // --- Modal Handling ---
 const openAddModal = () => {
   currentProject.value = null; // Clear for a new project
-  isFormModalVisible.value = true;
+  projectFormModalRef.value?.show();
 };
 
 const openEditModal = (project) => {
-  currentProject.value = {...project}; // Pass a copy to avoid direct mutation
-  isFormModalVisible.value = true;
-};
-
-const closeFormModal = () => {
-  isFormModalVisible.value = false;
-  currentProject.value = null;
+  // Pass a deep copy to the modal to prevent direct mutation of the list item
+  currentProject.value = JSON.parse(JSON.stringify(project));
+  projectFormModalRef.value?.show();
 };
 
 const openDeleteConfirm = (project) => {
   projectToDelete.value = project;
-  isConfirmModalVisible.value = true;
-};
-
-const closeConfirmModal = () => {
-  isConfirmModalVisible.value = false;
-  projectToDelete.value = null;
+  confirmModalRef.value?.show();
 };
 
 // --- CRUD Operations ---
@@ -204,27 +209,32 @@ const closeConfirmModal = () => {
  * @param {object} project - The project object from the component's state.
  * @returns {object} A clean data transfer object for the API.
  */
-const buildProjectPayload = (project) => {
-  return {
+const buildProjectPayload = (project) => { 
+  const payload = {
     // All fields from the ProjectDto are included
     ...project,
     // The `skills` array is transformed from an array of objects to an array of strings.
     skills: project.skills ? project.skills.map(skill => skill.name) : [],
-    // Frontend-only state like this is implicitly excluded.
   };
+  // Remove any frontend-only state properties before sending to the backend.
+  delete payload.isVisibilityLoading;
+  return payload;
 };
 
 const handleSaveProject = async (projectData) => {
   isLoading.value = true;
-  closeFormModal();
+  projectFormModalRef.value?.hide();
   try {
-    if (projectData.uuid) {
+    // REFACTOR: Always build the payload in the parent component for consistency.
+    // This ensures the data is in the correct format for the API.
+    const payload = buildProjectPayload(projectData);
+    if (payload.uuid) {
       // Update existing project
-      await projectsApi.update(projectData.uuid, projectData);
+      await projectsApi.update(payload.uuid, payload);
       successMessage.value = 'Project updated successfully!';
     } else {
       // Create new project
-      await projectsApi.create(projectData);
+      await projectsApi.create(payload);
       successMessage.value = 'Project created successfully!';
     }
     await fetchProjects(); // Refresh the list in the management view
@@ -245,7 +255,7 @@ const handleDeleteProject = async () => {
   // causing the subsequent API call to fail because it couldn't find the UUID.
   const projectToDeleteRef = projectToDelete.value;
   isLoading.value = true;
-  closeConfirmModal();
+  confirmModalRef.value?.hide();
 
   try {
     // Use the captured reference for the API call.

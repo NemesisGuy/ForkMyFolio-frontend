@@ -32,15 +32,17 @@ export const login = (credentials) =>
  * @returns {Promise<object>} API response with a new accessToken.
  */
 export const refreshToken = () =>
-  fetchWithAuth('/auth/refresh-token', {
-    method: 'POST',
-  }, true);
+  // FIX: Pass `isRetry = true` to prevent this call from triggering another refresh,
+  // which would cause an infinite loop if the refresh token is invalid.
+  fetchWithAuth('/auth/refresh-token', {method: 'POST'}, true, true);
 
 /**
  * Logout the current user.
  * @returns {Promise<void>}
  */
 export const logout = () =>
-  fetchWithAuth('/auth/logout', {
-    method: 'POST',
-  }, true);
+  // FIX: A logout should be a simple fire-and-forget request. Setting `requiresAuth`
+  // to `false` prevents the apiClient from trying to refresh an expired token during
+  // logout, which was causing an infinite loop and preventing the network call.
+  // The backend will invalidate the session using the secure HttpOnly refresh token cookie.
+  fetchWithAuth('/auth/logout', {method: 'POST'}, false);

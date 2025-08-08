@@ -1,0 +1,128 @@
+<template>
+  <div ref="modalRef" aria-hidden="true" class="modal fade" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content glass-modal">
+        <div class="modal-header">
+          <h5 class="modal-title">Terms of Service & Privacy Policy</h5>
+          <!-- No close button in header to make it "blocking" -->
+        </div>
+        <div class="modal-body">
+          <!-- Loading state -->
+          <div v-if="isLoadingContent" class="text-center p-4">
+            <div class="spinner-border" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2 small text-muted">Loading legal documents...</p>
+          </div>
+
+          <!-- Error state -->
+          <div v-else-if="contentError" class="alert alert-danger">
+            {{ contentError }}
+          </div>
+
+          <!-- Content -->
+          <div v-else>
+            <div class="policy-content" v-html="termsContent"></div>
+            <div class="policy-content mt-3" v-html="privacyContent"></div>
+            <p class="small mt-3">
+              By checking the box below, you acknowledge that you have read, understood, and agree to be bound by these terms.
+            </p>
+          </div>
+        </div>
+        <div class="modal-footer d-flex justify-content-between align-items-center">
+          <div class="form-check">
+            <input id="modalTermsCheck" v-model="isAccepted" class="form-check-input" type="checkbox">
+            <label class="form-check-label small" for="modalTermsCheck">
+              I have read and agree to the terms.
+            </label>
+          </div>
+          <div>
+            <button class="btn btn-secondary me-2" data-bs-dismiss="modal" type="button">Cancel</button>
+            <button :disabled="!isAccepted" class="btn btn-primary" type="button" @click="handleConfirm">
+              Confirm & Create Account
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue';
+import { Modal } from 'bootstrap';
+import { getTermsOfService, getPrivacyPolicy } from '@/services/api/policy.api.js';
+
+const emit = defineEmits(['confirm']);
+
+const modalRef = ref(null);
+let modalInstance = null;
+const isAccepted = ref(false);
+
+// --- New state for dynamic content ---
+const termsContent = ref('');
+const privacyContent = ref('');
+const isLoadingContent = ref(true);
+const contentError = ref(null);
+
+const fetchPolicies = async () => {
+  isLoadingContent.value = true;
+  contentError.value = null;
+  try {
+    // Fetch both policies concurrently for better performance
+    const [terms, privacy] = await Promise.all([
+      getTermsOfService(),
+      getPrivacyPolicy()
+    ]);
+    termsContent.value = terms.content;
+    privacyContent.value = privacy.content;
+  } catch (error) {
+    console.error("Failed to load policy documents:", error);
+    contentError.value = "Could not load the terms and conditions. Please try again later.";
+  } finally {
+    isLoadingContent.value = false;
+  }
+};
+
+onMounted(() => {
+  if (modalRef.value) {
+    modalInstance = new Modal(modalRef.value, {
+      backdrop: 'static', // Makes it non-skippable by clicking outside
+      keyboard: false // Prevents closing with Esc key
+    });
+    // Fetch content when the modal is about to be shown for the first time
+    modalRef.value.addEventListener('show.bs.modal', fetchPolicies);
+  }
+});
+
+const handleConfirm = () => {
+  if (isAccepted.value) {
+    emit('confirm');
+    modalInstance?.hide();
+  }
+};
+
+onUnmounted(() => {
+  if (modalRef.value) {
+    // Clean up the event listener to prevent memory leaks
+    modalRef.value.removeEventListener('show.bs.modal', fetchPolicies);
+  }
+});
+
+const show = () => modalInstance?.show();
+const hide = () => modalInstance?.hide();
+
+// Expose the show/hide methods to the parent component
+defineExpose({ show, hide });
+</script>
+
+<style scoped>
+.policy-content {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--bs-border-color);
+  padding: 1rem;
+  border-radius: var(--bs-border-radius);
+  background-color: var(--bs-tertiary-bg);
+}
+</style>

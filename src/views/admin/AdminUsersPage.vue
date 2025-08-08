@@ -19,8 +19,8 @@
       <SuccessModal :message="successMessage" :visible="!!successMessage" title="Success"
                     @close="successMessage = null"/>
       <ConfirmModal
+        ref="confirmModalRef"
         :message="`Are you sure you want to delete the user '${userToDelete?.firstName} ${userToDelete?.lastName}' (ID: ${userToDelete?.id})? This action cannot be undone.`"
-        :visible="!!userToDelete"
         title="Confirm Deletion"
         type="danger"
         @close="userToDelete = null"
@@ -61,14 +61,17 @@
                     </span>
                 </td>
                 <td class="text-end">
-                  <button class="btn btn-sm btn-outline-primary me-2" title="Edit User"
-                          @click="editUser(user.id)">
-                    <i class="bi bi-pencil-fill"></i>
-                  </button>
-                  <button class="btn btn-sm btn-outline-danger" title="Delete User"
-                          @click="confirmDelete(user)">
-                    <i class="bi bi-trash-fill"></i>
-                  </button>
+                  <!-- FIX: Wrap action buttons in a btn-group for better responsive behavior -->
+                  <div aria-label="User Actions" class="btn-group btn-group-sm" role="group">
+                    <button class="btn btn-outline-primary" title="Edit User"
+                            @click="editUser(user.id)">
+                      <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <button class="btn btn-outline-danger" title="Delete User"
+                            @click="confirmDelete(user)">
+                      <i class="bi bi-trash-fill"></i>
+                    </button>
+                  </div>
                 </td>
               </tr>
               </tbody>
@@ -105,6 +108,7 @@ const isLoading = ref(true);
 const error = ref(null);
 const successMessage = ref(null);
 const userToDelete = ref(null);
+const confirmModalRef = ref(null);
 
 const fetchUsers = async () => {
   try {
@@ -135,22 +139,25 @@ const editUser = (userId) => {
 
 const confirmDelete = (user) => {
   userToDelete.value = user;
+  confirmModalRef.value?.show();
 };
 
 const handleDelete = async () => {
   if (!userToDelete.value) return;
+  // Capture the ref before it's cleared by the modal closing
+  const userToDeleteRef = userToDelete.value;
   isLoading.value = true;
   error.value = null;
   try {
-    await deleteAdminUser(userToDelete.value.id);
-    successMessage.value = `User '${userToDelete.value.firstName} ${userToDelete.value.lastName}' has been deleted.`;
+    await deleteAdminUser(userToDeleteRef.id);
+    successMessage.value = `User '${userToDeleteRef.firstName} ${userToDeleteRef.lastName}' has been deleted.`;
     await fetchUsers(); // Refresh the list
   } catch (err) {
     console.error("Failed to delete user:", err);
     error.value = err.message || 'An error occurred during deletion.';
   } finally {
     isLoading.value = false;
-    userToDelete.value = null;
+    // The @close event on the modal will set userToDelete to null
   }
 };
 </script>

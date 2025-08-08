@@ -1,12 +1,12 @@
 <template>
-  <div ref="modalRef" aria-hidden="true" aria-labelledby="projectFormModalLabel" class="modal fade"
+  <div id="projectFormModal" ref="modalRef" aria-hidden="true" aria-labelledby="projectFormModalLabel" class="modal fade"
        tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content glass-modal">
         <div class="modal-header">
           <h5 id="projectFormModalLabel" class="modal-title">
             {{ isEditing ? 'Edit Project' : 'Add New Project' }}</h5>
-          <button aria-label="Close" class="btn-close" type="button" @click="closeModal"></button>
+          <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
         </div>
         <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
           <form class="row g-3" @submit.prevent="submitForm">
@@ -74,8 +74,8 @@
           </form>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" type="button" @click="closeModal">Close</button>
-          <button class="btn btn-primary" type="button" @click="submitForm">
+          <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+          <button class="btn btn-primary" data-bs-dismiss="modal" type="button" @click="submitForm">
             {{ isEditing ? 'Save Changes' : 'Add Project' }}
           </button>
         </div>
@@ -85,21 +85,23 @@
 </template>
 
 <script setup>
-import {computed, onMounted, reactive, ref, watch} from 'vue';
+import {onMounted, reactive, ref, watch} from 'vue';
 import {Modal} from 'bootstrap';
-import {skillsApi} from '@/services/api/user.api.js';
 // REFACTOR: Import the reusable SkillTagInput component.
 import SkillTagInput from '@/components/user/SkillTagInput.vue';
 
 // --- Props and Emits ---
 const props = defineProps({
-  visible: Boolean,
   project: {
     type: Object,
     default: null,
   },
+  userSkills: {
+    type: Array,
+    required: true,
+  },
 });
-const emit = defineEmits(['close', 'save']);
+const emit = defineEmits(['save']);
 
 // --- Component State ---
 const modalRef = ref(null);
@@ -119,25 +121,10 @@ const getInitialFormState = () => ({
 });
 const formState = reactive(getInitialFormState());
 
-// --- State for Skill Input ---
-const userSkills = ref([]);
-
 // --- Lifecycle and Watchers ---
 onMounted(() => {
   if (modalRef.value) {
     modalInstance = new Modal(modalRef.value);
-  }
-  // Fetch all available skills for the user once
-  skillsApi.getAll().then(skills => {
-    userSkills.value = skills;
-  }).catch(e => console.error("Failed to load skills for form modal", e));
-});
-
-watch(() => props.visible, (isVisible) => {
-  if (isVisible) {
-    modalInstance?.show();
-  } else {
-    modalInstance?.hide();
   }
 });
 
@@ -153,16 +140,17 @@ watch(() => props.project, (newProject) => {
     isEditing.value = false;
     Object.assign(formState, getInitialFormState());
   }
-}, {immediate: true});
+}, {deep: true});
 
 // --- Methods ---
-const closeModal = () => {
-  emit('close');
-};
-
 const submitForm = () => {
   emit('save', {...formState});
 };
+
+defineExpose({
+  show: () => modalInstance?.show(),
+  hide: () => modalInstance?.hide(),
+});
 </script>
 
 <style scoped>

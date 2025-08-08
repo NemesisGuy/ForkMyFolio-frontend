@@ -84,7 +84,7 @@
               Qualifications
             </router-link>
           </li>
-          <li v-if="settingsService.isEnabled.value('portfolio.contact.enabled') && currentSlug"
+          <li v-if="settingsService.isEnabled.value('portfolio.contact.show') && currentSlug"
               class="nav-item">
             <router-link :to="{ name: 'contact', params: { slug: currentSlug } }"
                          active-class="active"
@@ -212,13 +212,11 @@
     </div>
 
     <ConfirmModal
-      :message="logoutConfirmMessage"
+      ref="logoutConfirmModalRef"
       :title="logoutConfirmTitle"
-      :visible="showLogoutConfirmModal"
+      :message="logoutConfirmMessage"
       cancelText="Cancel"
       confirmText="Logout"
-      @cancel="cancelLogout"
-      @close="cancelLogout"
       @confirm="executeLogout"
     />
   </nav>
@@ -315,27 +313,22 @@ const isAdmin = computed(() => {
   );
 });
 
-const showLogoutConfirmModal = ref(false);
+const logoutConfirmModalRef = ref(null);
 const logoutConfirmTitle = 'Confirm Logout';
 const logoutConfirmMessage = 'Are you sure you want to logout?';
 
 const requestLogoutConfirmation = () => {
   collapseNavbar();
-  showLogoutConfirmModal.value = true;
+  logoutConfirmModalRef.value?.show();
 };
 
 const executeLogout = async () => {
-  showLogoutConfirmModal.value = false;
   try {
     await authService.logout();
     await router.push('/login');
   } catch (error) {
     console.error('Error during logout:', error);
   }
-};
-
-const cancelLogout = () => {
-  showLogoutConfirmModal.value = false;
 };
 </script>
 

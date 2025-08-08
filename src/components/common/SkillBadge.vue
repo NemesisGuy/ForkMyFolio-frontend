@@ -1,5 +1,6 @@
 <template>
   <span
+    ref="badgeRef"
     :title="tooltipText"
     class="badge skill-badge d-flex align-items-center"
     data-bs-toggle="tooltip"
@@ -11,7 +12,7 @@
 </template>
 
 <script setup>
-import {computed, nextTick, onMounted, onUpdated} from 'vue';
+import {computed, onMounted, onUnmounted, ref} from 'vue';
 import {getIconClass} from '@/services/iconService.js';
 import {Tooltip} from 'bootstrap';
 
@@ -32,25 +33,23 @@ const tooltipText = computed(() => {
   return props.skill.name;
 });
 
-// Encapsulated tooltip initialization logic
-onMounted(() => initializeTooltips());
-onUpdated(() => initializeTooltips());
+// --- Tooltip Management ---
+const badgeRef = ref(null);
+let tooltipInstance = null;
 
-function initializeTooltips() {
-  nextTick(() => {
-    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-    tooltipTriggerList.forEach(tooltipTriggerEl => {
-      // Ensure we don't re-initialize
-      if (!Tooltip.getInstance(tooltipTriggerEl)) {
-        new Tooltip(tooltipTriggerEl, {
-          container: 'body',
-          trigger: 'hover',
-          html: true,
-        });
-      }
+onMounted(() => {
+  if (badgeRef.value) {
+    tooltipInstance = new Tooltip(badgeRef.value, {
+      container: 'body',
+      trigger: 'hover',
+      html: true,
     });
-  });
-}
+  }
+});
+
+onUnmounted(() => {
+  tooltipInstance?.dispose();
+});
 </script>
 
 <style>

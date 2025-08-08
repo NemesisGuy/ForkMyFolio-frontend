@@ -3,7 +3,7 @@
     <div class="container">
       <div class="text-center mb-5">
         <h1 class="display-4 fw-bold animate-fade-in-up glass-text">
-          <i aria-hidden="true" class="bi bi-chat-left-quote"></i> Testimonials
+          <i aria-hidden="true" class="bi bi-chat-left-quote-fill"></i> Testimonials
         </h1>
         <p class="lead animate-fade-in-up glass-subtitle" style="animation-delay: 0.1s;">
           What colleagues and clients are saying about my work.
@@ -53,9 +53,13 @@
         <div v-for="(testimonial, index) in testimonials"
              :key="testimonial.uuid"
              :style="{ 'animation-delay': (index * 0.1 + 0.2) + 's' }"
-             class="col animate-fade-in-up">
+             class="col animate-fade-in-up"
+        >
           <div
-            class="card glass-card glass-card-floating h-100 interactive-card-lift interactive-card-shadow-primary">
+            class="card glass-card glass-card-floating h-100 interactive-card-lift interactive-card-shadow-primary"
+            role="button" tabindex="0"
+            @click="selectTestimonial(testimonial)"
+          >
             <div class="card-body d-flex flex-column">
               <i aria-hidden="true" class="bi bi-quote card-quote-icon"></i>
               <figure class="mb-0 d-flex flex-column flex-grow-1">
@@ -77,7 +81,7 @@
       <div v-else class="glass-card mx-auto" style="max-width: 800px;">
         <div class="card-body text-center p-5">
           <div class="empty-state-icon mb-4">
-            <i class="bi bi-chat-quote"></i>
+            <i class="bi bi-chat-quote-fill"></i>
           </div>
           <h4 class="card-title glass-title mb-3">No Testimonials Yet</h4>
           <!-- Generic message for public visitors -->
@@ -100,14 +104,21 @@
         </div>
       </div>
     </div>
+
+    <!-- Details Modal -->
+    <TestimonialDetailsModal
+      :testimonial="selectedTestimonial"
+      @close="closeModal"
+    />
   </div>
 </template>
 
 <script setup>
-import {computed} from 'vue';
+import {computed, ref} from 'vue';
 import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore.js';
 import {authService} from '@/services/authService.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
+import TestimonialDetailsModal from '@/components/public/TestimonialDetailsModal.vue';
 
 // Use the store to get reactive state.
 const {portfolio, isLoading, error, currentSlug} = usePublicPortfolioStore();
@@ -117,11 +128,27 @@ const {portfolio, isLoading, error, currentSlug} = usePublicPortfolioStore();
 // The portfolio store contains all testimonials (visible and hidden), so we must
 // filter them here on the client side.
 const testimonials = computed(() => (portfolio.value?.testimonials || []).filter(t => t.visible));
-
 // Check if the currently logged-in user is the owner of this portfolio.
 const isOwner = computed(() => {
   return authService.isAuthenticated.value && authService.user.value?.slug === currentSlug.value;
 });
+
+// --- Modal State & Focus Management ---
+// REFACTOR: Manually manage focus to prevent accessibility issues.
+// We store the element that triggered the modal and return focus to it on close.
+const selectedTestimonial = ref(null);
+let lastFocusedElement = null;
+
+const selectTestimonial = (testimonial) => {
+  lastFocusedElement = document.activeElement; // Store the focused element
+  selectedTestimonial.value = testimonial;
+};
+
+const closeModal = () => {
+  selectedTestimonial.value = null;
+  lastFocusedElement?.focus(); // Return focus to the trigger
+  lastFocusedElement = null;
+};
 </script>
 
 <style scoped>
@@ -132,6 +159,10 @@ const isOwner = computed(() => {
 .animate-fade-in-up {
   opacity: 0;
   animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.card[role="button"] {
+  cursor: pointer;
 }
 
 /* Watermark Quote Icon */

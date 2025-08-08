@@ -1,18 +1,16 @@
 <template>
-  <!-- The modal is conditionally rendered based on the presence of the qualification prop -->
-  <div v-if="qualification"
-       class="modal fade show d-block"
-       style="background: rgba(0,0,0,0.5);"
-       @click.self="$emit('close')">
+  <!-- REFACTOR: This modal now uses the standard Bootstrap JS-controlled structure,
+       and the backdrop blur is handled globally in glass.css -->
+  <div ref="modalRef" aria-hidden="true" class="modal fade" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content glass-modal border-0">
+      <!-- v-if prevents rendering errors when the prop is null during transitions -->
+      <div v-if="qualification" class="modal-content glass-modal border-0">
         <div class="modal-header border-0 pb-0">
           <h5 class="modal-title text-white">
             {{ qualification.qualificationName }}
           </h5>
-          <button aria-label="Close" class="btn-close btn-close-white"
-                  type="button"
-                  @click="$emit('close')">
+          <button aria-label="Close" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                  type="button">
           </button>
         </div>
         <div class="modal-body">
@@ -66,21 +64,39 @@
 </template>
 
 <script setup>
-defineProps({
+import {onMounted, ref, watch} from 'vue';
+import {Modal} from 'bootstrap';
+
+const props = defineProps({
   qualification: {
     type: Object,
     default: null,
   },
 });
 
-defineEmits(['close']);
+const emit = defineEmits(['close']);
+
+const modalRef = ref(null);
+let modalInstance = null;
+
+onMounted(() => {
+  if (modalRef.value) {
+    modalInstance = new Modal(modalRef.value);
+    // FIX: Use 'hide.bs.modal' to fire the close event earlier, preventing a focus race condition.
+    modalRef.value.addEventListener('hide.bs.modal', () => emit('close'));
+  }
+});
+
+watch(() => props.qualification, (newQual) => {
+  if (newQual) {
+    modalInstance?.show();
+  } else {
+    modalInstance?.hide();
+  }
+});
 </script>
 
 <style scoped>
-.modal.show {
-  backdrop-filter: blur(10px);
-}
-
 .year-badge-large {
   font-size: 2rem;
   font-weight: 800;

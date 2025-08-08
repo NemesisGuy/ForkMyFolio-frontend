@@ -43,8 +43,11 @@
         <div v-for="(exp, index) in experiences" :key="exp.uuid"
              :style="{ 'animation-delay': (index * 0.15) + 0.2 + 's' }"
              class="timeline-item animate-fade-in-up">
-          <div
-            class="timeline-content card glass-card glass-card-floating h-100 interactive-card-lift interactive-card-shadow-primary">
+          <div class="timeline-content card glass-card glass-card-floating h-100 interactive-card-lift interactive-card-shadow-primary"
+               role="button"
+               tabindex="0"
+               @click="selectExperience(exp)"
+          >
             <div class="card-body">
               <div class="d-flex align-items-start mb-3">
                 <a v-if="exp.companyUrl" :href="exp.companyUrl" class="company-logo-link"
@@ -126,16 +129,24 @@
           </div>
         </div>
       </div>
+
+      <!-- Details Modal -->
+      <ExperienceDetailsModal
+        :experience="selectedExperience"
+        @close="closeModal"
+      />
     </div>
   </div>
 </template>
 
 <script setup>
-import {computed} from 'vue';
+import {computed, ref} from 'vue';
 import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore.js';
 import {authService} from '@/services/authService.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 import SkillBadge from '@/components/common/SkillBadge.vue';
+import ExperienceDetailsModal from '@/components/public/ExperienceDetailsModal.vue';
+import {formatDisplayDate as formatDate} from '@/utils/dateUtils.js';
 
 // Get all necessary reactive properties from the store.
 const {portfolio, isLoading, error, currentSlug} = usePublicPortfolioStore();
@@ -158,18 +169,30 @@ const isOwner = computed(() => {
   return authService.isAuthenticated.value && authService.user.value?.slug === currentSlug.value;
 });
 
-const formatDate = (dateString) => {
-  if (!dateString) return '';
-  const options = {year: 'numeric', month: 'long'};
-  // Add a day to the date to avoid timezone issues where it might show the previous day.
-  const date = new Date(dateString);
-  date.setDate(date.getDate() + 1);
-  return date.toLocaleDateString(undefined, {...options, timeZone: 'UTC'});
+// --- Modal State & Focus Management ---
+// REFACTOR: Manually manage focus to prevent accessibility issues.
+// We store the element that triggered the modal and return focus to it on close.
+const selectedExperience = ref(null);
+let lastFocusedElement = null;
+
+const selectExperience = (experience) => {
+  lastFocusedElement = document.activeElement; // Store the focused element
+  selectedExperience.value = experience;
+};
+
+const closeModal = () => {
+  selectedExperience.value = null;
+  lastFocusedElement?.focus(); // Return focus to the trigger
+  lastFocusedElement = null;
 };
 </script>
 
 <style scoped>
 /* --- Page Styling --- */
+.timeline-content[role="button"] {
+  cursor: pointer;
+}
+
 .experience-page {
   overflow-x: hidden;
 }

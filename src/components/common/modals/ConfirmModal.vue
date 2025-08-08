@@ -1,44 +1,35 @@
 <template>
   <teleport to="body">
-    <div v-if="visible">
-      <!-- Backdrop -->
-      <div class="modal-backdrop fade show"></div>
-      <!-- Modal Dialog -->
-      <div
-        :aria-labelledby="modalId + 'Label'"
-        aria-modal="true"
-        class="modal fade show"
-        role="dialog"
-        style="display: block"
-        tabindex="-1"
-      >
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content glass-card">
-            <div class="modal-header">
-              <h5 :id="modalId + 'Label'" class="modal-title">{{ title }}</h5>
-              <button
-                :class="['btn-close', { 'btn-close-white': currentTheme === 'dark' }]"
-                aria-label="Close"
-                type="button"
-                @click="handleCancel"
-              ></button>
-            </div>
-            <div class="modal-body">
-              <p>{{ message }}</p>
-            </div>
-            <div class="modal-footer">
-              <button class="btn btn-outline-secondary" type="button" @click="handleCancel">
-                {{ cancelText }}
-              </button>
-              <!-- THIS IS THE FIX: The button now uses a computed class based on the 'type' prop -->
-              <button :class="['btn', confirmButtonClass]" type="button" @click="handleConfirm">
-                {{ confirmText }}
-              </button>
+    <div :id="modalId" ref="modalRef" aria-hidden="true" :aria-labelledby="modalId + 'Label'"
+         class="modal fade" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-card">
+          <div class="modal-header">
+            <h5 :id="modalId + 'Label'" class="modal-title">{{ title }}</h5>
+            <button
+              :class="['btn-close', { 'btn-close-white': currentTheme === 'dark' }]"
+              aria-label="Close"
+              data-bs-dismiss="modal"
+              type="button"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <p>{{ message }}</p>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">
+              {{ cancelText }}
+            </button>
+            <button :class="['btn', confirmButtonClass]" data-bs-dismiss="modal" type="button"
+                    @click="handleConfirm">
+              {{ confirmText }}
+            </button>
             </div>
           </div>
         </div>
       </div>
-    </div>
+
+
   </teleport>
 </template>
 
@@ -47,8 +38,9 @@
  * @file src/components/common/ConfirmModal.vue
  * @description A reusable, glassmorphic modal for asking users to confirm an action.
  */
-import {computed} from 'vue';
+import {computed, onMounted, ref} from 'vue';
 import {useTheme} from '@/services/themeService.js';
+import {Modal} from 'bootstrap';
 
 const {currentTheme} = useTheme();
 
@@ -59,10 +51,6 @@ const props = defineProps({
   },
   message: {
     type: String,
-    required: true,
-  },
-  visible: {
-    type: Boolean,
     required: true,
   },
   confirmText: {
@@ -90,16 +78,28 @@ const confirmButtonClass = computed(() => {
   return `btn-${props.type}`;
 });
 
-const emit = defineEmits(['confirm', 'cancel', 'close']);
+const emit = defineEmits(['confirm', 'close']);
+
+const modalRef = ref(null);
+let modalInstance = null;
+
+onMounted(() => {
+  if (modalRef.value) {
+    modalInstance = new Modal(modalRef.value);
+    modalRef.value.addEventListener('hidden.bs.modal', () => {
+      emit('close');
+    });
+  }
+});
 
 const handleConfirm = () => {
   emit('confirm');
 };
 
-const handleCancel = () => {
-  emit('cancel');
-  emit('close');
-};
+defineExpose({
+  show: () => modalInstance?.show(),
+  hide: () => modalInstance?.hide(),
+});
 </script>
 
 <style scoped>

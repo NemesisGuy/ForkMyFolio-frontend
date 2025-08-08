@@ -54,6 +54,17 @@ function _clearAuthState() {
   isLoading.value = false;
 }
 
+/**
+ * Clears all local session data without making an API call.
+ * This is used internally by the apiClient to prevent infinite loops.
+ */
+function clearLocalSession() {
+  _clearAuthState();
+  // Reset the portfolio store to clear any previous user's data.
+  const portfolioStore = usePublicPortfolioStore();
+  portfolioStore.clearPortfolio();
+}
+
 // --- Public API for the Service ---
 
 /**
@@ -76,10 +87,7 @@ async function logout() {
   } catch (e) {
     console.error('[AuthService] Backend logout failed, clearing state anyway.', e);
   } finally {
-    _clearAuthState();
-    // Reset the portfolio store to clear any previous user's data.
-    const portfolioStore = usePublicPortfolioStore();
-    portfolioStore.clearPortfolio();
+    clearLocalSession();
   }
 }
 
@@ -165,4 +173,6 @@ export const authService = {
   register,
   refreshToken,
   initAuth,
+  // For internal use by apiClient
+  clearLocalSession,
 };

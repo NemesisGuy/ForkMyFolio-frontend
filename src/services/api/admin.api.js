@@ -3,7 +3,7 @@
  * @description API functions for all admin-only operations.
  */
 import {fetchWithAuth} from './apiClient';
-import {triggerDownload} from '@/utils/downloadUtils';
+import {getFilenameFromResponse, triggerDownload} from '@/utils/downloadUtils';
 
 // --- Helper to normalize user data from the backend ---
 const normalizeUser = (user) => {
@@ -120,22 +120,48 @@ export const deleteAdminContactMessage = (uuid) => fetchWithAuth(`/admin/contact
  * @returns {Promise<void>}
  */
 export const downloadSystemBackup = async () => {
-  const blob = await fetchWithAuth('/admin/backup/system', {
+  const response = await fetchWithAuth('/admin/backup', {
     method: 'GET',
-    responseType: 'blob'
+    responseType: 'raw'
   });
-  const filename = `forkmyfolio-backup-${new Date().toISOString().split('T')[0]}.json`;
+  const blob = await response.blob();
+  const filename = getFilenameFromResponse(response, `forkmyfolio-system-backup-${new Date().toISOString().split('T')[0]}.json`);
   triggerDownload(blob, filename);
 };
 
 /**
  * Uploads a backup file to restore the entire system.
+ * This is a destructive operation.
  * @param {FormData} formData The form data containing the backup file (key: 'file').
  * @returns {Promise<void>}
  */
 export const restoreSystemBackup = (formData) => {
-  return fetchWithAuth('/admin/restore/system', {
+  return fetchWithAuth('/admin/backup/restore/system', {
     method: 'POST',
     body: formData,
+  });
+};
+
+/**
+ * Uploads a user backup file to restore a single user's portfolio.
+ * This is a destructive operation for the target user only.
+ * @param {string} userUuid - The UUID of the user to restore.
+ * @param {FormData} formData - The form data containing the backup file (key: 'file').
+ * @returns {Promise<void>}
+ */
+export const restoreSingleUserBackup = (userUuid, formData) => {
+  return fetchWithAuth(`/admin/backup/restore/user/${userUuid}`, {
+    method: 'POST',
+    body: formData,
+  });
+};
+
+/**
+ * Wipes all data from the system. THIS IS A HIGHLY DESTRUCTIVE OPERATION.
+ * @returns {Promise<void>}
+ */
+export const wipeSystemData = () => {
+  return fetchWithAuth('/admin/backup/wipe', {
+    method: 'DELETE',
   });
 };

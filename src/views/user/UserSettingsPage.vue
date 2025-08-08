@@ -163,7 +163,7 @@ const settingDefinitions = [
   {key: 'portfolio.experience.show', label: 'Experience Section'},
   {key: 'portfolio.qualifications.show', label: 'Qualifications Section'},
   {key: 'portfolio.testimonials.show', label: 'Testimonials Section'},
-  {key: 'portfolio.contact.enabled', label: 'Contact Form'},
+  {key: 'portfolio.contact.show', label: 'Contact Form'},
 ];
 
 const sleep = (ms) => new Promise((res) => setTimeout(res, ms));

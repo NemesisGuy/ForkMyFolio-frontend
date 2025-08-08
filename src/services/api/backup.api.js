@@ -4,37 +4,25 @@
  * Adheres to the Nemesis Architecture Style Guide.
  */
 import {fetchWithAuth} from './apiClient';
+// FIX: Import utilities to handle file downloads correctly.
+import {getFilenameFromResponse, triggerDownload} from '@/utils/downloadUtils';
 
 /**
  * Initiates a download of the full portfolio backup.
  * @returns {Promise<void>}
  */
 export const downloadBackup = async () => {
-  // 1. Fetch the backup data. The fetchWithAuth wrapper unwraps the main
-  //    response and provides the inner `data` object.
-  const backupData = await fetchWithAuth('/admin/backup', {
+  // FIX: The /admin/backup endpoint returns a raw file, not a standard JSON response.
+  // We must request it with `responseType: 'raw'` to get the full Response object
+  // and handle the file download manually.
+  const response = await fetchWithAuth('/admin/backup', {
     method: 'GET',
+    responseType: 'raw'
   });
 
-  // 2. Stringify the received data object into a readable format.
-  const jsonString = JSON.stringify(backupData, null, 2);
-
-  // 3. Create a Blob from the JSON string, which is required for file creation.
-  const blob = new Blob([jsonString], {type: 'application/json'});
-
-  // 4. Create a temporary URL to trigger the browser's download functionality.
-  const url = window.URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-
-  const filename = `portfolio-backup-${new Date().toISOString().split('T')[0]}.json`;
-  link.setAttribute('download', filename);
-
-  // 5. Trigger the download and clean up the temporary elements.
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  window.URL.revokeObjectURL(url);
+  const blob = await response.blob();
+  const filename = getFilenameFromResponse(response, `portfolio-backup-${new Date().toISOString().split('T')[0]}.json`);
+  triggerDownload(blob, filename);
 };
 
 /**

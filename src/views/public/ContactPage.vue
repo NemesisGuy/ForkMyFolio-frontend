@@ -3,7 +3,9 @@
     <div class="container" style="max-width: 600px;">
 
       <div class="text-center mb-4">
-        <h1 class="display-4 fw-bold animate-fade-in-up glass-text">📧 Get In Touch</h1>
+        <h1 class="display-4 fw-bold animate-fade-in-up glass-text">
+          <i aria-hidden="true" class="bi bi-envelope-paper-heart-fill me-3"></i>Get In Touch
+        </h1>
         <p class="lead animate-fade-in-up glass-subtitle" style="animation-delay: 0.1s;">
           Have a question or want to work together? Fill out the form below.
         </p>
@@ -106,7 +108,7 @@
             </div>
             <div class="col-md-4">
               <div class="glass-card text-center p-3 h-100 interactive-card-lift">
-                <i class="bi bi-shield-check-fill text-success mb-2" style="font-size: 1.5rem;"></i>
+                <i class="bi bi-shield-lock-fill text-success mb-2" style="font-size: 1.5rem;"></i>
                 <div class="glass-subtitle small">Privacy</div>
                 <div class="glass-text small fw-semibold">100% Secure</div>
               </div>

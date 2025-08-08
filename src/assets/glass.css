@@ -153,6 +153,14 @@
   color: var(--glass-text);
 }
 
+/* ADDED: Glassmorphic backdrop for all standard Bootstrap modals */
+.modal-backdrop.show {
+  opacity: 1; /* Override Bootstrap's default opacity to see the full effect */
+  background-color: var(--glass-backdrop);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
 /* --- Content Styling --- */
 .glass-text {
   color: var(--glass-text) !important;

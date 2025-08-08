@@ -1,5 +1,5 @@
 <template>
-  <div class="skills-page py-5 animated-gradient-background">
+  <div ref="pageRef" class="skills-page py-5 animated-gradient-background">
     <div class="container-fluid">
       <!-- Hero Section -->
       <div class="text-center mb-5">
@@ -62,6 +62,9 @@
             >
               <div
                 class="card glass-card glass-card-floating h-100 text-center shadow-sm interactive-card-lift interactive-card-shadow-primary"
+                role="button"
+                tabindex="0"
+                @click="selectSkill(skill)"
               >
                 <div v-if="skill.category" :title="skill.category" class="category-icon"
                      data-bs-toggle="tooltip">
@@ -118,16 +121,23 @@
         </div>
       </div>
     </div>
+
+    <!-- Details Modal -->
+    <SkillDetailsModal
+      :skill="selectedSkill"
+      @close="closeModal"
+    />
   </div>
 </template>
 
 <script setup>
-import {computed, onMounted, onUpdated} from 'vue';
+import {computed, onMounted, onUnmounted, onUpdated, ref} from 'vue';
 import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore.js';
 import {authService} from '@/services/authService.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 // REFACTOR: Import business logic from centralized services for consistency and maintainability.
 import {getIconClass, getCategoryIcon} from '@/services/iconService.js';
+import SkillDetailsModal from '@/components/public/SkillDetailsModal.vue';
 import {groupSkillsByLevel} from '@/services/skillsService.js';
 
 import {Tooltip} from 'bootstrap';
@@ -146,23 +156,49 @@ const isOwner = computed(() => {
   return authService.isAuthenticated.value && authService.user.value?.slug === currentSlug.value;
 });
 
-// --- Tooltip Initialization ---
-onMounted(() => initializeTooltips());
-onUpdated(() => initializeTooltips());
+// --- Modal State & Focus Management ---
+// REFACTOR: Manually manage focus to prevent accessibility issues.
+// We store the element that triggered the modal and return focus to it on close.
+const selectedSkill = ref(null);
+let lastFocusedElement = null;
 
-function initializeTooltips() {
-  // Dispose of old tooltips to prevent memory leaks
-  const oldTooltips = document.querySelectorAll('.tooltip');
-  oldTooltips.forEach(t => t.remove());
+const selectSkill = (skill) => {
+  lastFocusedElement = document.activeElement; // Store the focused element
+  selectedSkill.value = skill;
+};
 
-  const tooltipTriggerList = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-  tooltipTriggerList.forEach(tooltipTriggerEl => {
-    new Tooltip(tooltipTriggerEl, {
-      container: 'body', // Append tooltips to body to avoid z-index issues
-      trigger: 'hover',
-    });
-  });
-}
+const closeModal = () => {
+  selectedSkill.value = null;
+  lastFocusedElement?.focus(); // Return focus to the trigger
+  lastFocusedElement = null;
+};
+
+// --- Tooltip Management ---
+// REFACTOR: The tooltip initialization logic has been improved to be more performant and robust.
+// Instead of querying the entire document, it now queries only within this component's scope.
+// It also properly manages the lifecycle of each tooltip instance to prevent memory leaks.
+const pageRef = ref(null);
+let tooltipInstances = [];
+
+const manageTooltips = () => {
+  // 1. Dispose of any existing tooltips this component has created.
+  tooltipInstances.forEach(t => t.dispose());
+  tooltipInstances = [];
+
+  // 2. Find all tooltip triggers within this component's template.
+  if (pageRef.value) {
+    const tooltipTriggerList = pageRef.value.querySelectorAll('[data-bs-toggle="tooltip"]');
+    // 3. Create new Tooltip instances and store them.
+    tooltipInstances = Array.from(tooltipTriggerList).map(el => new Tooltip(el, {
+      container: 'body',
+      trigger: 'hover'
+    }));
+  }
+};
+
+onMounted(manageTooltips);
+onUpdated(manageTooltips);
+onUnmounted(() => tooltipInstances.forEach(t => t.dispose()));
 
 // REFACTOR: The grouping logic is now handled by the centralized skillsService,
 // and icon logic is handled by iconService. This component is now much simpler.
@@ -172,6 +208,10 @@ const groupedByLevel = computed(() => groupSkillsByLevel(skills.value));
 <style scoped>
 .skills-page {
   overflow-x: hidden;
+}
+
+.card[role="button"] {
+  cursor: pointer;
 }
 
 .level-heading {

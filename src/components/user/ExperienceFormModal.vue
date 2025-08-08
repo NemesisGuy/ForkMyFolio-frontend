@@ -123,7 +123,7 @@
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
-          <button class="btn btn-primary" type="button" @click="submitForm">
+          <button class="btn btn-primary" data-bs-dismiss="modal" type="button" @click="submitForm">
             {{ isEditing ? 'Save Changes' : 'Add Experience' }}
           </button>
         </div>
@@ -133,7 +133,8 @@
 </template>
 
 <script setup>
-import {defineExpose, reactive, ref, watch} from 'vue';
+import {defineExpose, onMounted, reactive, ref, watch} from 'vue';
+import {Modal} from 'bootstrap';
 import SkillTagInput from './SkillTagInput.vue';
 
 // --- Props and Emits ---
@@ -158,6 +159,7 @@ const LOCATION_TYPES = [
 
 // --- State ---
 const modalRef = ref(null); // This ref is on the modal's root div
+let modalInstance = null;
 const isEditing = ref(false);
 
 const getInitialFormState = () => ({
@@ -167,6 +169,12 @@ const getInitialFormState = () => ({
   displayOrder: 100, skills: [], visible: true, isCurrentJob: false,
 });
 const formState = reactive(getInitialFormState());
+
+onMounted(() => {
+  if (modalRef.value) {
+    modalInstance = new Modal(modalRef.value);
+  }
+});
 
 // --- Watchers ---
 watch(() => props.experience, (newExp) => {
@@ -201,9 +209,8 @@ const submitForm = () => {
   emit('save', buildPayload());
 };
 
-// --- THIS IS THE FIX ---
-// Expose the modal's ref to the parent component so it can be controlled.
 defineExpose({
-  modalRef
+  show: () => modalInstance?.show(),
+  hide: () => modalInstance?.hide(),
 });
 </script>

@@ -17,8 +17,8 @@
       <SuccessModal :message="successMessage || ''" :visible="!!successMessage" title="Success"
                     @close="successMessage = null"/>
       <ConfirmModal
+        ref="confirmModalRef"
         :message="`Are you sure you want to delete the qualification '${qualificationToDelete?.qualificationName}'?`"
-        :visible="!!qualificationToDelete"
         title="Confirm Deletion"
         @close="qualificationToDelete = null"
         @confirm="handleDeleteQualification"
@@ -58,7 +58,7 @@
                 <i class="bi bi-pencil-fill"></i>
               </button>
               <button class="btn btn-sm btn-outline-danger" title="Delete Qualification"
-                      @click="qualificationToDelete = qual">
+                      @click="openDeleteConfirm(qual)">
                 <i class="bi bi-trash-fill"></i>
               </button>
             </div>
@@ -83,6 +83,8 @@
 <script setup>
 import {onMounted, ref} from 'vue';
 import {qualificationsApi} from '@/services/api/user.api.js';
+import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore.js';
+import {authService} from '@/services/authService.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';
@@ -99,8 +101,19 @@ const qualificationToDelete = ref(null);
 
 // --- Modal State ---
 const qualificationFormModalRef = ref(null);
+const confirmModalRef = ref(null);
 const isEditing = ref(false);
 const currentQualificationForModal = ref(null);
+
+// --- Store and Services ---
+const portfolioStore = usePublicPortfolioStore();
+
+const refreshPublicData = async () => {
+  const userSlug = authService.user.value?.slug;
+  if (userSlug) {
+    await portfolioStore.fetchPortfolio(userSlug, true);
+  }
+};
 
 // --- Lifecycle Hooks ---
 onMounted(async () => {
@@ -114,11 +127,16 @@ const fetchQualifications = async () => {
     error.value = null;
     const fetched = await qualificationsApi.getAll();
     qualifications.value = fetched
-      .map(q => ({...q, isVisibilityLoading: false})) // Add loading state
+      .map(q => ({...q, isVisibilityLoading: false}))
       .sort((a, b) => {
-        const yearA = a.startYear || 0;
-        const yearB = b.startYear || 0;
-        return yearB - yearA;
+        // REFACTOR: Use the more robust sorting from the public page and add a secondary sort.
+        const yearA = a.stillStudying ? Infinity : a.completionYear || a.startYear || 0;
+        const yearB = b.stillStudying ? Infinity : b.completionYear || b.startYear || 0;
+        if (yearA !== yearB) {
+          return yearB - yearA; // Sort by year (descending, with "Present" first)
+        }
+        // Secondary sort: alphabetically by name if years are the same
+        return a.qualificationName.localeCompare(b.qualificationName);
       });
   } catch (err) {
     console.error("Failed to fetch user qualifications:", err);
@@ -139,6 +157,11 @@ const openEditModal = (qual) => {
   isEditing.value = true;
   currentQualificationForModal.value = JSON.parse(JSON.stringify(qual));
   qualificationFormModalRef.value?.show();
+};
+
+const openDeleteConfirm = (qual) => {
+  qualificationToDelete.value = qual;
+  confirmModalRef.value?.show();
 };
 
 const buildPayload = (qual) => ({
@@ -172,6 +195,7 @@ const handleSaveQualification = async (qualificationData) => {
       successMessage.value = `Qualification '${payload.qualificationName}' was added successfully.`;
     }
     await fetchQualifications();
+    await refreshPublicData();
   } catch (err) {
     console.error("Failed to save qualification:", err);
     error.value = err.message || 'An error occurred while saving the qualification.';
@@ -182,20 +206,23 @@ const handleSaveQualification = async (qualificationData) => {
 
 const handleDeleteQualification = async () => {
   if (!qualificationToDelete.value) return;
+  const qualToDeleteRef = qualificationToDelete.value;
   isLoading.value = true;
   error.value = null;
+  confirmModalRef.value?.hide();
   try {
-    await qualificationsApi.remove(qualificationToDelete.value.uuid);
-    await fetchQualifications();
+    await qualificationsApi.remove(qualToDeleteRef.uuid);
+    // Optimistically remove from the local array for a faster UI response
+    qualifications.value = qualifications.value.filter(q => q.uuid !== qualToDeleteRef.uuid);
+    await refreshPublicData();
     // CORRECTED: Referenced qualificationName instead of non-existent 'name'
-    successMessage.value = `Qualification '${qualificationToDelete.value.qualificationName}' was deleted successfully.`;
+    successMessage.value = `Qualification '${qualToDeleteRef.qualificationName}' was deleted successfully.`;
   } catch (err) {
     console.error("Failed to delete qualification:", err);
     error.value = err.message || 'An error occurred while deleting the qualification.';
   } finally {
     isLoading.value = false;
-    qualificationToDelete.value = null;
-  }
+  } // The @close event on the modal will reset qualificationToDelete.
 };
 
 const handleVisibilityToggle = async (qual) => {
@@ -207,6 +234,7 @@ const handleVisibilityToggle = async (qual) => {
     const payload = buildPayload(qual);
     await qualificationsApi.update(qual.uuid, payload);
     successMessage.value = `Visibility for '${qual.qualificationName}' updated.`;
+    await refreshPublicData();
   } catch (err) {
     qual.visible = originalVisibility;
     console.error("Failed to update visibility:", err);

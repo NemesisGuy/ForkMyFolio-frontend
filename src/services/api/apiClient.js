@@ -58,8 +58,11 @@ export async function fetchWithAuth(
       await authService.refreshToken();
       return fetchWithAuth(endpoint, options, true, true);
     } catch (refreshError) {
-      authService.logout();
-      window.location.href = '/login';
+      // FIX: When a token refresh fails, we must clear the local session state to
+      // prevent an infinite loop, but we should not navigate here. Instead, we
+      // re-throw the error so the original caller (e.g., the UI component) can
+      // handle the navigation gracefully.
+      authService.clearLocalSession();
       throw new ApiError('Session expired. Please log in again.', 401, []);
     }
   }
@@ -116,15 +119,4 @@ export async function fetchWithAuth(
     const text = await response.text();
     return text ? text : null;
   }
-
-  const responseData = await response.json();
-  if (responseData.status !== 'success') {
-    throw new ApiError(
-      responseData.errors?.[0]?.message || 'API returned a non-success status.',
-      response.status,
-      responseData.errors || []
-    );
-  }
-
-  return responseData.data;
 }

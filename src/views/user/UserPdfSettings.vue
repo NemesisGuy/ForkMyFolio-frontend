@@ -114,7 +114,6 @@ const availableTemplates = ref([]);
 
 const isLoading = ref(true);
 const isSaving = ref(false);
-const isDirty = ref(false);
 const error = ref(null);
 
 const showSuccessModal = ref(false);
@@ -122,29 +121,16 @@ const showErrorModal = ref(false);
 const errorMessage = ref('');
 
 /**
- * A computed property with a getter/setter for two-way binding to the select input.
- * This pattern allows us to track if the value has been changed by the user.
+ * The selected template value is now a simple ref, bound directly to the select input.
+ * This simplifies the logic and decouples the UI state from the full setting object.
  */
-const selectedTemplate = computed({
-  get: () => pdfSetting.value?.value || '',
-  set: (val) => {
-    // If the setting doesn't exist yet for the user, create a temporary object to hold the new value.
-    if (!pdfSetting.value) {
-      pdfSetting.value = {name: 'DEFAULT_PDF_TEMPLATE', value: ''};
-    }
-
-    if (pdfSetting.value.value !== val) {
-      pdfSetting.value.value = val;
-      isDirty.value = true;
-    }
-  },
-});
+const selectedTemplate = ref('');
+const isDirty = computed(() => selectedTemplate.value !== originalTemplateValue.value);
 
 // Sleep helper to guarantee minimum modal visible time, preventing UI flicker.
 const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
 
 onMounted(async () => {
-  isLoading.value = true;
   error.value = null;
 
   const minDelay = sleep(500);
@@ -156,17 +142,21 @@ onMounted(async () => {
       publicApi.getAvailablePdfTemplates(), // Use the public API now
     ]);
 
-    // Find the user's specific PDF template setting.
-    const defaultSetting = userSettings.find(
-      (s) => s.name === 'DEFAULT_PDF_TEMPLATE'
+    // Find the user's specific PDF template setting from the server.
+    const defaultSettingFromServer = userSettings.find(
+      (s) => s.name === 'portfolio.pdf.template'
     );
 
-    // It's okay if the user doesn't have this setting yet.
-    if (defaultSetting) {
-      pdfSetting.value = defaultSetting;
-      originalTemplateValue.value = defaultSetting.value;
+    if (defaultSettingFromServer) {
+      // If the setting exists, store it and set the initial values for the form.
+      pdfSetting.value = defaultSettingFromServer;
+      selectedTemplate.value = defaultSettingFromServer.value;
+      originalTemplateValue.value = defaultSettingFromServer.value;
     } else {
-      // If no setting exists, we start with a clean slate.
+      // If the setting is missing, we log a warning and prepare the UI to be functional
+      // but unsaveable. The save handler will catch the missing UUID.
+      console.warn("The 'portfolio.pdf.template' setting was not found for this user.");
+      selectedTemplate.value = '';
       originalTemplateValue.value = '';
     }
 
@@ -185,32 +175,37 @@ onMounted(async () => {
  * Saves the user's selected PDF template setting to the backend.
  */
 const handleSaveSettings = async () => {
-  if (!isDirty.value || !pdfSetting.value) return;
+  if (!isDirty.value) return;
   isSaving.value = true;
 
+  // If the setting object or its UUID is missing, it means the backend didn't initialize
+  // it correctly. We must block the save and inform the user.
+  if (!pdfSetting.value?.uuid) {
+    errorMessage.value = 'Cannot save setting. The PDF template setting was not found for your account. Please contact support.';
+    showErrorModal.value = true;
+    isSaving.value = false;
+    return;
+  }
+
   try {
-    // The payload for the user settings update API.
-    const payload = [
-      {
-        // If the setting is new, it won't have a UUID. The backend handles this.
-        uuid: pdfSetting.value.uuid || null,
-        name: pdfSetting.value.name,
-        value: selectedTemplate.value,
-      },
-    ];
+    // The payload only needs the UUID and the new value for an update.
+    const payload = [{
+      uuid: pdfSetting.value.uuid,
+      value: selectedTemplate.value,
+    }];
 
     const updatedSettings = await settingsApi.update(payload);
     // Update the central settings service so the whole app is aware.
     settingsService.updateSettings(updatedSettings);
 
-    // After a successful save, find the newly saved setting to get its UUID and update local state.
-    const newPdfSetting = updatedSettings.find(s => s.name === 'DEFAULT_PDF_TEMPLATE');
+    // After a successful save, find the setting again from the fresh list to update local state.
+    const newPdfSetting = updatedSettings.find(s => s.name === 'portfolio.pdf.template');
     if (newPdfSetting) {
       pdfSetting.value = newPdfSetting;
+      selectedTemplate.value = newPdfSetting.value;
       originalTemplateValue.value = newPdfSetting.value;
     }
 
-    isDirty.value = false;
     showSuccessModal.value = true;
   } catch (err) {
     console.error('Save failed:', err);
@@ -225,10 +220,7 @@ const handleSaveSettings = async () => {
  * Resets the selection back to its original value.
  */
 const resetChanges = () => {
-  if (!pdfSetting.value && originalTemplateValue.value === '') return;
   selectedTemplate.value = originalTemplateValue.value;
-  // We need to re-check if the value is dirty after reset.
-  isDirty.value = pdfSetting.value?.value !== originalTemplateValue.value;
 };
 
 /**

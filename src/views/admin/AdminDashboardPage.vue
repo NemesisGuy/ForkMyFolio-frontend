@@ -92,11 +92,12 @@
         <div class="col-md-6 col-lg-4 animate-fade-in-up" style="animation-delay: 0.7s;">
           <div class="card h-100 glass-card interactive-card-lift interactive-card-shadow-primary">
             <div class="card-body d-flex flex-column">
-              <h5 class="card-title"><i class="bi bi-database-down me-2"></i>Backup & Restore</h5>
-              <p class="card-text small text-muted">Manage full system backups and restores.</p>
-              <router-link :to="{ name: 'admin-backup-restore' }"
+              <h5 class="card-title"><i class="bi bi-shield-lock-fill me-2"></i>System Tools</h5>
+              <p class="card-text small text-muted">Manage system-wide backups, restores, and other
+                destructive data operations.</p>
+              <router-link :to="{ name: 'admin-system-backup' }"
                            class="btn btn-outline-primary mt-auto align-self-start">
-                Go to Backup & Restore
+                Go to System Tools
               </router-link>
             </div>
           </div>

@@ -191,10 +191,10 @@ const routes = [
     meta: {requiresAuth: true, requiresAdmin: true},
   },
   {
-    path: '/admin/backup-restore',
-    name: 'admin-backup-restore',
-    component: () => import('@/views/admin/AdminBackupRestorePage.vue'),
-    meta: {requiresAuth: true, requiresAdmin: true},
+    path: '/admin/system-backup',
+    name: 'admin-system-backup',
+    component: () => import('@/views/admin/AdminSystemBackupPage.vue'),
+    meta: { requiresAuth: true, roles: ['ADMIN'] }
   },
 
   // --- Dynamic Public Portfolio Routes (MUST BE LAST before 404) ---

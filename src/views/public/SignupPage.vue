@@ -8,15 +8,15 @@
         <div class="card-body p-4 p-md-5">
           <h1 class="card-title text-center mb-4 fs-3">Create Account</h1>
 
-          <div v-if="formMessage.text"
-               :class="['alert', formMessage.type === 'success' ? 'alert-success' : 'alert-danger']"
-               role="alert">
-            {{ formMessage.text }}
-            <ul v-if="formMessage.errors && formMessage.errors.length > 0" class="mb-0 mt-2">
-              <li v-for="(err, index) in formMessage.errors" :key="index">
-                {{ err.field ? `${err.field}: ` : '' }}{{ err.message }}
-              </li>
-            </ul>
+          <div v-if="pageError" class="alert alert-danger" role="alert">
+            <strong>Registration Unavailable</strong>
+            <p class="mb-0 small">{{ pageError }}</p>
+          </div>
+
+          <div v-if="formMessage.text" :class="['alert', formMessage.type === 'success' ? 'alert-success' : 'alert-danger']" role="alert">
+            {{ formMessage.text }} <ul v-if="formMessage.errors && formMessage.errors.length > 0" class="mb-0 mt-2">
+            <li v-for="(err, index) in formMessage.errors" :key="index">{{ err.field ? `${err.field}: ` : '' }}{{ err.message }}</li>
+          </ul>
           </div>
 
           <form novalidate @submit.prevent="handleSignup">
@@ -66,7 +66,7 @@
               </div>
             </div>
             <!-- KEY CHANGE: The button now uses the global interactive classes -->
-            <button :disabled="isLoading"
+            <button :disabled="isLoading || pageError"
                     class="btn btn-primary w-100 interactive-lift interactive-shadow-primary"
                     type="submit">
               <span v-if="isLoading" aria-hidden="true" class="spinner-border spinner-border-sm"
@@ -95,19 +95,27 @@
         :visible="showSignupErrorModal"
         @close="closeSignupErrorModal"
       />
+
+      <!-- The new, blocking Terms & Conditions modal -->
+      <TermsAgreementModal
+        ref="termsModalRef"
+        @confirm="executeRegistration"
+      />
     </div>
   </div>
 </template>
 
 <script setup>
-import {reactive, ref} from 'vue';
+import {reactive, ref, onMounted} from 'vue';
 import {useRouter} from 'vue-router';
 import {authService} from '@/services/authService.js';
 import {settingsService} from '@/services/settingsService.js';
 import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore.js';
 import {ApiError} from '@/services/api/index.js';
+import { getTermsOfService } from '@/services/api/policy.api.js';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
+import TermsAgreementModal from '@/components/auth/TermsAgreementModal.vue';
 
 /**
  * @file src/views/SignupPage.vue
@@ -121,15 +129,19 @@ const formData = reactive({
   lastName: '',
   email: '',
   password: '',
-  confirmPassword: ''
+  confirmPassword: '',
 });
+
+const termsModalRef = ref(null);
+const termsVersion = ref(null);
+const pageError = ref(null);
 
 const fieldErrors = reactive({
   firstName: null,
   lastName: null,
   email: null,
   password: null,
-  confirmPassword: null
+  confirmPassword: null,
 });
 
 const formMessage = reactive({text: null, type: null, errors: []});
@@ -144,6 +156,17 @@ const showSignupSuccessModal = ref(false);
 const showSignupErrorModal = ref(false);
 const signupErrorTitle = ref('Error');
 const signupErrorMessage = ref('');
+
+onMounted(async () => {
+  try {
+    const policy = await getTermsOfService();
+    termsVersion.value = policy.version;
+  } catch (error) {
+    console.error('Failed to load Terms of Service:', error);
+    pageError.value = 'Could not load registration requirements. Please try again later.';
+    // The submit button will be disabled via the pageError ref
+  }
+});
 
 /**
  * Closes the success modal and redirects to the user's account page.
@@ -222,17 +245,32 @@ const handleSignup = async () => {
     return;
   }
 
+  // Show the blocking terms modal instead of immediately submitting
+  termsModalRef.value?.show();
+};
+
+/**
+ * Executes the actual registration after the user has confirmed the terms in the modal.
+ */
+const executeRegistration = async () => {
   isLoading.value = true;
   formMessage.text = null;
   formMessage.type = null;
   formMessage.errors = [];
 
+  if (!termsVersion.value) {
+    pageError.value = "Cannot register because the terms version could not be loaded.";
+    return;
+  }
+
   try {
+    // The form data is already validated, so we can proceed.
     const apiData = {
       firstName: formData.firstName,
       lastName: formData.lastName,
       email: formData.email,
       password: formData.password,
+      termsVersion: termsVersion.value,
     };
     await authService.register(apiData);
 

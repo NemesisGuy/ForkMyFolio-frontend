@@ -16,8 +16,8 @@
       <SuccessModal :message="successMessage || ''" :visible="!!successMessage" title="Success"
                     @close="successMessage = null"/>
       <ConfirmModal
+        ref="confirmModalRef"
         :message="`Are you sure you want to remove the skill '${skillToDelete?.name}' from your portfolio?`"
-        :visible="!!skillToDelete"
         title="Confirm Deletion"
         @close="skillToDelete = null"
         @confirm="handleDeleteSkill"
@@ -62,7 +62,7 @@
                       <i class="bi bi-pencil-fill"></i>
                     </button>
                     <button class="btn btn-sm btn-outline-danger" title="Delete Skill"
-                            @click="skillToDelete = skill">
+                            @click="openDeleteConfirm(skill)">
                       <i class="bi bi-trash-fill"></i>
                     </button>
                   </div>
@@ -89,6 +89,8 @@
 import {computed, onMounted, ref} from 'vue';
 import {skillsApi} from '@/services/api/user.api.js';
 import {platformSkillApi} from '@/services/api/skill.api.js';
+import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore.js';
+import {authService} from '@/services/authService.js';
 // REFACTOR: Import all business logic from centralized services
 import {groupSkills} from '@/services/skillsService.js';
 import {getIconClass} from '@/services/iconService.js';
@@ -110,8 +112,19 @@ const skillToDelete = ref(null);
 
 // --- Modal State ---
 const skillFormModalRef = ref(null); // Ref for the component instance
+const confirmModalRef = ref(null);
 const isEditing = ref(false);
 const currentSkillForModal = ref(null); // Data to pass to the modal
+
+// --- Store and Services ---
+const portfolioStore = usePublicPortfolioStore();
+
+const refreshPublicData = async () => {
+  const userSlug = authService.user.value?.slug;
+  if (userSlug) {
+    await portfolioStore.fetchPortfolio(userSlug, true);
+  }
+};
 
 // --- Computed Properties ---
 // REFACTOR: The grouping logic is now handled by the centralized skillsService.
@@ -160,6 +173,11 @@ const openEditModal = (skill) => {
   skillFormModalRef.value?.show();
 };
 
+const openDeleteConfirm = (skill) => {
+  skillToDelete.value = skill;
+  confirmModalRef.value?.show();
+};
+
 // --- CRUD Operations ---
 const handleSaveSkill = async (payload) => {
   isLoading.value = true;
@@ -182,6 +200,7 @@ const handleSaveSkill = async (payload) => {
       successMessage.value = `Skill '${payload.name}' was added.`;
     }
     await fetchData(); // Refresh the list
+    await refreshPublicData();
   } catch (err) {
     console.error("Failed to save skill:", err);
     error.value = err.message || 'An error occurred while saving the skill.';
@@ -204,6 +223,7 @@ const handleVisibilityToggle = async (skill) => {
     };
     await skillsApi.update(skill.userSkillId, payload);
     successMessage.value = `Visibility for '${skill.name}' updated.`;
+    await refreshPublicData();
   } catch (err) {
     skill.visible = originalVisibility;
     error.value = err.message || 'Failed to update visibility.';
@@ -214,19 +234,22 @@ const handleVisibilityToggle = async (skill) => {
 
 const handleDeleteSkill = async () => {
   if (!skillToDelete.value) return;
+  const skillToDeleteRef = skillToDelete.value;
   isLoading.value = true;
   error.value = null;
+  confirmModalRef.value?.hide();
   try {
-    await skillsApi.remove(skillToDelete.value.userSkillId);
-    successMessage.value = `Skill '${skillToDelete.value.name}' was removed.`;
-    await fetchData(); // Refresh the list
+    await skillsApi.remove(skillToDeleteRef.userSkillId);
+    successMessage.value = `Skill '${skillToDeleteRef.name}' was removed.`;
+    // Optimistically remove from the local array for a faster UI response
+    userSkills.value = userSkills.value.filter(s => s.userSkillId !== skillToDeleteRef.userSkillId);
+    await refreshPublicData();
   } catch (err) {
     console.error("Failed to delete skill:", err);
     error.value = err.message || 'An error occurred while deleting the skill.';
   } finally {
     isLoading.value = false;
-    skillToDelete.value = null;
-  }
+  } // The @close event on the modal will reset skillToDelete.
 };
 </script>
 

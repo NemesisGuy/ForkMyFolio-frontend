@@ -109,8 +109,7 @@
       </div>
     </div>
 
-    <!-- REFACTOR: The inline modal has been extracted to its own component for better
-         maintainability and consistency with the rest of the application. -->
+    <!-- The details modal, which is now consistent with other modals in the app. -->
     <QualificationDetailsModal
       :qualification="selectedQualification"
       @close="closeModal"
@@ -145,14 +144,21 @@ const qualifications = computed(() => {
   });
 });
 
+// --- Modal State & Focus Management ---
+// REFACTOR: Manually manage focus to prevent accessibility issues.
+// We store the element that triggered the modal and return focus to it on close.
 const selectedQualification = ref(null);
+let lastFocusedElement = null;
 
 const selectQualification = (qual) => {
+  lastFocusedElement = document.activeElement; // Store the focused element
   selectedQualification.value = qual;
 };
 
 const closeModal = () => {
   selectedQualification.value = null;
+  lastFocusedElement?.focus(); // Return focus to the trigger
+  lastFocusedElement = null;
 };
 </script>
 

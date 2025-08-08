@@ -16,8 +16,8 @@
       <SuccessModal :message="successMessage || ''" :visible="!!successMessage" title="Success"
                     @close="successMessage = null"/>
       <ConfirmModal
+        ref="confirmModalRef"
         :message="`Are you sure you want to delete the entry for '${experienceToDelete?.jobTitle} at ${experienceToDelete?.companyName}'?`"
-        :visible="!!experienceToDelete"
         title="Confirm Deletion"
         @close="experienceToDelete = null"
         @confirm="handleDeleteExperience"
@@ -49,16 +49,14 @@
                   }}</h6>
               </div>
               <div class="actions d-flex align-items-center flex-shrink-0">
-                <div class="form-check form-switch me-3" title="Toggle Visibility">
-                  <input :checked="exp.visible" class="form-check-input" role="switch"
-                         type="checkbox" @change="handleVisibilityToggle(exp)">
-                </div>
+                <VisibilityToggle :is-loading="exp.isVisibilityLoading" :visible="exp.visible"
+                                  class="me-3" @toggle="handleVisibilityToggle(exp)"/>
                 <button class="btn btn-sm btn-outline-primary me-2" title="Edit Experience"
                         @click="openEditModal(exp)">
                   <i class="bi bi-pencil-fill"></i>
                 </button>
                 <button class="btn btn-sm btn-outline-danger" title="Delete Experience"
-                        @click="experienceToDelete = exp">
+                        @click="openDeleteConfirm(exp)">
                   <i class="bi bi-trash-fill"></i>
                 </button>
               </div>
@@ -103,8 +101,10 @@
 import {onMounted, ref} from 'vue';
 import {experiencesApi} from '@/services/api/user.api.js';
 import {platformSkillApi} from '@/services/api/skill.api.js';
+import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore.js';
+import {authService} from '@/services/authService.js';
 import {getIconClass} from '@/services/iconService.js';
-import {Modal} from 'bootstrap';
+import {formatDisplayDate as formatDate} from '@/utils/dateUtils.js';
 
 // Import all child components
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
@@ -126,7 +126,17 @@ const currentExperience = ref(null); // For editing
 
 // --- Modal Instances ---
 const experienceFormModalRef = ref(null);
-let formModalInstance = null;
+const confirmModalRef = ref(null);
+
+// --- Store and Services ---
+const portfolioStore = usePublicPortfolioStore();
+
+const refreshPublicData = async () => {
+  const userSlug = authService.user.value?.slug;
+  if (userSlug) {
+    await portfolioStore.fetchPortfolio(userSlug, true);
+  }
+};
 
 // --- Lifecycle ---
 onMounted(async () => {
@@ -135,19 +145,21 @@ onMounted(async () => {
     fetchExperiences(),
     fetchPlatformSkills()
   ]);
-  // We need to get the instance from the child component's ref, which is named 'modalRef' inside that component
-  if (experienceFormModalRef.value?.modalRef) {
-    formModalInstance = new Modal(experienceFormModalRef.value.modalRef);
-  }
 });
 
-// --- Helper Functions ---
-const formatDate = (dateString) => {
-  if (!dateString) return '';
-  const date = new Date(dateString);
-  date.setDate(date.getDate() + 1);
-  const options = {year: 'numeric', month: 'long', timeZone: 'UTC'};
-  return date.toLocaleDateString(undefined, options);
+// REFACTOR: Centralize the creation of the API payload to ensure consistency.
+const buildPayload = (exp) => {
+  // Create a clean payload object for the API.
+  const payload = {
+    ...exp,
+    // The `skills` array is transformed from an array of objects to an array of strings.
+    skills: exp.skills ? exp.skills.map(skill => skill.name) : [],
+  };
+
+  // Remove any frontend-only state properties before sending to the backend.
+  delete payload.isVisibilityLoading;
+
+  return payload;
 };
 
 // --- Data Fetching ---
@@ -159,14 +171,17 @@ const fetchExperiences = async () => {
     // FIX: Implement a more robust sorting logic. It now sorts by displayOrder first,
     // and then by start date (newest first) as a secondary criterion. This handles the
     // case where all display orders are 0, sorting them chronologically.
-    experiences.value = fetched.sort((a, b) => {
-      const orderA = a.displayOrder ?? 999;
-      const orderB = b.displayOrder ?? 999;
-      if (orderA !== orderB) {
-        return orderA - orderB;
-      }
-      return new Date(b.startDate) - new Date(a.startDate);
-    });
+    experiences.value = fetched
+      .map(e => ({...e, isVisibilityLoading: false})) // Add loading state for the toggle
+      .sort((a, b) => {
+        // Primary sort: displayOrder (lower numbers first)
+        if (a.displayOrder !== b.displayOrder) {
+          return (a.displayOrder || 999) - (b.displayOrder || 999);
+        }
+        // Secondary sort: startDate (newest first)
+        return new Date(b.startDate) - new Date(a.startDate);
+      });
+
   } catch (err) {
     error.value = err.message || 'An unexpected error occurred.';
   } finally {
@@ -187,19 +202,28 @@ const fetchPlatformSkills = async () => {
 // --- Modal Handling ---
 const openAddModal = () => {
   currentExperience.value = null;
-  formModalInstance?.show();
+  experienceFormModalRef.value?.show();
 };
 
 const openEditModal = (exp) => {
-  currentExperience.value = exp;
-  formModalInstance?.show();
+  // Pass a deep copy to the modal to prevent direct mutation of the list item
+  currentExperience.value = JSON.parse(JSON.stringify(exp));
+  experienceFormModalRef.value?.show();
+};
+
+const openDeleteConfirm = (exp) => {
+  experienceToDelete.value = exp;
+  confirmModalRef.value?.show();
 };
 
 // --- CRUD Operations ---
-const handleSaveExperience = async (payload) => {
+const handleSaveExperience = async (experienceData) => {
   isLoading.value = true;
-  formModalInstance?.hide();
+  experienceFormModalRef.value?.hide();
   try {
+    // REFACTOR: Always build the payload in the parent component for consistency.
+    // This ensures the data is in the correct format for the API.
+    const payload = buildPayload(experienceData);
     if (payload.uuid) {
       await experiencesApi.update(payload.uuid, payload);
       successMessage.value = `Experience at '${payload.companyName}' was updated.`;
@@ -208,6 +232,7 @@ const handleSaveExperience = async (payload) => {
       successMessage.value = `Experience at '${payload.companyName}' was added.`;
     }
     await fetchExperiences();
+    await refreshPublicData();
   } catch (err) {
     error.value = err.message || 'Failed to save experience.';
   } finally {
@@ -217,29 +242,36 @@ const handleSaveExperience = async (payload) => {
 
 const handleDeleteExperience = async () => {
   if (!experienceToDelete.value) return;
+  const expToDeleteRef = experienceToDelete.value;
   isLoading.value = true;
+  confirmModalRef.value?.hide();
   try {
-    await experiencesApi.remove(experienceToDelete.value.uuid);
-    await fetchExperiences();
-    successMessage.value = `Experience at '${experienceToDelete.value.companyName}' was deleted.`;
+    await experiencesApi.remove(expToDeleteRef.uuid);
+    // Optimistically remove from the local array for a faster UI response
+    experiences.value = experiences.value.filter(e => e.uuid !== expToDeleteRef.uuid);
+    await refreshPublicData();
+    successMessage.value = `Experience at '${expToDeleteRef.companyName}' was deleted.`;
   } catch (err) {
     error.value = err.message || 'Failed to delete experience.';
   } finally {
     isLoading.value = false;
-    experienceToDelete.value = null;
-  }
+  } // The @close event on the modal will reset experienceToDelete.
 };
 
 const handleVisibilityToggle = async (exp) => {
+  exp.isVisibilityLoading = true;
   const originalVisibility = exp.visible;
   exp.visible = !exp.visible; // Optimistic update
   try {
-    const payload = {...exp, skills: exp.skills ? exp.skills.map(s => s.name) : []};
+    const payload = buildPayload(exp);
     await experiencesApi.update(exp.uuid, payload);
     successMessage.value = `Visibility for '${exp.jobTitle}' updated.`;
+    await refreshPublicData();
   } catch (err) {
     exp.visible = originalVisibility; // Revert on error
     error.value = err.message || 'Failed to update visibility.';
+  } finally {
+    exp.isVisibilityLoading = false;
   }
 };
 </script>
