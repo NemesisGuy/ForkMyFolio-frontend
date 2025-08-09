@@ -16,7 +16,15 @@ export function setAuthService(service) {
   authService = service;
 }
 
-const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1';
+// --- KEY CHANGE: Read the Base URL from Environment Variables ---
+// This logic correctly handles both Docker runtime configuration and local development.
+// 1. In Docker, `entrypoint.sh` replaces "##VITE_API_BASE_URL##" with the real URL.
+// 2. In local dev, the placeholder remains, so we check for it and provide a fallback.
+const runtimeUrl = window.runtimeConfig?.API_BASE_URL;
+const VITE_API_BASE_URL = (runtimeUrl && !runtimeUrl.startsWith('##'))
+  ? runtimeUrl // Use the valid runtime URL from the Docker environment.
+  : 'http://localhost:8080/api/v1'; // Fallback for local development.
+
 
 /**
  * A wrapper around the Fetch API that handles authentication, API response structure, and error handling.

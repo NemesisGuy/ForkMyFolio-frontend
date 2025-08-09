@@ -152,9 +152,18 @@ const buildPayload = (exp) => {
   // Create a clean payload object for the API.
   const payload = {
     ...exp,
-    // The `skills` array is transformed from an array of objects to an array of strings.
-    skills: exp.skills ? exp.skills.map(skill => skill.name) : [],
   };
+
+  // FIX: The skills can be an array of objects (from the main list) or an array of strings (from the form).
+  // The API always expects an array of strings. This logic handles both cases.
+  if (Array.isArray(exp.skills) && exp.skills.length > 0) {
+    // If the first item is an object with a 'name' property, map to names.
+    if (typeof exp.skills[0] === 'object' && exp.skills[0] !== null && 'name' in exp.skills[0]) {
+      payload.skills = exp.skills.map(skill => skill.name);
+    } // Otherwise, it's already an array of strings from the form, so we do nothing.
+  } else {
+    payload.skills = [];
+  }
 
   // Remove any frontend-only state properties before sending to the backend.
   delete payload.isVisibilityLoading;
