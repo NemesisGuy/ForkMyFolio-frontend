@@ -1,23 +1,45 @@
+/**
+ * @file src/stores/publicPortfolioStore.js
+ * @description A simple, composable-based store for managing the state of a publicly viewed portfolio.
+ * This follows a singleton pattern where the state is defined once and shared across all
+ * components that use the `usePublicPortfolioStore` composable.
+ */
 import {ref} from 'vue';
 import {publicApi} from '@/services/api/public.api.js';
 import {ApiError} from '@/services/api/ApiError.js';
 
-// These refs are defined outside the function, making them singletons (shared state).
-// This is the core of the simple store pattern.
+/**
+ * The reactive portfolio object, containing all combined data for the current user.
+ * @type {import('vue').Ref<object|null>}
+ */
 const portfolio = ref(null);
+/**
+ * A reactive flag indicating if a fetch operation is in progress.
+ * @type {import('vue').Ref<boolean>}
+ */
 const isLoading = ref(false);
+/**
+ * A reactive container for any API errors that occur during fetching.
+ * @type {import('vue').Ref<ApiError|null>}
+ */
 const error = ref(null);
+/**
+ * The slug of the portfolio currently loaded in the store.
+ * @type {import('vue').Ref<string|null>}
+ */
 const currentSlug = ref(null);
 
 /**
- * New state to specifically track if a portfolio is inaccessible because it's private.
+ * A reactive flag to specifically track if a portfolio is inaccessible because it's private.
  * This allows the UI to show a specific "Private" message instead of a generic error.
+ * @type {import('vue').Ref<boolean>}
  */
 const isPrivate = ref(false);
 
 /**
  * A composable that acts as a simple store for the publicly viewed portfolio.
  * It holds the portfolio data and prevents redundant API calls.
+ * @returns {{portfolio: import('vue').Ref<object|null>, isLoading: import('vue').Ref<boolean>, error: import('vue').Ref<ApiError|null>, isPrivate: import('vue').Ref<boolean>, currentSlug: import('vue').Ref<string|null>, fetchPortfolio: function, clearPortfolio: function}}
  */
 export function usePublicPortfolioStore() {
 
@@ -27,6 +49,7 @@ export function usePublicPortfolioStore() {
    * It now also handles the 403 Forbidden error for private portfolios.
    * @param {string} slug The user's public portfolio slug.
    * @param {boolean} force - If true, bypasses the cache and re-fetches data.
+   * @returns {Promise<void>}
    */
   const fetchPortfolio = async (slug, force = false) => {
     if (!slug) {
@@ -96,6 +119,7 @@ export function usePublicPortfolioStore() {
 
   /**
    * Clears the store's state, useful when logging out or navigating away.
+   * @returns {void}
    */
   const clearPortfolio = () => {
     portfolio.value = null;

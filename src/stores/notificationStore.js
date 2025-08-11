@@ -1,6 +1,14 @@
+/**
+ * @file src/stores/notificationStore.js
+ * @description A simple, self-contained service for managing global UI notifications (toasts).
+ * It provides a reactive list of notifications and methods to add or remove them.
+ */
 import {ref} from 'vue';
 
-// This is a self-contained reactive state module, following your project's service pattern.
+/**
+ * The reactive array holding the current list of notification objects.
+ * @type {import('vue').Ref<Array<object>>}
+ */
 const notifications = ref([]);
 
 /**
@@ -23,6 +31,7 @@ const add = ({message, type = 'info', duration = 5000}) => {
 /**
  * Removes a notification from the list by its ID.
  * @param {number} id - The ID of the notification to remove.
+ * @returns {void}
  */
 const remove = (id) => {
   const index = notifications.value.findIndex(n => n.id === id);
@@ -31,7 +40,12 @@ const remove = (id) => {
   }
 };
 
-// Export the service as a single object, consistent with your architecture.
+/**
+ * The notification service, providing state and methods for managing notifications.
+ * @property {import('vue').Ref<Array<object>>} notifications - The reactive list of notifications.
+ * @property {function} add - Function to add a new notification.
+ * @property {function} remove - Function to remove a notification by its ID.
+ */
 export const notificationService = {
   notifications,
   add,

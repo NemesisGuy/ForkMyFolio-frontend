@@ -44,26 +44,40 @@
  * @description A reusable, glassmorphic modal component for displaying success messages.
  */
 
-defineProps({
+defineProps(/** @props */ {
+  /**
+   * The title displayed in the modal header.
+   */
   title: {
     type: String,
     default: 'Success',
   },
+  /**
+   * The success message to display in the modal body.
+   */
   message: {
     type: String,
     required: true,
   },
+  /**
+   * Controls the visibility of the modal.
+   */
   visible: {
     type: Boolean,
     required: true,
   },
+  /**
+   * A unique ID for the modal, used for ARIA attributes.
+   */
   modalId: {
     type: String,
     default: () => `success-modal-${Math.random().toString(36).slice(2, 11)}`,
   }
 });
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(/** @emits */ {
+  'close': null, // Emitted when the user clicks the close button.
+});
 
 const handleClose = () => {
   emit('close');

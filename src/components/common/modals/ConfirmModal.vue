@@ -44,29 +44,47 @@ import {Modal} from 'bootstrap';
 
 const {currentTheme} = useTheme();
 
-const props = defineProps({
+const props = defineProps(/** @props */ {
+  /**
+   * The title displayed in the modal header.
+   */
   title: {
     type: String,
     required: true,
   },
+  /**
+   * The confirmation message or question to display in the modal body.
+   */
   message: {
     type: String,
     required: true,
   },
+  /**
+   * The text for the confirmation button.
+   */
   confirmText: {
     type: String,
     default: 'Confirm',
   },
+  /**
+   * The text for the cancellation button.
+   */
   cancelText: {
     type: String,
     default: 'Cancel',
   },
   // THIS IS THE FIX: Replaced confirmButtonClass with a more robust 'type' prop
+  /**
+   * The style of the confirmation button, corresponding to Bootstrap theme colors.
+   */
   type: {
     type: String,
     default: 'primary',
     validator: (value) => ['primary', 'success', 'danger'].includes(value),
   },
+  /**
+   * A unique ID for the modal, used for ARIA attributes.
+   */
   modalId: {
     type: String,
     default: () => `confirm-modal-${Math.random().toString(36).slice(2, 11)}`,
@@ -78,7 +96,10 @@ const confirmButtonClass = computed(() => {
   return `btn-${props.type}`;
 });
 
-const emit = defineEmits(['confirm', 'close']);
+const emit = defineEmits(/** @emits */ {
+  'confirm': null, // Emitted when the user clicks the confirm button.
+  'close': null,   // Emitted when the modal is closed (via any method).
+});
 
 const modalRef = ref(null);
 let modalInstance = null;

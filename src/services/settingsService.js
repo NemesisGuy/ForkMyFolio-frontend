@@ -11,8 +11,15 @@ import {settingsApi} from '@/services/api/user.api.js';
 import {authService} from './authService';
 
 // --- Reactive State ---
-// The internal state is a key-value map: { "SHOW_PROJECTS": "true", ... }
+/**
+ * A reactive key-value map of all current settings (e.g., { "SHOW_PROJECTS": "true" }).
+ * @type {import('vue').Ref<Object<string, string>>}
+ */
 const settings = ref({});
+/**
+ * A reactive flag indicating if settings are currently being fetched.
+ * @type {import('vue').Ref<boolean>}
+ */
 const isLoading = ref(true);
 
 /**
@@ -20,6 +27,7 @@ const isLoading = ref(true);
  * and applies them to the reactive `settings` ref.
  * This is the single source of truth for fetching application-level settings.
  * @private
+ * @returns {Promise<void>}
  */
 async function _fetchAndApplySettings() {
   isLoading.value = true;
@@ -69,6 +77,14 @@ watch(authService.isAuthenticated, (isNowAuthenticated, wasPreviouslyAuthenticat
 });
 
 // --- Exported Service ---
+/**
+ * The settings service, providing reactive state and methods for managing application settings.
+ * @property {import('vue').Ref<boolean>} isLoading - Reactive flag for the settings fetch process.
+ * @property {import('vue').Ref<Object<string, string>>} settings - The reactive map of all settings.
+ * @property {function(): Promise<void>} initialize - Fetches the initial settings on app load.
+ * @property {function(Array<object>): void} updateSettings - Updates the settings state from an array.
+ * @property {import('vue').ComputedRef<function(string): boolean>} isEnabled - A computed function to check if a feature is enabled.
+ */
 export const settingsService = {
   isLoading,
   settings,

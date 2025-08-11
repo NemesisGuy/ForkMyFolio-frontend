@@ -16,6 +16,12 @@
 </template>
 
 <script setup>
+/**
+ * @file src/views/auth/AcceptTermsPage.vue
+ * @description A blocking page that requires a user to accept the Terms of Service
+ * and Privacy Policy before they can access the rest of the application.
+ * It primarily acts as a host for the TermsAgreementModal.
+ */
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import TermsAgreementModal from '@/components/auth/TermsAgreementModal.vue';

@@ -70,6 +70,11 @@
 </template>
 
 <script setup>
+/**
+ * @file src/views/public/LoginPage.vue
+ * @description The user login page. It handles user authentication, form validation,
+ * and redirects the user upon successful login.
+ */
 import {onMounted, reactive, ref} from 'vue';
 import {useRoute, useRouter} from 'vue-router';
 import {authService} from '@/services/authService.js';

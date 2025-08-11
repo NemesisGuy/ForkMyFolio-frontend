@@ -7,8 +7,8 @@ import {fetchWithAuth} from './apiClient';
 
 /**
  * Register a new user.
- * @param {Object} userData - The registration data.
- * @returns {Promise<object>} API response with user and accessToken.
+ * @param {object} userData The registration data (firstName, lastName, email, password).
+ * @returns {Promise<{accessToken: string}>} API response containing the access token.
  */
 export const register = (userData) =>
   fetchWithAuth('/auth/register', {
@@ -18,8 +18,8 @@ export const register = (userData) =>
 
 /**
  * Login an existing user.
- * @param {Object} credentials - The login credentials.
- * @returns {Promise<object>} API response with user and accessToken.
+ * @param {object} credentials The login credentials (email, password).
+ * @returns {Promise<{accessToken: string}>} API response containing the access token.
  */
 export const login = (credentials) =>
   fetchWithAuth('/auth/login', {
@@ -29,7 +29,7 @@ export const login = (credentials) =>
 
 /**
  * Refresh the access token using the refresh token cookie.
- * @returns {Promise<object>} API response with a new accessToken.
+ * @returns {Promise<{accessToken: string}>} API response with a new accessToken.
  */
 export const refreshToken = () =>
   // FIX: Pass `isRetry = true` to prevent this call from triggering another refresh,

@@ -74,6 +74,11 @@
 </template>
 
 <script setup>
+/**
+ * @file src/views/user/UserBackupRestorePage.vue
+ * @description A page that allows an authenticated user to download a full backup of their
+ * portfolio data or restore their portfolio from a previously downloaded backup file.
+ */
 import {ref} from 'vue';
 import {useRouter} from 'vue-router';
 import {downloadMyBackup, restoreMyBackup} from '@/services/api/user.api.js';
@@ -81,6 +86,7 @@ import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';
 import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore.js';
+import {notificationService} from '@/services/notificationService.js';
 
 const props = defineProps({
   slug: {
@@ -103,7 +109,11 @@ const handleDownloadBackup = async () => {
   isLoading.value = true;
   try {
     await downloadMyBackup();
-    // The download is handled by the API function, so no success message is needed here.
+    // UX Improvement: Add a non-blocking toast notification to confirm the download has started.
+    notificationService.add({
+      message: 'Backup download has started.',
+      type: 'success'
+    });
   } catch (err) {
     console.error('Backup download failed:', err);
     error.value = err.message || 'An unexpected error occurred during the backup download.';

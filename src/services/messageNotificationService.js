@@ -1,11 +1,22 @@
+/**
+ * @file src/services/messageNotificationService.js
+ * @description A reactive service for managing the unread message count for an authenticated user.
+ * It automatically fetches the count on login and when the browser tab becomes visible.
+ */
 import {ref, watch} from 'vue';
 import {getUnreadMessageCount} from '@/services/api/user.api.js';
 import {authService} from '@/services/authService';
 
+/**
+ * A reactive number representing the count of unread messages.
+ * @type {import('vue').Ref<number>}
+ */
 const unreadCount = ref(0);
 
 /**
  * Fetches the latest unread message count from the API if the user is authenticated.
+ * Resets the count to 0 on error or if the user is not authenticated.
+ * @returns {Promise<void>}
  */
 const fetchUnreadCount = async () => {
   if (!authService.isAuthenticated.value) {
@@ -23,6 +34,7 @@ const fetchUnreadCount = async () => {
 
 /**
  * Decrements the count locally when a message is read, providing instant UI feedback.
+
  */
 const decrementUnreadCount = () => {
   if (unreadCount.value > 0) {

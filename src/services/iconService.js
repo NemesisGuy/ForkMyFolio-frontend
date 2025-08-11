@@ -1,16 +1,23 @@
 /**
  * @file src/services/iconService.js
- * @description Centralized logic for rendering skill icons from various libraries and formats.
+ * @description Centralized logic for determining and rendering icons for skills and categories.
+ * This service handles various icon libraries (Bootstrap Icons, Devicon, Font Awesome) and provides fallbacks.
  */
 
-// A set of legacy Font Awesome icons that should use the `fa-brands` prefix.
+/**
+ * A set of legacy Font Awesome icons that require the `fa-brands` prefix for Font Awesome v6.
+ * @type {Set<string>}
+ */
 const faBrandIcons = new Set([
   'fa-java', 'fa-js', 'fa-vuejs', 'fa-react', 'fa-angular', 'fa-node-js',
   'fa-python', 'fa-php', 'fa-html5', 'fa-css3-alt', 'fa-git-alt',
   'fa-github', 'fa-linkedin', 'fa-docker', 'fa-bootstrap'
 ]);
 
-// Theme-based color classes for different proficiency levels.
+/**
+ * A map of proficiency levels to their corresponding theme-based text color classes.
+ * @type {Object<string, string>}
+ */
 const levelColorClasses = {
   EXPERT: 'text-success',
   ADVANCED: 'text-info',
@@ -23,7 +30,10 @@ const levelColorClasses = {
   DEFAULT: 'text-muted',
 };
 
-// Fallback icons for skills that have no specific icon defined.
+/**
+ * A map of proficiency levels to their default fallback icons.
+ * @type {Object<string, string>}
+ */
 const levelDefaultIcons = {
   EXPERT: 'bi bi-trophy-fill',
   ADVANCED: 'bi bi-lightning-charge-fill',
@@ -34,8 +44,10 @@ const levelDefaultIcons = {
 
 /**
  * Determines the correct CSS class for a skill's icon.
- * It handles modern multi-class icons, legacy Font Awesome icons, and provides a fallback.
- * @param {object} skill The skill object from the API, must contain `icon` and `level` properties.
+ * It intelligently handles modern multi-class icons (Devicon, Bootstrap Icons), legacy Font Awesome icons,
+ * and provides a fallback icon based on the skill's proficiency level. It also applies a color class
+ * based on the proficiency level.
+ * @param {object} skill The skill object from the API. May contain `icon` and `level` properties.
  * @returns {string} The appropriate CSS class for the <i> tag.
  */
 export const getIconClass = (skill) => {
@@ -74,6 +86,10 @@ export const getIconClass = (skill) => {
   return `${baseIconClass} ${colorClass}`.trim();
 };
 
+/**
+ * A map of skill categories to their corresponding Bootstrap Icons.
+ * @type {Object<string, string>}
+ */
 const categoryIcons = {
   'Frontend': 'bi bi-display-fill',
   'Backend': 'bi bi-server',
@@ -85,6 +101,11 @@ const categoryIcons = {
   'default': 'bi bi-tag-fill'
 };
 
+/**
+ * Retrieves the appropriate icon class for a given skill category.
+ * @param {string} category The name of the category.
+ * @returns {string} The Bootstrap Icon class for the category.
+ */
 export const getCategoryIcon = (category) => {
   if (!category) return '';
   const key = Object.keys(categoryIcons).find(k => k.toLowerCase() === category.toLowerCase().trim());

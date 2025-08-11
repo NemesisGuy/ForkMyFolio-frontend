@@ -22,7 +22,7 @@ const normalizeUser = (user) => {
  * The backend returns a paginated object. This function extracts, normalizes,
  * and returns the user array from the 'content' property.
  * @param {object} [pageable={ page: 0, size: 20 }] - Pagination options.
- * @returns {Promise<Array<object>>} A list of clean UserDto objects.
+ * @returns {Promise<Array<object>>} A list of normalized UserDto objects.
  */
 export const getAdminUsers = async (pageable = {page: 0, size: 20}) => {
   const params = new URLSearchParams(pageable);
@@ -36,8 +36,8 @@ export const getAdminUsers = async (pageable = {page: 0, size: 20}) => {
 
 /**
  * Fetches a single user by their ID and normalizes the data.
- * @param {string|number} userId - The UUID of the user.
- * @returns {Promise<object>} A clean UserDto object.
+ * @param {string} userId The UUID of the user.
+ * @returns {Promise<object>} A normalized UserDto object.
  */
 export const getAdminUserById = async (userId) => {
   const user = await fetchWithAuth(`/admin/users/${userId}`, {method: 'GET'});
@@ -46,8 +46,8 @@ export const getAdminUserById = async (userId) => {
 
 /**
  * Updates an existing user's details as an admin.
- * @param {string|number} userId - The UUID of the user to update.
- * @param {object} userData - The new data for the user (e.g., roles, active status).
+ * @param {string} userId The UUID of the user to update.
+ * @param {object} userData The new data for the user (e.g., roles, active status).
  * @returns {Promise<object>} The updated UserDto.
  */
 export const updateAdminUser = (userId, userData) => fetchWithAuth(`/admin/users/${userId}`, {
@@ -57,7 +57,7 @@ export const updateAdminUser = (userId, userData) => fetchWithAuth(`/admin/users
 
 /**
  * Deactivates (soft deletes) a user.
- * @param {string|number} userId - The UUID of the user to deactivate.
+ * @param {string} userId The UUID of the user to deactivate.
  * @returns {Promise<void>}
  */
 export const deleteAdminUser = (userId) => fetchWithAuth(`/admin/users/${userId}`, {method: 'DELETE'});
@@ -101,7 +101,7 @@ export const getAdminStats = () => fetchWithAuth('/admin/stats', {method: 'GET'}
 
 /**
  * Fetches all received contact messages from all users.
- * @returns {Promise<Array<object>>} List of ContactMessageDto
+ * @returns {Promise<Array<object>>} A list of ContactMessageDto objects.
  */
 export const getAdminContactMessages = () => fetchWithAuth('/admin/contact-messages', {method: 'GET'});
 

@@ -44,6 +44,11 @@
 </template>
 
 <script setup>
+/**
+ * @file src/views/auth/ForcePasswordChangePage.vue
+ * @description A dedicated page that forces a user to change their temporary password
+ * after their first login or a password reset. It is a blocking page controlled by the router guard.
+ */
 import {computed, ref} from 'vue';
 import {useRouter} from 'vue-router';
 import {changeMyPassword} from '@/services/api/user.api.js';

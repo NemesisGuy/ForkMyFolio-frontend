@@ -8,6 +8,11 @@ import {authService} from '@/services/authService';
 
 // --- Named Exports for use with the barrel file (index.js) ---
 
+/**
+ * Fetches the core profile and user data for a public portfolio.
+ * @param {string} slug The user's portfolio slug.
+ * @returns {Promise<object>} The combined user and profile data.
+ */
 export const getPortfolioBySlug = (slug) => {
   return fetchWithAuth(`/portfolios/${slug}`, {method: 'GET'}, false);
 };
@@ -47,14 +52,29 @@ export const getPortfolioQualifications = (slug) => fetchWithAuth(`/portfolios/$
  */
 export const getPortfolioTestimonials = (slug) => fetchWithAuth(`/portfolios/${slug}/testimonials`, {method: 'GET'}, false);
 
+/**
+ * Fetches the public settings for a portfolio by its slug.
+ * @param {string} slug The user's portfolio slug.
+ * @returns {Promise<Array<object>>} A list of setting objects.
+ */
 export const getPortfolioSettings = (slug) => {
   return fetchWithAuth(`/portfolios/${slug}/settings`, {method: 'GET'}, false);
 };
 
+/**
+ * Fetches the global, unauthenticated application settings.
+ * @returns {Promise<Array<object>>} A list of global setting objects.
+ */
 export const getGlobalSettings = () => {
   return fetchWithAuth('/settings', {method: 'GET'}, false);
 };
 
+/**
+ * Sends a contact message to a portfolio owner.
+ * @param {string} slug The user's portfolio slug.
+ * @param {object} messageData The contact message data.
+ * @returns {Promise<void>}
+ */
 export const sendContactMessage = (slug, messageData) => {
   return fetchWithAuth(`/portfolios/${slug}/contact-messages`, {
     method: 'POST',
@@ -62,6 +82,10 @@ export const sendContactMessage = (slug, messageData) => {
   }, false);
 };
 
+/**
+ * Fetches the list of available PDF templates.
+ * @returns {Promise<Array<object>>} A list of PDF template metadata objects.
+ */
 export const getAvailablePdfTemplates = () => {
   return fetchWithAuth('/settings/pdf-templates', {method: 'GET'}, false);
 };
@@ -118,7 +142,7 @@ export const downloadVCardBySlug = (slug) => {
  * This is now dynamic:
  * - If a user is logged in, it fetches their own portfolio.
  * - If no user is logged in, it returns null, allowing the UI to show a generic state.
- * @returns {Promise<Object|null>} The profile data or null.
+ * @returns {Promise<object|null>} The flattened profile data or null.
  */
 export const getPublicProfile = async () => {
   // --- DYNAMIC LOGIC ---

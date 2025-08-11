@@ -52,26 +52,40 @@
  * @description A reusable, glassmorphic modal component for displaying error messages.
  */
 
-defineProps({
+defineProps(/** @props */ {
+  /**
+   * The title displayed in the modal header.
+   */
   title: {
     type: String,
     default: 'Error',
   },
+  /**
+   * The error message to display. Can be a single string or an array of strings for a list.
+   */
   message: {
     type: [String, Array],
     required: true,
   },
+  /**
+   * Controls the visibility of the modal.
+   */
   visible: {
     type: Boolean,
     required: true,
   },
+  /**
+   * A unique ID for the modal, used for ARIA attributes.
+   */
   modalId: {
     type: String,
     default: () => `error-modal-${Math.random().toString(36).slice(2, 11)}`,
   }
 });
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(/** @emits */ {
+  'close': null, // Emitted when the user clicks the close button.
+});
 
 const handleClose = () => {
   emit('close');

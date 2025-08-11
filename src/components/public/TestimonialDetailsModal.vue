@@ -36,14 +36,20 @@
 import {onMounted, ref, watch} from 'vue';
 import {Modal} from 'bootstrap';
 
-const props = defineProps({
+const props = defineProps(/** @props */ {
+  /**
+   * The testimonial object to display. The modal is shown when this prop is not null.
+   * @type {object|null}
+   */
   testimonial: {
     type: Object,
     default: null
   }
 });
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(/** @emits */ {
+  'close': null, // Emitted when the modal is closed, signaling the parent to nullify the prop.
+});
 
 const modalRef = ref(null);
 let modalInstance = null;

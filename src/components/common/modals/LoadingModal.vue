@@ -32,11 +32,9 @@ defineOptions({
   inheritAttrs: false,
 });
 
-defineProps({
+defineProps(/** @props */ {
   /**
    * Controls the visibility of the loading modal.
-   * @type {Boolean}
-   * @required
    */
   visible: {
     type: Boolean,

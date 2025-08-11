@@ -9,7 +9,7 @@ export const platformSkillApi = {
   /**
    * Retrieves the list of all skills available on the platform.
    * This is an authenticated endpoint.
-   * @returns {Promise<Array<import('@/types').SkillDto>>} A list of all platform skills.
+   * @returns {Promise<Array<object>>} A list of all platform skills (SkillDto).
    */
   getAll() {
     // Endpoint: GET /api/v1/skills

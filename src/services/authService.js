@@ -1,7 +1,7 @@
 /**
  * @file src/services/authService.js
  * @description Manages authentication state, including login, logout, token storage, and session initialization.
- * This service acts as the central hub for authentication logic.
+ * This service acts as the central hub for authentication logic and provides a reactive state.
  */
 import {ref} from 'vue';
 
@@ -16,9 +16,20 @@ import {getMyAccount} from './api/user.api';
 import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore';
 
 // --- Reactive State ---
+/**
+ * A reactive flag indicating if the user is currently authenticated.
+ * @type {import('vue').Ref<boolean>}
+ */
 const isAuthenticated = ref(false);
+/**
+ * A reactive object containing the authenticated user's data. Null if not authenticated.
+ * @type {import('vue').Ref<object|null>}
+ */
 const user = ref(null);
-// This isLoading flag now specifically tracks the initial authentication process.
+/**
+ * A reactive flag that is true only during the initial session restoration process on app load.
+ * @type {import('vue').Ref<boolean>}
+ */
 const isLoading = ref(true);
 let accessToken = null;
 
@@ -33,6 +44,7 @@ let refreshPromise = null;
  * @param {string|null} token - The new access token.
  * @param {object|null} userData - The user data object.
  * @private
+ * @returns {void}
  */
 function _updateAuthState(token, userData) {
   accessToken = token;
@@ -45,6 +57,7 @@ function _updateAuthState(token, userData) {
 /**
  * Clears the authentication state.
  * @private
+ * @returns {void}
  */
 function _clearAuthState() {
   console.log('[AuthService] Clearing auth state.');
@@ -56,7 +69,8 @@ function _clearAuthState() {
 
 /**
  * Clears all local session data without making an API call.
- * This is used internally by the apiClient to prevent infinite loops.
+ * This is used internally by the apiClient to prevent infinite loops on auth failure.
+ * @returns {void}
  */
 function clearLocalSession() {
   _clearAuthState();
@@ -67,7 +81,8 @@ function clearLocalSession() {
 
 /**
  * Manually updates the local user state after a successful password change.
- * This prevents the navigation guard from re-triggering.
+ * This prevents the navigation guard from re-triggering a redirect.
+ * @returns {void}
  */
 function passwordHasBeenChanged() {
     if (user.value) {
@@ -80,7 +95,8 @@ function passwordHasBeenChanged() {
 
 /**
  * Manually updates the local user state after a successful terms acceptance.
- * This prevents the navigation guard from re-triggering.
+ * This prevents the navigation guard from re-triggering a redirect.
+ * @returns {void}
  */
 function termsHaveBeenAccepted() {
     if (user.value) {
@@ -94,7 +110,8 @@ function termsHaveBeenAccepted() {
 
 /**
  * Logs in a user and establishes their session.
- * @param {object} credentials - { email, password }
+ * @param {object} credentials - An object containing `email` and `password`.
+ * @returns {Promise<void>}
  */
 async function login(credentials) {
   const loginResponse = await apiLogin(credentials);
@@ -115,6 +132,7 @@ async function login(credentials) {
 
 /**
  * Logs out the user from the backend and clears local state.
+ * @returns {Promise<void>}
  */
 async function logout() {
   try {
@@ -128,7 +146,8 @@ async function logout() {
 
 /**
  * Registers a new user and logs them in.
- * @param {object} userData - { firstName, lastName, email, password }
+ * @param {object} userData - An object containing `firstName`, `lastName`, `email`, and `password`.
+ * @returns {Promise<void>}
  */
 async function register(userData) {
   const registerResponse = await apiRegister(userData);
@@ -144,7 +163,8 @@ async function register(userData) {
 
 /**
  * Refreshes the access token using the HttpOnly refresh token cookie.
- * @returns {Promise<boolean>}
+ * Manages a single refresh promise to prevent race conditions.
+ * @returns {Promise<boolean>} A promise that resolves to true on success.
  */
 async function refreshToken() {
   if (isRefreshing) {
@@ -175,7 +195,7 @@ async function refreshToken() {
 /**
  * Initializes the authentication state on application startup.
  * It attempts to restore a session by refreshing the token and fetching user data.
- * Settings are handled separately by the settingsService.
+ * @returns {Promise<void>}
  */
 async function initAuth() {
   console.log('[AuthService] Initializing session...');
@@ -201,6 +221,21 @@ async function initAuth() {
   }
 }
 
+/**
+ * The authentication service, providing reactive state and methods for managing user sessions.
+ * @property {import('vue').Ref<boolean>} isAuthenticated - Reactive flag for authentication status.
+ * @property {import('vue').Ref<object|null>} user - Reactive object for the current user's data.
+ * @property {import('vue').Ref<boolean>} isLoading - Reactive flag for the initial auth process.
+ * @property {function(): string|null} getAccessToken - Returns the current access token.
+ * @property {function(object): Promise<void>} login - Logs in a user.
+ * @property {function(): Promise<void>} logout - Logs out the current user.
+ * @property {function(object): Promise<void>} register - Registers a new user.
+ * @property {function(): Promise<boolean>} refreshToken - Refreshes the access token.
+ * @property {function(): Promise<void>} initAuth - Initializes the session on app startup.
+ * @property {function(): void} clearLocalSession - For internal use by apiClient.
+ * @property {function(): void} passwordHasBeenChanged - For use after forced password change.
+ * @property {function(): void} termsHaveBeenChanged - For use after terms acceptance.
+ */
 export const authService = {
   // State
   isAuthenticated,

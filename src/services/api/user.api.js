@@ -9,7 +9,7 @@ import {fetchWithAuth} from './apiClient';
 
 /**
  * Fetches the private account details for the authenticated user.
- * @returns {Promise<Object>} The user's account data (name, email, etc.).
+ * @returns {Promise<object>} The user's account data (UserDto).
  */
 export const getMyAccount = () => {
   // Endpoint: GET /api/v1/me
@@ -18,8 +18,8 @@ export const getMyAccount = () => {
 
 /**
  * Updates the private account details for the authenticated user.
- * @param {Object} accountData - The account data to update (firstName, lastName, profileImageUrl).
- * @returns {Promise<Object>} The updated account data.
+ * @param {object} accountData The account data to update (firstName, lastName, profileImageUrl).
+ * @returns {Promise<object>} The updated account data (UserDto).
  */
 export const updateMyAccount = (accountData) => {
   // Endpoint: PUT /api/v1/me
@@ -28,14 +28,14 @@ export const updateMyAccount = (accountData) => {
 
 /**
  * Fetches the public-facing profile details for the authenticated user to edit.
- * @returns {Promise<Object>} The user's public profile data.
+ * @returns {Promise<object>} The user's public profile data (ProfileDto).
  */
 export const getMyPublicProfile = () => fetchWithAuth('/me/profile', {method: 'GET'});
 
 /**
  * Updates the public profile for the authenticated user.
- * @param {Object} profileData - The public profile data.
- * @returns {Promise<Object>} The updated public profile data.
+ * @param {object} profileData The public profile data.
+ * @returns {Promise<object>} The updated public profile data (ProfileDto).
  */
 export const updateMyPublicProfile = (profileData) => {
   // The image is handled separately via updateMyAccount.
@@ -47,7 +47,7 @@ export const updateMyPublicProfile = (profileData) => {
 
 /**
  * Updates the master public visibility of the authenticated user's portfolio.
- * @param {Object} visibilityData - The visibility data, e.g., { isPublic: true }.
+ * @param {object} visibilityData The visibility data, e.g., `{ isPublic: true }`.
  * @returns {Promise<void>}
  */
 export const updateMyProfileVisibility = (visibilityData) => {
@@ -60,7 +60,7 @@ export const updateMyProfileVisibility = (visibilityData) => {
 
 /**
  * Changes the password for the currently authenticated user.
- * @param {string} newPassword - The new password.
+ * @param {string} newPassword The new password.
  * @returns {Promise<void>}
  */
 export const changeMyPassword = (newPassword) => {
@@ -112,7 +112,12 @@ export const skillsApi = {
 
 
 // --- Contact Messages (User-specific) ---
+/**
+ * Fetches all contact messages for the authenticated user.
+ * @returns {Promise<Array<object>>} A list of contact message objects.
+ */
 export const getMyContactMessages = () => fetchWithAuth('/me/contact-messages');
+
 export const deleteMyContactMessage = (uuid) => fetchWithAuth(`/me/contact-messages/${uuid}`, {method: 'DELETE'});
 
 /**
@@ -128,8 +133,8 @@ export const getUnreadMessageCount = async () => {
 
 /**
  * Partially updates a contact message for the authenticated user.
- * @param {string} uuid - The UUID of the message to update.
- * @param {object} updateData - An object with the fields to update (e.g., { read: true, priority: 'HIGH' }).
+ * @param {string} uuid The UUID of the message to update.
+ * @param {object} updateData An object with the fields to update (e.g., `{ read: true, priority: 'HIGH' }`).
  * @returns {Promise<object>} The updated message object from the server.
  */
 export const updateMyContactMessage = (uuid, updateData) => {
@@ -142,8 +147,18 @@ export const updateMyContactMessage = (uuid, updateData) => {
 
 
 // --- Settings API ---
+/**
+ * API service for managing user-specific settings.
+ */
 export const settingsApi = {
+  /**
+   * @returns {Promise<Array<object>>}
+   */
   getAll: () => fetchWithAuth('/me/settings'),
+  /**
+   * @param {Array<object>} settingsList
+   * @returns {Promise<Array<object>>}
+   */
   update: (settingsList) => fetchWithAuth('/me/settings', {method: 'PUT', body: settingsList}),
 };
 
@@ -167,6 +182,11 @@ export const downloadMyBackup = async () => {
   window.URL.revokeObjectURL(url);
 };
 
+/**
+ * Restores a user's portfolio from a backup file.
+ * @param {File} file The JSON backup file.
+ * @returns {Promise<void>}
+ */
 export const restoreMyBackup = (file) => {
   const formData = new FormData();
   formData.append('file', file);

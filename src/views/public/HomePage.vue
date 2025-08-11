@@ -229,6 +229,13 @@
 </template>
 
 <script setup>
+/**
+ * @file src/views/public/HomePage.vue
+ * @description The main public-facing portfolio homepage for a user.
+ * It displays the user's profile summary, social links, and provides actions
+ * to download the portfolio in various formats. It also handles loading, error,
+ * and private portfolio states.
+ */
 import {computed, onMounted, ref, watch} from 'vue';
 import {Modal} from 'bootstrap';
 import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore.js';

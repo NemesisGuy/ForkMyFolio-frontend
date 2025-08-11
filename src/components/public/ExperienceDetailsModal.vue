@@ -56,14 +56,20 @@ import {Modal} from 'bootstrap';
 import SkillBadge from '@/components/common/SkillBadge.vue';
 import {formatDisplayDate as formatDate} from '@/utils/dateUtils.js';
 
-const props = defineProps({
+const props = defineProps(/** @props */ {
+  /**
+   * The experience object to display. The modal is shown when this prop is not null.
+   * @type {object|null}
+   */
   experience: {
     type: Object,
     default: null
   }
 });
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(/** @emits */ {
+  'close': null, // Emitted when the modal is closed, signaling the parent to nullify the prop.
+});
 
 const modalRef = ref(null);
 let modalInstance = null;

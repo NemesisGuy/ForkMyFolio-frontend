@@ -42,14 +42,20 @@ import {computed, onMounted, ref, watch} from 'vue';
 import {Modal} from 'bootstrap';
 import {getIconClass} from '@/services/iconService.js';
 
-const props = defineProps({
+const props = defineProps(/** @props */ {
+  /**
+   * The skill object to display. The modal is shown when this prop is not null.
+   * @type {object|null}
+   */
   skill: {
     type: Object,
     default: null
   }
 });
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(/** @emits */ {
+  'close': null, // Emitted when the modal is closed, signaling the parent to nullify the prop.
+});
 
 const modalRef = ref(null);
 let modalInstance = null;

@@ -1,11 +1,12 @@
 /**
- * @file services/skillsService.js
+ * @file src/services/skillsService.js
  * @description Service for skill-related business logic and shared constants.
  */
 
 /**
  * An array of skill level objects, defining the value and display text.
  * Used for select dropdowns and consistent ordering.
+ * @type {Array<{value: string, text: string}>}
  */
 export const SKILL_LEVELS = [
   {value: 'EXPERT', text: 'Expert'},
@@ -16,16 +17,21 @@ export const SKILL_LEVELS = [
 
 /**
  * A map of skill level keys to their display names (e.g., 'EXPERT' -> 'Expert').
- * Derived from SKILL_LEVELS for consistency.
+ * @type {Object<string, string>}
  */
 const SKILL_LEVEL_MAP = Object.fromEntries(SKILL_LEVELS.map(l => [l.value, l.text]));
 
-/** An array of skill level keys in order of proficiency. Used for sorting. */
+/**
+ * An array of skill level keys in order of proficiency. Used for sorting.
+ * @type {Array<string>}
+ */
 export const SKILL_LEVEL_ORDER = SKILL_LEVELS.map(l => l.value);
 /**
  * Groups an array of skills by category, and then by proficiency level within each category.
+ * The final result is sorted alphabetically by category.
  *
- * @param {Array<object>} skills - The array of skill objects to group. Each object must have 'level' and may have 'category'.
+ * @param {Array<object>} skills - The array of skill objects to group. Each object must have a `level` property
+ * and may have a `category` property.
  * @returns {Array<{category: string, levels: Array<{name: string, skills: Array<object>}>}>} An array of grouped skills.
  */
 export const groupSkills = (skills) => {
@@ -77,9 +83,10 @@ export const groupSkills = (skills) => {
 
 /**
  * Groups an array of skills by their proficiency level.
+ * The final result is sorted by proficiency level (Expert -> Beginner).
  *
- * @param {Array<object>} skills - The array of skill objects to group. Each must have a 'level'.
- * @returns {Array<{name: string, levelKey: string, skills: Array<object>}>} An array of grouped skills, sorted by proficiency.
+ * @param {Array<object>} skills - The array of skill objects to group. Each must have a `level`.
+ * @returns {Array<{name: string, levelKey: string, skills: Array<object>}>} An array of grouped skills.
  */
 export const groupSkillsByLevel = (skills) => {
   if (!skills || skills.length === 0) {

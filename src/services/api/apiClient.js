@@ -28,11 +28,12 @@ const VITE_API_BASE_URL = (runtimeUrl && !runtimeUrl.startsWith('##'))
 
 /**
  * A wrapper around the Fetch API that handles authentication, API response structure, and error handling.
- * @param {string} endpoint - The API endpoint to call (e.g., '/users').
- * @param {object} options - Fetch options (method, body, etc.). Can also include `responseType`.
- * @param {boolean} requiresAuth - Whether the endpoint requires an Authorization header.
- * @param {boolean} isRetry - Internal flag to prevent infinite refresh loops.
- * @returns {Promise<any>} The `data` property from the API response, a Blob, or the raw Response object.
+ * @param {string} endpoint The API endpoint to call (e.g., '/users').
+ * @param {object} [options={}] Fetch options (method, body, etc.).
+ * @param {'json'|'raw'|'blob'} [options.responseType='json'] - The expected response type.
+ * @param {boolean} [requiresAuth=true] Whether the endpoint requires an Authorization header.
+ * @param {boolean} [isRetry=false] Internal flag to prevent infinite refresh loops.
+ * @returns {Promise<any>} The `data` from the API response, a Blob, or the raw Response object.
  * @throws {ApiError} If the API returns a non-success status.
  */
 export async function fetchWithAuth(

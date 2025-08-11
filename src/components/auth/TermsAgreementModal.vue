@@ -56,14 +56,22 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import { Modal } from 'bootstrap';
 import { getTermsOfService, getPrivacyPolicy } from '@/services/api/policy.api.js';
 
-const props = defineProps({
+const props = defineProps(/** @props */ {
+  /**
+   * The text to display on the main confirmation button.
+   */
   confirmButtonText: {
     type: String,
     default: 'Confirm & Create Account'
   }
 });
 
-const emit = defineEmits(['confirm', 'cancel']);
+const emit = defineEmits(/** @emits */ {
+  /** Emitted when the user accepts the terms and clicks the confirm button. */
+  'confirm': null,
+  /** Emitted when the user clicks the cancel button. */
+  'cancel': null
+});
 
 const modalRef = ref(null);
 let modalInstance = null;
