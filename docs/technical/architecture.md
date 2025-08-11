@@ -14,7 +14,7 @@ The architecture is designed to be:
 ## 2. Core Technologies
 
 -   **Framework:** [Vue 3](https://vuejs.org/) (Composition API)
--   **State Management:** [Pinia](https://pinia.vuejs.org/)
+-   **State Management:** Custom Vue 3 Composable (Singleton Pattern)
 -   **Routing:** [Vue Router](https://router.vuejs.org/)
 -   **UI/Styling:** [Bootstrap 5](https://getbootstrap.com/) & Custom Glassmorphism Engine
 
@@ -27,23 +27,23 @@ The `src` directory is organized to enforce a clear separation of concerns.
 -   `composables/`: Reusable Composition API functions (e.g., `usePortfolioDownloader.js`).
 -   `router/`: All routing configuration, including route definitions and navigation guards.
 -   `services/`: Business logic, API communication, and interaction with browser storage. This layer is completely decoupled from the UI.
--   `stores/`: Pinia state management modules. The "single source of truth" for shared application state.
+-   `stores/`: Contains the application's custom state management logic. It acts as the "single source of truth" for shared application state.
 -   `views/`: Top-level page components, each corresponding to a specific route.
 
 ## 4. Architectural Patterns in Depth
 
-### 4.1. State Management: The Pinia Store
+### 4.1. State Management: Custom Composable Store
 
-The application employs a centralized state management pattern using Pinia.
+The application employs a lightweight, centralized state management pattern using a custom Vue 3 Composable that implements a singleton pattern. This avoids the need for an external library like Pinia or Vuex.
 
 -   **File:** `src/stores/publicPortfolioStore.js`
 -   **Concept:** This store acts as the **Single Source of Truth (SSoT)** for all data related to a publicly viewed portfolio.
 -   **Mechanism:**
-    -   When a user navigates to a portfolio URL (e.g., `/:slug`), the router guard triggers the `fetchPortfolio(slug)` action.
-    -   This action makes a single API call to retrieve the entire portfolio object (profile, projects, skills, etc.).
-    -   The result is stored in the `portfolio` ref within the store.
-    -   All public-facing pages (`ProjectsPage`, `ExperiencePage`, etc.) are "dumb" components that simply read their required data from this central store.
--   **Benefit:** This pattern is highly efficient. It prevents redundant API calls as the user navigates between different sections of the same portfolio. The data is fetched once and reused. The `force = true` parameter allows for intentional cache-busting when data is updated.
+    -   The core state (e.g., `portfolio`, `isLoading`) is defined as a series of `ref`s *outside* the main composable function. This makes them singletons, meaning the state is created only once and shared across the entire application.
+    -   The `usePublicPortfolioStore()` function provides access to this shared state and the actions (`fetchPortfolio`, `clearPortfolio`) that modify it.
+    -   When a component calls `usePublicPortfolioStore()`, it receives the same instance of the state and actions.
+    -   The router guard triggers the `fetchPortfolio(slug)` action when a user navigates to a portfolio URL, which fetches all data and stores it in the shared state.
+-   **Benefit:** This pattern is highly efficient and minimalistic. It leverages Vue's built-in reactivity system to provide centralized state management without adding extra dependencies. It prevents redundant API calls as the user navigates between different sections of the same portfolio.
 
 ### 4.2. The Service Layer
 
