@@ -10,33 +10,23 @@
 
 ![ForkMyFolio Screenshot](https://github.com/NemesisGuy/ForkMyFolio-frontend/blob/master/Snapshotforkmyfolio.nemesisnet.co.za.png?raw=true)
 
-## 📌 Introduction
+## 📌 What is ForkMyFolio?
 
 ForkMyFolio is a complete, self-hostable portfolio solution for developers, designers, and professionals. It provides a beautiful, responsive public-facing website and a secure, feature-rich administrative dashboard to manage all your content dynamically.
 
 This project was built to give professionals full control over their online presence, without being locked into a proprietary platform. You own your data, you control the look and feel, and you can extend it however you see fit.
 
-## ✨ Key Features
+## ✨ Key Features for Professionals
 
--   **🎨 Dynamic Public Portfolio**: A stunning, theme-aware (light/dark) portfolio that showcases your profile, projects, skills, experience, and more.
--   **⚙️ Powerful Admin Dashboard**: A secure, behind-a-login area to manage every aspect of your portfolio without touching any code:
-    -   **Full Content Management**: Easily Create, Read, Update, and Delete Projects, Skills, Work Experience, Testimonials, and Qualifications.
-    -   **Live Site Configuration**: Instantly toggle the visibility of entire sections of your public portfolio (e.g., hide "Testimonials") or change the PDF resume template with a single click.
-    -   **Visitor Analytics**: A dashboard to visualize site traffic and engagement.
-    -   **Contact Message Inbox**: View and manage messages sent through your contact form.
--   **🔐 Secure Authentication**: Robust JWT-based authentication with automated token refresh ensures your admin panel is secure.
--   **📄 Dynamic PDF Generation**: Visitors can download a PDF of your portfolio, and you can choose from multiple templates (e.g., a full resume or a compact one-pager).
--   **📦 Backup & Restore**: Download a full JSON backup of your entire portfolio and restore from it anytime, ensuring your data is always safe and portable.
+*   **Stunning Public Portfolio**: Present your work on a beautiful, responsive website that looks great on any device.
+*   **Easy Content Management**: No coding required to update your portfolio. Use the secure admin dashboard to add, edit, and delete projects, skills, and work experience.
+*   **Dynamic PDF Resumes**: Visitors can download a PDF of your portfolio. You can choose from different templates to create the perfect resume for any occasion.
+*   **Full Data Ownership**: Your portfolio data is yours. Download a full backup at any time.
 
-## 💻 Tech Stack
+## 💻 For the Technologists
 
-This project is a modern, full-stack application built with a focus on clean architecture and best practices.
+This project is a modern, full-stack application built with a focus on clean architecture and best practices. For a deeper dive into the technical architecture, features, and setup instructions, please see our **[Technical Documentation](./docs/technical/index.md)**.
 
-| Area       | Technology                                          |
-| :--------- | :-------------------------------------------------- |
-| **Frontend**   | Vue 3 (Composition API), Vite, Bootstrap 5, Axios |
-| **Backend**    | Java 21, Spring Boot 3, Spring Security           |
-| **Database**   | MySQL                                             |
-| **Deployment** | Docker, Docker Compose, Nginx                     |
+---
 
-For a deeper dive into the technical architecture and a complete feature list, please see [FEATURES.md](./FEATURES.md).
+*This README is intended to be a high-level overview. For detailed technical information, please refer to the technical documentation.*
