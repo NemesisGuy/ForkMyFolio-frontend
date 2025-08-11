@@ -37,9 +37,12 @@
             </label>
           </div>
           <div>
-            <button class="btn btn-secondary me-2" data-bs-dismiss="modal" type="button">Cancel</button>
+            <!-- The cancel button is only shown if the parent is listening for the 'cancel' event -->
+            <button v-if="$attrs.onCancel" class="btn btn-outline-secondary me-2" type="button" @click="handleCancel">
+              Cancel
+            </button>
             <button :disabled="!isAccepted" class="btn btn-primary" type="button" @click="handleConfirm">
-              Confirm & Create Account
+              {{ confirmButtonText }}
             </button>
           </div>
         </div>
@@ -53,7 +56,14 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import { Modal } from 'bootstrap';
 import { getTermsOfService, getPrivacyPolicy } from '@/services/api/policy.api.js';
 
-const emit = defineEmits(['confirm']);
+const props = defineProps({
+  confirmButtonText: {
+    type: String,
+    default: 'Confirm & Create Account'
+  }
+});
+
+const emit = defineEmits(['confirm', 'cancel']);
 
 const modalRef = ref(null);
 let modalInstance = null;
@@ -100,6 +110,11 @@ const handleConfirm = () => {
     emit('confirm');
     modalInstance?.hide();
   }
+};
+
+const handleCancel = () => {
+  emit('cancel');
+  modalInstance?.hide();
 };
 
 onUnmounted(() => {

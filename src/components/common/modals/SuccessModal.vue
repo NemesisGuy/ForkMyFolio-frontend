@@ -101,15 +101,4 @@ const handleClose = () => {
   background-color: var(--bs-success);
   color: #fff;
 }
-
-/*
-  THIS IS THE FIX: Lifts the modal's content above any shimmering
-  pseudo-element, making all buttons inside clickable.
-*/
-.modal-content.glass-card .modal-header,
-.modal-content.glass-card .modal-body,
-.modal-content.glass-card .modal-footer {
-  position: relative;
-  z-index: 1;
-}
 </style>

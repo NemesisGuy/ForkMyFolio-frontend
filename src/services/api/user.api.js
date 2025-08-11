@@ -58,6 +58,29 @@ export const updateMyProfileVisibility = (visibilityData) => {
   });
 };
 
+/**
+ * Changes the password for the currently authenticated user.
+ * @param {string} newPassword - The new password.
+ * @returns {Promise<void>}
+ */
+export const changeMyPassword = (newPassword) => {
+  // Endpoint: POST /api/v1/me/password
+  return fetchWithAuth('/me/password', {
+    method: 'POST',
+    body: { newPassword },
+  });
+};
+
+/**
+ * Records that the authenticated user has accepted the terms and conditions.
+ * @returns {Promise<void>}
+ */
+export const acceptMyTerms = () => {
+  // Endpoint: POST /api/v1/me/accept-terms
+  return fetchWithAuth('/me/accept-terms', {
+    method: 'POST',
+  });
+};
 
 // --- Generic CRUD factory for /me resources ---
 const createCrudFunctions = (resource) => ({

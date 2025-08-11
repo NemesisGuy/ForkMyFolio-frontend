@@ -177,6 +177,9 @@ const handleLogin = async () => {
     redirectPathOnSuccess = route.query.redirect || {name: 'dashboard', params: {slug: userSlug}};
     loginSuccessMessage.value = "Login successful! Redirecting...";
     showLoginSuccessModal.value = true;
+
+    // Automatically close the modal and redirect after a short delay for better UX.
+    setTimeout(closeLoginSuccessModal, 1500);
   } catch (error) {
     console.error("Login error:", error);
     if (error instanceof ApiError) {

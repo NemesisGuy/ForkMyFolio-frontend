@@ -6,27 +6,29 @@
       <!-- v-if prevents rendering errors when the prop is null during transitions -->
       <div v-if="qualification" class="modal-content glass-modal border-0">
         <div class="modal-header border-0 pb-0">
-          <h5 class="modal-title text-white">
+          <!-- FIX: Removed text-white to allow theme-adaptive color from glass.css -->
+          <h5 class="modal-title">
             {{ qualification.qualificationName }}
           </h5>
-          <button aria-label="Close" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                  type="button">
-          </button>
+          <!-- FIX: Removed btn-close-white to allow Bootstrap to handle theme-adaptive color -->
+          <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
         </div>
         <div class="modal-body">
           <div class="row align-items-center">
             <div class="col-md-8">
-              <h6 class="text-light opacity-75 mb-1">
+              <!-- FIX: Replaced text-light with theme-aware text-muted -->
+              <h6 class="text-muted mb-1">
                 {{ qualification.institutionName }}
               </h6>
               <p v-if="qualification.fieldOfStudy" class="text-info mb-3">
                 {{ qualification.fieldOfStudy }}
               </p>
-              <p v-if="qualification.grade"
-                 class="text-light mb-2">
+              <!-- FIX: Removed text-light to inherit correct color -->
+              <p v-if="qualification.grade" class="mb-2">
                 <strong>Grade:</strong> {{ qualification.grade }}
               </p>
-              <p v-if="qualification.level" class="text-light mb-2">
+              <!-- FIX: Removed text-light to inherit correct color -->
+              <p v-if="qualification.level" class="mb-2">
                 <strong>Level:</strong> {{
                   qualification.level.replace('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())
                 }}

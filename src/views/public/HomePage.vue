@@ -155,17 +155,12 @@
     </div>
 
     <!-- Cover Letter Modal -->
-    <div v-if="showCoverLetterModal" class="modal fade show" style="display: block;" tabindex="-1">
+    <div ref="coverLetterModalRef" class="modal fade" tabindex="-1">
       <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content glass-modal">
           <div class="modal-header">
             <h5 class="modal-title glass-title">Cover Letter Template</h5>
-            <button
-              aria-label="Close"
-              class="btn-close btn-close-white"
-              type="button"
-              @click="showCoverLetterModal = false"
-            ></button>
+            <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
           </div>
           <div class="modal-body">
             <pre class="cover-letter-text glass-description">{{
@@ -173,19 +168,11 @@
               }}</pre>
           </div>
           <div class="modal-footer">
-            <button class="btn glass-btn" type="button" @click="showCoverLetterModal = false">
-              Close
-            </button>
+            <!-- FIX: Use standard btn-outline-secondary for consistency with other modals -->
+            <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">Close</button>
           </div>
         </div>
       </div>
-    </div>
-    <div
-      v-if="showCoverLetterModal"
-      class="modal-backdrop fade show"
-      style="backdrop-filter: blur(5px);"
-      @click="showCoverLetterModal = false"
-    ></div>
 
     <!-- Success and Error Modals for Downloads -->
     <SuccessModal
@@ -238,10 +225,12 @@
       </button>
     </div>
   </div>
+  </div>
 </template>
 
 <script setup>
-import {computed, ref} from 'vue';
+import {computed, onMounted, ref, watch} from 'vue';
+import {Modal} from 'bootstrap';
 import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore.js';
 import {authService} from '@/services/authService.js';
 import {usePortfolioDownloader} from '@/composables/usePortfolioDownloader.js';
@@ -258,6 +247,7 @@ const {portfolio, isLoading, error, currentSlug, isPrivate} = usePublicPortfolio
 
 // --- Local UI State ---
 const showCoverLetterModal = ref(false);
+const coverLetterModalRef = ref(null);
 const isDownloadingMd = ref(false);
 const isDownloadingVcf = ref(false);
 
@@ -279,6 +269,22 @@ const {
   errorModalMessage,
   handleDownloadPdf
 } = usePortfolioDownloader(currentSlug);
+
+// --- Modal Instance Management ---
+let coverLetterModalInstance = null;
+onMounted(() => {
+  if (coverLetterModalRef.value) {
+    coverLetterModalInstance = new Modal(coverLetterModalRef.value);
+    // Keep state in sync if modal is closed by other means (e.g., Esc key)
+    coverLetterModalRef.value.addEventListener('hide.bs.modal', () => {
+      showCoverLetterModal.value = false;
+    });
+  }
+});
+
+watch(showCoverLetterModal, (isVisible) => {
+  isVisible ? coverLetterModalInstance?.show() : coverLetterModalInstance?.hide();
+});
 
 // --- Download Handlers ---
 const handleDownloadMd = async () => {

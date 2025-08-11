@@ -12,8 +12,8 @@
               <h6 class="modal-subtitle text-muted">{{ experience.companyName }}</h6>
             </div>
           </div>
-          <button aria-label="Close" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                  type="button"></button>
+          <!-- FIX: Removed btn-close-white to make the icon theme-aware -->
+          <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
         </div>
         <div class="modal-body">
           <div class="mb-3">

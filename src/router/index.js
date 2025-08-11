@@ -39,6 +39,18 @@ const routes = [
       params: {slug: authService.user.value.slug}
     }) : next()),
   },
+  {
+    path: '/force-password-change',
+    name: 'force-password-change',
+    component: () => import('@/views/auth/ForcePasswordChangePage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/accept-terms',
+    name: 'accept-terms',
+    component: () => import('@/views/auth/AcceptTermsPage.vue'),
+    meta: { requiresAuth: true }
+  },
 
   // --- Authenticated User Routes ---
   {
@@ -269,6 +281,39 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to, from, next) => {
+  const user = authService.user.value;
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+
+  // --- 1. Authentication Check ---
+  if (requiresAuth && !isAuthenticated()) {
+    return next({name: 'login', query: {redirect: to.fullPath}});
+  }
+
+  // If the user is authenticated, perform the mandatory sequential checks.
+  if (requiresAuth && user) {
+    // --- 2. Force Terms Acceptance (Highest Priority) ---
+    const needsToAcceptTerms = !user.termsAcceptedAt;
+    if (needsToAcceptTerms && to.name !== 'accept-terms') {
+      return next({ name: 'accept-terms' });
+    }
+    // If they are on the accept terms page, but don't need to be, send them away.
+    if (!needsToAcceptTerms && to.name === 'accept-terms') {
+      return next({ name: 'dashboard', params: { slug: user.slug } });
+    }
+    // If they are on the correct page to accept terms, let them pass and stop further checks.
+    if (needsToAcceptTerms) return next();
+
+    // --- 3. Force Password Change (Runs only after terms are accepted) ---
+    const needsToChangePassword = !user.passwordLastChangedAt;
+    if (needsToChangePassword && to.name !== 'force-password-change') {
+      return next({ name: 'force-password-change' });
+    }
+    // If they are on the change password page, but don't need to be, send them away.
+    if (!needsToChangePassword && to.name === 'force-password-change') {
+      return next({ name: 'dashboard', params: { slug: user.slug } });
+    }
+  }
+
   const publicPortfolioPages = ['portfolio-home', 'projects-public', 'skills-public', 'experience-public', 'testimonials-public', 'qualifications-public', 'contact', 'project-details'];
 
   if (publicPortfolioPages.includes(to.name)) {
@@ -293,18 +338,12 @@ router.beforeEach(async (to, from, next) => {
     const store = usePublicPortfolioStore();
     store.portfolio.value = null;
     store.currentSlug.value = null;
-  } else if (to.matched.some(record => record.meta.requiresAuth)) {
+  } else if (requiresAuth) { // Simplified from to.matched.some(...)
     // For authenticated user pages, initialize with their own settings.
     await settingsService.initialize();
   }
 
-  // Authentication checks
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
   const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin);
-
-  if (requiresAuth && !isAuthenticated()) {
-    return next({name: 'login', query: {redirect: to.fullPath}});
-  }
 
   // --- NEW: Ownership check for management routes ---
   // A management route has a slug parameter and requires auth, but is not an admin route.

@@ -7,8 +7,8 @@
             <i :class="getIconClass(skill)" class="me-3" style="font-size: 1.5rem;"></i>
             {{ skill.name }}
           </h5>
-          <button aria-label="Close" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                  type="button"></button>
+          <!-- FIX: Removed btn-close-white to make the icon theme-aware -->
+          <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
         </div>
         <div class="modal-body">
           <p v-if="skill.description" class="glass-description">{{ skill.description }}</p>

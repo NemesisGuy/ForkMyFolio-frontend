@@ -123,14 +123,6 @@ defineExpose({
   border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Lifts the modal's content above any shimmering pseudo-elements */
-.modal-content.glass-card .modal-header,
-.modal-content.glass-card .modal-body,
-.modal-content.glass-card .modal-footer {
-  position: relative;
-  z-index: 1;
-}
-
 /* THIS IS THE FIX: Added specific styles for danger/success buttons for better visual feedback */
 .modal-footer .btn {
   transition: all 0.2s ease-in-out;

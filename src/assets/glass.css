@@ -108,6 +108,11 @@
 .glass-card > * {
   position: relative;
   z-index: 1;
+  /* THIS IS THE GLOBAL FIX for the invisible content issue.
+     It forces direct children of the card (like .card-body) onto their own
+     GPU layer, ensuring they render above any pseudo-element overlays
+     (like the shimmer/reflection effect), especially when transforms/animations are active. */
+  transform: translateZ(0);
 }
 
 /* --- Shimmering Glass Card --- */
@@ -213,6 +218,22 @@
   color: #fff !important;
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(var(--bs-primary-rgb), 0.4);
+}
+
+/*
+  FIX: The default Bootstrap .btn-outline-secondary can have low contrast
+  inside a .glass-modal in light mode. These rules override Bootstrap's CSS
+  variables to increase the border and text contrast for better visibility.
+*/
+[data-bs-theme="light"] .glass-modal .btn-outline-secondary {
+  --bs-btn-color: var(--glass-text-secondary);
+  --bs-btn-border-color: rgba(0, 0, 0, 0.2);
+}
+
+[data-bs-theme="light"] .glass-modal .btn-outline-secondary:hover {
+  --bs-btn-hover-bg: rgba(0, 0, 0, 0.075);
+  --bs-btn-hover-border-color: rgba(0, 0, 0, 0.3);
+  --bs-btn-hover-color: var(--glass-text);
 }
 
 /* --- Glass Dropdown Menu --- */

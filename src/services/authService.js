@@ -65,6 +65,31 @@ function clearLocalSession() {
   portfolioStore.clearPortfolio();
 }
 
+/**
+ * Manually updates the local user state after a successful password change.
+ * This prevents the navigation guard from re-triggering.
+ */
+function passwordHasBeenChanged() {
+    if (user.value) {
+        // Set a non-null value to satisfy the router guard. The next full page
+        // reload or re-login will fetch the real timestamp from the backend.
+        user.value.passwordLastChangedAt = new Date().toISOString();
+        console.log('[AuthService] passwordLastChangedAt flag updated locally to prevent re-redirect.');
+    }
+}
+
+/**
+ * Manually updates the local user state after a successful terms acceptance.
+ * This prevents the navigation guard from re-triggering.
+ */
+function termsHaveBeenAccepted() {
+    if (user.value) {
+        // Set a non-null value to satisfy the router guard. The next full page
+        // reload or re-login will fetch the real timestamp from the backend.
+        user.value.termsAcceptedAt = new Date().toISOString();
+        console.log('[AuthService] termsAcceptedAt flag updated locally to prevent re-redirect.');
+    }
+}
 // --- Public API for the Service ---
 
 /**
@@ -72,10 +97,20 @@ function clearLocalSession() {
  * @param {object} credentials - { email, password }
  */
 async function login(credentials) {
-  const response = await apiLogin(credentials);
-  // The user object is now part of the login response to be more efficient.
-  _updateAuthState(response.accessToken, response.user);
-  // Settings are already loaded by initAuth, so no need to fetch them again here.
+  const loginResponse = await apiLogin(credentials);
+
+  // The login response gives us the token. We'll use that token to fetch the
+  // full, authoritative user object from the `/me` endpoint. This is more
+  // robust than trusting the user object that might be nested in the login
+  // response, as it ensures all fields (like `passwordLastChangedAt`) are present.
+
+  // Temporarily set the token so the next API call is authenticated.
+  accessToken = loginResponse.accessToken;
+
+  const freshUserAccount = await getMyAccount();
+
+  // Now, formally update the application's state with the token and the complete user object.
+  _updateAuthState(loginResponse.accessToken, freshUserAccount);
 }
 
 /**
@@ -96,9 +131,15 @@ async function logout() {
  * @param {object} userData - { firstName, lastName, email, password }
  */
 async function register(userData) {
-  const response = await apiRegister(userData);
-  // The user object is now part of the register response.
-  _updateAuthState(response.accessToken, response.user);
+  const registerResponse = await apiRegister(userData);
+
+  // Just like in login, we use the new token to fetch the authoritative user object.
+  // This ensures data consistency regardless of which auth endpoint is used.
+  accessToken = registerResponse.accessToken;
+
+  const freshUserAccount = await getMyAccount();
+
+  _updateAuthState(registerResponse.accessToken, freshUserAccount);
 }
 
 /**
@@ -175,4 +216,8 @@ export const authService = {
   initAuth,
   // For internal use by apiClient
   clearLocalSession,
+  // For use after forced password change
+  passwordHasBeenChanged,
+  // For use after terms acceptance
+  termsHaveBeenAccepted,
 };

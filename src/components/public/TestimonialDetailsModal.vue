@@ -6,8 +6,8 @@
           <h5 class="modal-title">
             Testimonial from {{ testimonial.authorName }}
           </h5>
-          <button aria-label="Close" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                  type="button"></button>
+          <!-- FIX: Removed btn-close-white. The default btn-close is theme-aware and will be visible in both light and dark modes. -->
+          <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
         </div>
         <div class="modal-body text-center p-4 p-md-5">
           <i class="bi bi-quote display-1 text-primary opacity-25"></i>

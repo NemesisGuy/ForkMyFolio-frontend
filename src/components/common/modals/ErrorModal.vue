@@ -112,12 +112,4 @@ const handleClose = () => {
   background-color: var(--bs-danger);
   color: #fff;
 }
-
-/* Lifts the modal's content above any shimmering pseudo-elements */
-.modal-content.glass-card .modal-header,
-.modal-content.glass-card .modal-body,
-.modal-content.glass-card .modal-footer {
-  position: relative;
-  z-index: 1;
-}
 </style>

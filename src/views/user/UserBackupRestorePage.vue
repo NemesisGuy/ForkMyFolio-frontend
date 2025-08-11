@@ -80,6 +80,7 @@ import {downloadMyBackup, restoreMyBackup} from '@/services/api/user.api.js';
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 import SuccessModal from '@/components/common/modals/SuccessModal.vue';
+import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore.js';
 
 const props = defineProps({
   slug: {
@@ -95,6 +96,7 @@ const successMessage = ref(null);
 
 const fileInput = ref(null);
 const selectedFile = ref(null);
+const portfolioStore = usePublicPortfolioStore();
 
 const handleDownloadBackup = async () => {
   error.value = null;
@@ -124,6 +126,12 @@ const handleRestoreBackup = async () => {
   isLoading.value = true;
   try {
     await restoreMyBackup(selectedFile.value);
+    // THIS IS THE FIX: After a successful restore, the local data in the store
+    // is now stale. By clearing the portfolio store, we ensure that the next
+    // navigation to a portfolio page (like the dashboard) will trigger a full
+    // re-fetch of the new, restored data from the backend.
+    portfolioStore.clearPortfolio();
+
     successMessage.value = 'Your portfolio has been successfully restored! You will now be redirected to the dashboard.';
   } catch (err) {
     console.error('Backup restore failed:', err);
