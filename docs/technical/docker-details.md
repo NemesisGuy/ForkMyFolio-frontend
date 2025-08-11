@@ -21,7 +21,7 @@ To run the container, you must provide the public URL of your backend via the `A
 
 ```bash
 docker run -d -p 8080:80 \
-  -e API_BASE_URL=http://your-backend-api-url.com/api/v1 \
+  -e VITE_API_BASE_URL=http://your-backend-api-url.com/api/v1 \
   --name forkmyfolio-frontend-container \
   nemesisguy/forkmyfolio-frontend:latest
 ```
