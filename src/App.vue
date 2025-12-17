@@ -33,10 +33,12 @@ useTheme();
 #app-layout {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100svh; /* Changed from min-height to height for proper inheritance */
+  margin: 0;
 }
 
 main.main-content {
-  flex: 1; /* Allows main content to grow and push footer down */
+  flex: 1; /* Allows main content to absorb remaining space */
+  height: 100%; /* Ensure it fills the available height */
 }
 </style>

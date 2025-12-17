@@ -3,7 +3,6 @@
     'navbar',
     'navbar-expand-lg',
     'glass-nav',
-    'sticky-top',
     currentTheme === 'dark' ? 'navbar-dark' : 'navbar-light'
   ]">
     <div class="container-fluid">

@@ -121,4 +121,55 @@
   vertical-align: -0.125em;
   opacity: 0.8;
 }
+
+/* Responsive styles for mobile-first design */
+@media (max-width: 576px) {
+  .admin-dashboard-page {
+    padding: 1rem 0;
+  }
+
+  .admin-dashboard-page .container {
+    padding: 0 1rem;
+  }
+
+  .admin-dashboard-page .display-4 {
+    font-size: 2rem;
+  }
+
+  .admin-dashboard-page .lead {
+    font-size: 1rem;
+  }
+
+  .admin-dashboard-page .card-body {
+    padding: 1rem;
+  }
+
+  .admin-dashboard-page .card-title {
+    font-size: 1.1rem;
+  }
+
+  .admin-dashboard-page .card-text {
+    font-size: 0.9rem;
+  }
+
+  .admin-dashboard-page .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    min-height: 44px; /* Touch-friendly */
+  }
+}
+
+/* Tablet enhancements */
+@media (min-width: 768px) {
+  .admin-dashboard-page .row {
+    --bs-gutter-x: 2rem; /* Increase gap on tablet */
+  }
+}
+
+/* Desktop enhancements */
+@media (min-width: 1024px) {
+  .admin-dashboard-page .container {
+    max-width: 1200px;
+  }
+}
 </style>

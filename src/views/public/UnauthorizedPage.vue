@@ -70,4 +70,54 @@ h1 {
   opacity: 0;
   animation: fadeInUp 0.8s ease-out forwards;
 }
+
+/* Responsive styles for mobile */
+@media (max-width: 576px) {
+  .unauthorized-page {
+    padding: 1rem 0;
+  }
+
+  .unauthorized-page .container {
+    max-width: 100%;
+    padding: 0 1rem;
+  }
+
+  .unauthorized-page .card-body {
+    padding: 1.5rem;
+  }
+
+  .unauthorized-page .display-5 {
+    font-size: 1.8rem !important;
+  }
+
+  .unauthorized-page .lead {
+    font-size: 1rem;
+  }
+
+  .unauthorized-page .btn-lg {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+
+  .unauthorized-page .d-flex {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+/* Tablet enhancements */
+@media (min-width: 768px) {
+  .unauthorized-page .container {
+    max-width: 500px;
+  }
+}
+
+/* Desktop enhancements */
+@media (min-width: 1024px) {
+  .unauthorized-page .container {
+    max-width: 600px;
+  }
+}
 </style>

@@ -201,4 +201,63 @@ const editPublicProfile = () => {
   padding: 0.4em 0.7em;
   text-transform: capitalize;
 }
+
+/* Responsive styles for mobile-first design */
+@media (max-width: 576px) {
+  .user-account-page {
+    padding: 1rem 0;
+  }
+
+  .user-account-page .container {
+    padding: 0 1rem;
+  }
+
+  .user-account-page .card-body {
+    padding: 1.5rem;
+  }
+
+  .profile-image,
+  .profile-image-placeholder {
+    width: 100px;
+    height: 100px;
+  }
+
+  .profile-image-placeholder .bi {
+    font-size: 3rem;
+  }
+
+  .account-details {
+    max-width: 100%;
+  }
+
+  .detail-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .display-6 {
+    font-size: 1.8rem;
+  }
+}
+
+/* Tablet enhancements */
+@media (min-width: 768px) {
+  .profile-image,
+  .profile-image-placeholder {
+    width: 120px;
+    height: 120px;
+  }
+
+  .profile-image-placeholder .bi {
+    font-size: 4rem;
+  }
+}
+
+/* Desktop enhancements */
+@media (min-width: 1024px) {
+  .user-account-page .container {
+    max-width: 800px;
+  }
+}
 </style>

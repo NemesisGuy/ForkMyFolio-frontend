@@ -193,4 +193,58 @@ const handleDelete = async () => {
   font-size: 4rem;
   color: var(--glass-text);
 }
+
+/* Responsive styles for mobile-first design */
+@media (max-width: 576px) {
+  .admin-users-page {
+    padding: 1rem 0;
+  }
+
+  .admin-users-page .container {
+    padding: 0 1rem;
+  }
+
+  .admin-users-page .d-flex {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .admin-users-page .display-5 {
+    font-size: 1.8rem;
+    text-align: center;
+  }
+
+  .admin-users-page .lead {
+    font-size: 1rem;
+    text-align: center;
+  }
+
+  .admin-users-page .btn {
+    min-height: 44px;
+    font-size: 0.9rem;
+  }
+
+  .admin-users-page .table-responsive {
+    font-size: 0.85rem;
+  }
+
+  .admin-users-page th, .admin-users-page td {
+    padding: 0.5rem;
+  }
+}
+
+/* Tablet enhancements */
+@media (min-width: 768px) {
+  .admin-users-page .card-body {
+    padding: 1.5rem;
+  }
+}
+
+/* Desktop enhancements */
+@media (min-width: 1024px) {
+  .admin-users-page .container {
+    max-width: 1400px;
+  }
+}
 </style>

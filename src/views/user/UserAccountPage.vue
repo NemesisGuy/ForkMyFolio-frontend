@@ -79,4 +79,55 @@ const user = computed(() => authService.user.value);
   vertical-align: -0.125em;
   opacity: 0.8;
 }
+
+/* Responsive styles for mobile-first design */
+@media (max-width: 576px) {
+  .user-account-page {
+    padding: 1rem 0;
+  }
+
+  .user-account-page .container {
+    padding: 0 1rem;
+  }
+
+  .user-account-page .display-4 {
+    font-size: 2rem;
+  }
+
+  .user-account-page .lead {
+    font-size: 1rem;
+  }
+
+  .user-account-page .card-body {
+    padding: 1rem;
+  }
+
+  .user-account-page .card-title {
+    font-size: 1.1rem;
+  }
+
+  .user-account-page .card-text {
+    font-size: 0.9rem;
+  }
+
+  .user-account-page .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    min-height: 44px; /* Touch-friendly */
+  }
+}
+
+/* Tablet enhancements */
+@media (min-width: 768px) {
+  .user-account-page .row {
+    --bs-gutter-x: 2rem; /* Increase gap on tablet */
+  }
+}
+
+/* Desktop enhancements */
+@media (min-width: 1024px) {
+  .user-account-page .container {
+    max-width: 1200px;
+  }
+}
 </style>

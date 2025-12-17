@@ -1,6 +1,6 @@
 <template>
   <div class="home-page py-5 animated-gradient-background">
-    <LoadingModal :visible="isLoading"/>
+    <LoadingModal :visible="isLoading || isDownloading"/>
 
     <!-- Skeleton Loader: A placeholder for when the profile is loading -->
     <div v-if="isLoading" class="container">
@@ -173,58 +173,52 @@
           </div>
         </div>
       </div>
+    </div>
 
-    <!-- Success and Error Modals for Downloads -->
-    <SuccessModal
-      :message="successModalMessage"
-      :visible="showSuccessModal"
-      title="Download Started"
-      @close="showSuccessModal = false"
-    />
+    <!-- Modal for download errors -->
     <ErrorModal
       :message="errorModalMessage"
-      :visible="showErrorModal"
+      :visible="!!errorModalMessage"
       title="Download Failed"
-      @close="showErrorModal = false"
+      @close="errorModalMessage = ''"
     />
 
     <!-- Floating Action Buttons -->
     <div v-if="portfolio && portfolio.profile" class="download-actions">
       <!-- PDF Button -->
       <button
-        :disabled="isDownloadingPdf"
+        :disabled="isDownloading"
         class="btn glass-btn-primary btn-lg rounded-circle shadow-lg"
         title="Download Resume as PDF"
         @click="handleDownloadPdf"
       >
-        <span v-if="isDownloadingPdf" aria-hidden="true" class="spinner-border spinner-border-sm"
+        <span v-if="isDownloading" aria-hidden="true" class="spinner-border spinner-border-sm"
               role="status"></span>
         <i v-else class="bi bi-file-earmark-pdf-fill"></i>
       </button>
       <!-- Markdown Button -->
       <button
-        :disabled="isDownloadingMd"
+        :disabled="isDownloading"
         class="btn glass-btn-primary btn-lg rounded-circle shadow-lg"
         title="Download as Markdown"
         @click="handleDownloadMd"
       >
-        <span v-if="isDownloadingMd" aria-hidden="true" class="spinner-border spinner-border-sm"
+        <span v-if="isDownloading" aria-hidden="true" class="spinner-border spinner-border-sm"
               role="status"></span>
         <i v-else class="bi bi-markdown-fill"></i>
       </button>
       <!-- vCard Button -->
       <button
-        :disabled="isDownloadingVcf"
+        :disabled="isDownloading"
         class="btn glass-btn-primary btn-lg rounded-circle shadow-lg"
         title="Download vCard"
         @click="handleDownloadVcf"
       >
-        <span v-if="isDownloadingVcf" aria-hidden="true" class="spinner-border spinner-border-sm"
+        <span v-if="isDownloading" aria-hidden="true" class="spinner-border spinner-border-sm"
               role="status"></span>
         <i v-else class="bi bi-person-vcard-fill"></i>
       </button>
     </div>
-  </div>
   </div>
 </template>
 
@@ -240,13 +234,16 @@ import {computed, onMounted, ref, watch} from 'vue';
 import {Modal} from 'bootstrap';
 import {usePublicPortfolioStore} from '@/stores/publicPortfolioStore.js';
 import {authService} from '@/services/authService.js';
-import {usePortfolioDownloader} from '@/composables/usePortfolioDownloader.js';
-import {downloadMarkdownBySlug, downloadVCardBySlug} from '@/services/api';
+import {
+  downloadMarkdownBySlug,
+  downloadPublicPortfolioBySlug,
+  downloadVCardBySlug
+} from '@/services/api';
 import {getFilenameFromResponse, triggerDownload} from '@/utils/downloadUtils';
+import {notificationService} from '@/services/notificationService.js';
 
 // Modal components
 import LoadingModal from '@/components/common/modals/LoadingModal.vue';
-import SuccessModal from '@/components/common/modals/SuccessModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
 
 // --- State from Central Store ---
@@ -255,8 +252,8 @@ const {portfolio, isLoading, error, currentSlug, isPrivate} = usePublicPortfolio
 // --- Local UI State ---
 const showCoverLetterModal = ref(false);
 const coverLetterModalRef = ref(null);
-const isDownloadingMd = ref(false);
-const isDownloadingVcf = ref(false);
+const isDownloading = ref(false);
+const errorModalMessage = ref('');
 
 // --- Computed Properties for Template ---
 const fullName = computed(() => {
@@ -265,17 +262,6 @@ const fullName = computed(() => {
 });
 
 const isAdmin = computed(() => authService.isAuthenticated.value && authService.user.value?.roles?.includes('ADMIN'));
-
-// --- Composables ---
-// usePortfolioDownloader handles PDF and the modals
-const {
-  isDownloadingPdf,
-  showSuccessModal,
-  successModalMessage,
-  showErrorModal,
-  errorModalMessage,
-  handleDownloadPdf
-} = usePortfolioDownloader(currentSlug);
 
 // --- Modal Instance Management ---
 let coverLetterModalInstance = null;
@@ -294,43 +280,31 @@ watch(showCoverLetterModal, (isVisible) => {
 });
 
 // --- Download Handlers ---
-const handleDownloadMd = async () => {
+const createDownloadHandler = (downloadFunc, fileType, extension) => async () => {
   if (!currentSlug.value) return;
-  isDownloadingMd.value = true;
+  isDownloading.value = true;
+  errorModalMessage.value = ''; // Clear previous errors
+
   try {
-    const response = await downloadMarkdownBySlug(currentSlug.value);
-    const filename = getFilenameFromResponse(response, `${currentSlug.value}-portfolio.md`);
+    const response = await downloadFunc(currentSlug.value);
     const blob = await response.blob();
+    const filename = getFilenameFromResponse(response, `${currentSlug.value}-portfolio.${extension}`);
     triggerDownload(blob, filename);
-    successModalMessage.value = 'Markdown file download has started.';
-    showSuccessModal.value = true;
+    notificationService.add({
+      message: `${fileType.toUpperCase()} download has started.`,
+      type: 'success'
+    });
   } catch (err) {
-    console.error('Markdown download failed:', err);
-    errorModalMessage.value = err.message || 'An unexpected error occurred while downloading the Markdown file.';
-    showErrorModal.value = true;
+    console.error(`${fileType} download failed:`, err);
+    errorModalMessage.value = err.message || `An unexpected error occurred while downloading the ${fileType.toUpperCase()} file.`;
   } finally {
-    isDownloadingMd.value = false;
+    isDownloading.value = false;
   }
 };
 
-const handleDownloadVcf = async () => {
-  if (!currentSlug.value) return;
-  isDownloadingVcf.value = true;
-  try {
-    const response = await downloadVCardBySlug(currentSlug.value);
-    const filename = getFilenameFromResponse(response, `${currentSlug.value}-contact.vcf`);
-    const blob = await response.blob();
-    triggerDownload(blob, filename);
-    successModalMessage.value = 'vCard file download has started.';
-    showSuccessModal.value = true;
-  } catch (err) {
-    console.error('vCard download failed:', err);
-    errorModalMessage.value = err.message || 'An unexpected error occurred while downloading the vCard file.';
-    showErrorModal.value = true;
-  } finally {
-    isDownloadingVcf.value = false;
-  }
-};
+const handleDownloadPdf = createDownloadHandler(downloadPublicPortfolioBySlug, 'pdf', 'pdf');
+const handleDownloadMd = createDownloadHandler(downloadMarkdownBySlug, 'md', 'md');
+const handleDownloadVcf = createDownloadHandler(downloadVCardBySlug, 'vcf', 'vcf');
 
 </script>
 

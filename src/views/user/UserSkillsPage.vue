@@ -363,4 +363,62 @@ const handleDeleteSkill = async () => {
   font-size: 1.1em;
   line-height: 1;
 }
+
+/* Responsive styles for mobile-first design */
+@media (max-width: 576px) {
+  .user-skills-page {
+    padding: 1rem 0;
+  }
+
+  .user-skills-page .container {
+    padding: 0 1rem;
+  }
+
+  .user-skills-page .d-flex {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .user-skills-page h2 {
+    font-size: 1.5rem;
+    text-align: center;
+  }
+
+  .user-skills-page .btn {
+    min-height: 44px;
+    font-size: 0.9rem;
+  }
+
+  .user-skills-page h3 {
+    font-size: 1.3rem;
+  }
+
+  .user-skills-page h4 {
+    font-size: 1.1rem;
+  }
+
+  .user-skills-page .list-group-item {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .user-skills-page .me-3 {
+    margin-right: 1rem !important;
+  }
+}
+
+/* Tablet enhancements */
+@media (min-width: 768px) {
+  .user-skills-page .mb-5 {
+    margin-bottom: 3rem !important;
+  }
+}
+
+/* Desktop enhancements */
+@media (min-width: 1024px) {
+  .user-skills-page .container {
+    max-width: 1200px;
+  }
+}
 </style>

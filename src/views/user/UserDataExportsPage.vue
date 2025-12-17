@@ -9,11 +9,11 @@
         </p>
       </div>
 
-      <!-- Modals for feedback -->
-      <SuccessModal :message="successModalMessage" :visible="showSuccessModal"
-                    title="Download Started" @close="showSuccessModal = false"/>
-      <ErrorModal :message="errorModalMessage" :visible="showErrorModal" title="Download Failed"
-                  @close="showErrorModal = false"/>
+      <!-- Full screen loading modal -->
+      <LoadingModal :visible="isLoading"/>
+
+      <!-- Modal for error feedback -->
+      <ErrorModal :message="errorModalMessage" :visible="!!errorModalMessage" title="Download Failed" @close="errorModalMessage = ''"/>
 
       <div class="row g-4 justify-content-center">
         <!-- PDF Card -->
@@ -25,9 +25,8 @@
               <h5 class="card-title glass-title">PDF Portfolio</h5>
               <p class="card-text glass-subtitle small flex-grow-1">A professional, print-ready PDF
                 version of your portfolio.</p>
-              <button :disabled="isDownloadingPdf" class="btn btn-danger mt-auto interactive-lift"
+              <button :disabled="isLoading" class="btn btn-danger mt-auto interactive-lift"
                       @click="handleDownloadPdf">
-                <span v-if="isDownloadingPdf" class="spinner-border spinner-border-sm me-2"></span>
                 Download PDF
               </button>
             </div>
@@ -42,9 +41,8 @@
               <h5 class="card-title glass-title">Markdown File</h5>
               <p class="card-text glass-subtitle small flex-grow-1">A plain-text Markdown file,
                 perfect for version control or static site generators.</p>
-              <button :disabled="isDownloadingMd" class="btn btn-info mt-auto interactive-lift"
+              <button :disabled="isLoading" class="btn btn-info mt-auto interactive-lift"
                       @click="handleDownloadMd">
-                <span v-if="isDownloadingMd" class="spinner-border spinner-border-sm me-2"></span>
                 Download .md
               </button>
             </div>
@@ -59,9 +57,8 @@
               <h5 class="card-title glass-title">vCard Contact</h5>
               <p class="card-text glass-subtitle small flex-grow-1">A standard vCard (.vcf) file
                 that can be easily imported into contact applications.</p>
-              <button :disabled="isDownloadingVcf" class="btn btn-success mt-auto interactive-lift"
+              <button :disabled="isLoading" class="btn btn-success mt-auto interactive-lift"
                       @click="handleDownloadVcf">
-                <span v-if="isDownloadingVcf" class="spinner-border spinner-border-sm me-2"></span>
                 Download .vcf
               </button>
             </div>
@@ -81,41 +78,38 @@ import {
   downloadVCardBySlug
 } from '@/services/api';
 import {getFilenameFromResponse, triggerDownload} from '@/utils/downloadUtils';
-import SuccessModal from '@/components/common/modals/SuccessModal.vue';
 import ErrorModal from '@/components/common/modals/ErrorModal.vue';
+import LoadingModal from '@/components/common/modals/LoadingModal.vue';
+import {notificationService} from '@/services/notificationService.js';
 
 const currentSlug = computed(() => authService.user.value?.slug);
 
-// State for modals
-const showSuccessModal = ref(false);
-const successModalMessage = ref('');
-const showErrorModal = ref(false);
-const errorModalMessage = ref('');
+// State for feedback
+const errorModalMessage = ref(''); // Use a string to control visibility
 
-// Individual loading states for each button
-const isDownloadingPdf = ref(false);
-const isDownloadingMd = ref(false);
-const isDownloadingVcf = ref(false);
+// A single loading state for the full-screen modal
+const isLoading = ref(false);
 
 const createDownloadHandler = (downloadFunc, fileType, extension) => async () => {
   if (!currentSlug.value) return;
 
-  const loadingRef = fileType === 'pdf' ? isDownloadingPdf : (fileType === 'md' ? isDownloadingMd : isDownloadingVcf);
-  loadingRef.value = true;
+  isLoading.value = true;
 
   try {
     const response = await downloadFunc(currentSlug.value);
     const blob = await response.blob();
     const filename = getFilenameFromResponse(response, `${currentSlug.value}-portfolio.${extension}`);
     triggerDownload(blob, filename);
-    successModalMessage.value = `${fileType.toUpperCase()} download has started.`;
-    showSuccessModal.value = true;
+    // Use a non-blocking toast for success, just like the backup page
+    notificationService.add({
+      message: `${fileType.toUpperCase()} download has started.`,
+      type: 'success'
+    });
   } catch (err) {
     console.error(`${fileType} download failed:`, err);
     errorModalMessage.value = err.message || `An unexpected error occurred while downloading the ${fileType.toUpperCase()} file.`;
-    showErrorModal.value = true;
   } finally {
-    loadingRef.value = false;
+    isLoading.value = false;
   }
 };
 

@@ -4,7 +4,7 @@
     <div class="container" style="max-width: 500px;">
       <!-- KEY CHANGE: The card now uses the global glass-card and interactive classes -->
       <div
-        class="card glass-card shimmering animate-fade-in-up interactive-card-lift interactive-card-shadow-primary">
+        class="card glass-card animate-fade-in-up interactive-card-lift interactive-card-shadow-primary">
         <div class="card-body p-4 p-md-5">
           <h1 class="card-title text-center mb-4 fs-3">Create Account</h1>
 
@@ -376,4 +376,31 @@ const executeRegistration = async () => {
 }
 
 /* REMOVED: .btn-primary and .btn-primary:hover. Handled by global interactive classes. */
+
+/* Ensure button visibility in light mode */
+.btn-primary {
+  background-color: var(--bs-primary);
+  color: var(--bs-white);
+  border-color: var(--bs-primary);
+}
+
+/* Responsive styles for small screens like iPhone SE */
+@media (max-width: 576px) {
+  .signup-page {
+    padding: 1rem 0;
+  }
+
+  .signup-page .container {
+    max-width: 100%;
+    padding: 0 1rem;
+  }
+
+  .signup-page .card-body {
+    padding: 1.5rem;
+  }
+
+  .signup-page .fs-3 {
+    font-size: 1.5rem !important;
+  }
+}
 </style>

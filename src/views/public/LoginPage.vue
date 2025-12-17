@@ -2,8 +2,9 @@
   <div class="login-page animated-gradient-background">
     <div class="container" style="max-width: 400px;">
       <!-- The interactive classes are correct -->
+      <!-- FIX: Removed the 'shimmering' class. It hardcodes a dark background which makes the theme-adaptive text unreadable in light mode. -->
       <div
-        class="card glass-card shimmering animate-fade-in-up interactive-card-lift interactive-card-shadow-primary">
+        class="card glass-card animate-fade-in-up interactive-card-lift interactive-card-shadow-primary">
         <div class="card-body p-4 p-md-5">
           <h1 class="card-title text-center mb-4 fs-3">Login</h1>
 
@@ -44,10 +45,10 @@
               {{ isLoading ? 'Logging in...' : 'Login' }}
             </button>
           </form>
-          <!--          <p class="mt-4 text-center">
-                      Don't have an account?
-                      <router-link to="/signup">Sign Up</router-link>
-                    </p>-->
+          <p class="mt-4 text-center">
+            Don't have an account?
+            <router-link to="/register">Sign Up</router-link>
+          </p>
         </div>
       </div>
 
@@ -269,5 +270,32 @@ const handleLogin = async () => {
 .invalid-feedback {
   color: var(--bs-danger);
   font-weight: 500;
+}
+
+/* Ensure button visibility in light mode */
+.btn-primary {
+  background-color: var(--bs-primary);
+  color: var(--bs-white);
+  border-color: var(--bs-primary);
+}
+
+/* Responsive styles for small screens like iPhone SE */
+@media (max-width: 576px) {
+  .login-page {
+    padding: 1rem 0;
+  }
+
+  .login-page .container {
+    max-width: 100%;
+    padding: 0 1rem;
+  }
+
+  .login-page .card-body {
+    padding: 1.5rem;
+  }
+
+  .login-page .fs-3 {
+    font-size: 1.5rem !important;
+  }
 }
 </style>

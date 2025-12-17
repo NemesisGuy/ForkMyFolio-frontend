@@ -346,4 +346,61 @@ const handleVisibilityToggle = async (project) => {
     transform: translateY(0);
   }
 }
+
+/* Responsive styles for mobile-first design */
+@media (max-width: 576px) {
+  .user-projects-page {
+    padding: 1rem 0;
+  }
+
+  .user-projects-page .container {
+    padding: 0 1rem;
+  }
+
+  .user-projects-page .d-flex {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .user-projects-page h2 {
+    font-size: 1.5rem;
+    text-align: center;
+  }
+
+  .card-img-container {
+    height: 120px;
+  }
+
+  .project-image-placeholder {
+    font-size: 2rem;
+  }
+
+  .card-title {
+    font-size: 1.1rem;
+  }
+
+  .card-text {
+    font-size: 0.9rem;
+  }
+
+  .btn {
+    min-height: 44px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Tablet enhancements */
+@media (min-width: 768px) {
+  .card-img-container {
+    height: 150px;
+  }
+}
+
+/* Desktop enhancements */
+@media (min-width: 1024px) {
+  .user-projects-page .container {
+    max-width: 1200px;
+  }
+}
 </style>
